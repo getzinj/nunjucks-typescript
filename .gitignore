@@ -12,3 +12,7 @@ docs/files
 /tests/browser/precompiled-templates.js
 /samples/express/js/nunjucks.js
 /samples/express/js/templates.js
+nunjucks/src/nodes/nunjucksNode.js
+nunjucks/src/nodes/nunjucksNode.js.map
+tests/parser.spec.js
+tests/parser.spec.js.map

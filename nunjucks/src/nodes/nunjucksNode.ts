@@ -1,4 +1,5 @@
 export class NunjucksNode {
+  public children: NunjucksNode[] | undefined;
   readonly lineno: number;
   readonly colno: number;
 
@@ -42,8 +43,6 @@ export class NunjucksNodeList extends NunjucksNode {
   get typename(): string {
     return 'NunjucksNodeList';
   }
-
-  public children: NunjucksNode[] | undefined;
 
 
   constructor(lineno: number, colno: number, nodes?) {
