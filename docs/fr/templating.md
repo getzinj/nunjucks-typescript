@@ -630,7 +630,7 @@ Les arguments avec mots clefs ressemblent à ceci :
 passe comme dernier argument. C'est équivalent à cet appel en javascript :
 
 ```js
-foo(1, 2, { bar: 3, baz: 4})
+globalchokidar(1, 2, { bar: 3, baz: 4})
 ```
 
 Puisqu'il s'agit d'une convention d'appel standard, ça marche pour toutes les fonctions et les

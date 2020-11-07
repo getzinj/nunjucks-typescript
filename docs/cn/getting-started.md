@@ -32,7 +32,7 @@ $ npm install nunjucks
 或者可以作为一个 AMD 模块加载：
 
 ```js
-define(['nunjucks'], function(nunjucks) {
+define(['nunjucks/index'], function(nunjucks) {
 });
 ```
 

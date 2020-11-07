@@ -807,7 +807,7 @@ argument et n'importe quels arguments qui seront transmis dans l'ordre au filtre
 comme d'autres arguments.
 
 ```js
-var nunjucks = require('nunjucks');
+var nunjucks = require('nunjucks/index');
 var env = new nunjucks.Environment();
 
 env.addFilter('shorten', function(str, count) {

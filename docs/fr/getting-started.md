@@ -46,7 +46,7 @@ Il suffit d’inclure nunjucks avec une balise `script` dans la page :
 ou le charger comme un module AMD :
 
 ```js
-define(['nunjucks'], function(nunjucks) {
+define(['nunjucks/index'], function(nunjucks) {
 });
 ```
 

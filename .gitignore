@@ -4,8 +4,8 @@ coverage
 docs/_site
 docs/files
 /src/
-/index.js
-/index.js.map
+/nunjucks/index.ts
+/nunjucks/index.js.map
 /tests/browser/nunjucks*
 .nyc_output
 /browser

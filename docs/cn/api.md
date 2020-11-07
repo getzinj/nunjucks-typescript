@@ -586,7 +586,7 @@ var env = nunjucks.configure('/path/to/templates', {
 使用 `Environment` 的 `addFilter` 方法添加一个自定义的过滤器，过滤器时一个函数，第一个参数为目标元素，剩下的参数为传入过滤器的参数。
 
 ```js
-var nunjucks = require('nunjucks');
+var nunjucks = require('nunjucks/index');
 var env = new nunjucks.Environment();
 
 env.addFilter('shorten', function(str, count) {

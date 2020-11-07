@@ -816,7 +816,7 @@ first argument and any arguments passed to the filter as the other
 arguments, in order.
 
 ```js
-var nunjucks = require('nunjucks');
+var nunjucks = require('nunjucks/index');
 var env = new nunjucks.Environment();
 
 env.addFilter('shorten', function(str, count) {

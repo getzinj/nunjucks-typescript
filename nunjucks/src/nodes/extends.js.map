@@ -1,0 +1,1 @@
+{"version":3,"file":"extends.js","sourceRoot":"","sources":["extends.ts"],"names":[],"mappings":";;;AAAA,+CAA4C;AAI5C,MAAa,OAAQ,SAAQ,yBAAW;IACtC,IAAI,QAAQ,KAAa,OAAO,SAAS,CAAC,CAAC,CAAC;IAG5C,YAAY,MAAc,EAAE,KAAa,EAAE,QAAS;QAClD,KAAK,CAAC,MAAM,EAAE,KAAK,EAAE,QAAQ,CAAC,CAAC;IACjC,CAAC;CACF;AAPD,0BAOC"}

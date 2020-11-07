@@ -661,7 +661,7 @@ Keyword arguments look like this:
 passes it as the last argument. It's equivalent to this call in javascript:
 
 ```js
-foo(1, 2, { bar: 3, baz: 4})
+globalchokidar(1, 2, { bar: 3, baz: 4})
 ```
 
 Since this is a standard calling convention, it works for all functions and

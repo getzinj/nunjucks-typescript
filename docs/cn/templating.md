@@ -496,7 +496,7 @@ jinja2 使用 Python 的关键字参数，支持函数，过滤器和宏。Nunju
 `bar` 和 `baz` 为关键字参数，Nunjucks 将他们转换成一个对象作为最后一个参数传入，等价于 javascript 的如下调用：
 
 ```js
-foo(1, 2, { bar: 3, baz: 4})
+globalchokidar(1, 2, { bar: 3, baz: 4})
 ```
 
 因为这使一个标准的调用转换，所以适用于所有的符合预期的函数和过滤器。查看 [API 章节](api#Keyword-Arguments)获得更多信息。
