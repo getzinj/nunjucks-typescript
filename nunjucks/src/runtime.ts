@@ -1,6 +1,7 @@
 'use strict';
 
 
+import { escape } from './lib';
 import { Frame } from './frame';
 
 export { Frame } from './frame';
