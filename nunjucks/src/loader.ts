@@ -5,7 +5,7 @@ import { EmitterObj } from './emitterObj';
 
 
 
-export class Loader extends EmitterObj {
+export abstract class Loader extends EmitterObj {
   cache: Record<string, any>;
 
   resolve(from, to): string {
@@ -15,4 +15,6 @@ export class Loader extends EmitterObj {
   isRelative(filename): boolean {
     return (filename.indexOf('./') === 0 || filename.indexOf('../') === 0);
   }
+
+  abstract getSource(name: string, cb?);
 }

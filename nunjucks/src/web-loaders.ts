@@ -5,9 +5,9 @@ export { PrecompiledLoader } from './precompiled-loader';
 
 
 export class WebLoader extends Loader {
-  private useCache: boolean;
-  private baseURL: string;
-  private async: boolean;
+  private readonly useCache: boolean;
+  private readonly baseURL: string;
+  private readonly async: boolean;
 
 
   constructor(baseURL, opts?) {
@@ -29,13 +29,15 @@ export class WebLoader extends Loader {
     this.async = !!opts.async;
   }
 
+
   resolve(from, to): string {
     throw new Error('relative templates not support in the browser yet');
   }
 
-  getSource(name, cb) {
-    var useCache = this.useCache;
-    var result;
+
+  getSource(name: string, cb): { src: any; path: any; noCache: boolean } {
+    const useCache: boolean = this.useCache;
+    let result: { src: any; path: any; noCache: boolean; };
     this.fetch(this.baseURL + '/' + name, (err, src) => {
       if (err) {
         if (cb) {
@@ -64,14 +66,15 @@ export class WebLoader extends Loader {
     return result;
   }
 
-  fetch(url, cb) {
+
+  fetch(url: string, cb): void {
     // Only in the browser please
     if (typeof window === 'undefined') {
       throw new Error('WebLoader can only by used in a browser');
     }
 
-    const ajax = new XMLHttpRequest();
-    let loading = true;
+    const ajax: XMLHttpRequest = new XMLHttpRequest();
+    let loading: boolean = true;
 
     ajax.onreadystatechange = () => {
       if (ajax.readyState === 4 && loading) {

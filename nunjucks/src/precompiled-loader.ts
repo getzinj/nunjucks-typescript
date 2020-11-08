@@ -14,7 +14,7 @@ export class PrecompiledLoader extends Loader {
   }
 
 
-  getSource(name) {
+  getSource(name: string): null | { path: string; src: { obj: any; type: string } } {
     if (this.precompiled[name]) {
       return {
         src: {

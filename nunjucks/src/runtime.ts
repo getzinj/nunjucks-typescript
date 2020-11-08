@@ -1,6 +1,8 @@
 'use strict';
 
 
+import { Frame } from './frame';
+
 export { Frame } from './frame';
 
 export { SafeString} from './SafeString';
@@ -11,6 +13,7 @@ export { TemplateError } from './templateError';
 import { TemplateError } from './templateError';
 export { NunjucksSymbol } from './nodes/nunjucksSymbol';
 import { NunjucksSymbol } from './nodes/nunjucksSymbol';
+import { Context } from './environment';
 
 
 const supportsIterators: boolean = (
@@ -166,11 +169,12 @@ export function callWrap(obj, name, context, args) {
   return obj.apply(context, args);
 }
 
-export function contextOrFrameLookup(context, frame, name) {
+export function contextOrFrameLookup(context: Context, frame: Frame, name: string) {
   const val = frame.lookup(name);
-  return (val !== undefined) ?
-    val :
-    context.lookup(name);
+  return (val === undefined)
+      ? context.lookup(name)
+      : val
+  ;
 }
 
 export function handleError(error, lineno, colno) {

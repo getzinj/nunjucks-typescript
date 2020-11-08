@@ -7,9 +7,9 @@ import { Loader } from './loader';
 
 
 export class FileSystemLoader extends Loader {
-  private pathsToNames: any;
-  private noCache: boolean;
-  private searchPaths: string[];
+  private readonly pathsToNames: any;
+  private readonly noCache: boolean;
+  private readonly searchPaths: string[];
 
 
   constructor(searchPaths, opts?) {
@@ -56,13 +56,14 @@ export class FileSystemLoader extends Loader {
     }
   }
 
-  getSource(name) {
-    var fullpath = null;
-    var paths = this.searchPaths;
+
+  getSource(name: string): null | { path: string; noCache: boolean; src: string } {
+    let fullpath: string = null;
+    const paths: string[] = this.searchPaths;
 
     for (let i = 0; i < paths.length; i++) {
-      const basePath = path.resolve(paths[i]);
-      const p = path.resolve(paths[i], name);
+      const basePath: string = path.resolve(paths[i]);
+      const p: string = path.resolve(paths[i], name);
 
       // Only allow the current directory and anything
       // underneath it to be searched
@@ -78,7 +79,7 @@ export class FileSystemLoader extends Loader {
 
     this.pathsToNames[fullpath] = name;
 
-    const source = {
+    const source: { path: string; noCache: boolean; src: string } = {
       src: fs.readFileSync(fullpath, 'utf-8'),
       path: fullpath,
       noCache: this.noCache

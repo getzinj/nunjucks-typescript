@@ -117,7 +117,7 @@ export class Template extends Obj {
   private rootRenderFunc;
 
 
-  constructor(src, env, path, eagerCompile?: boolean) {
+  constructor(src, env, path?: string, eagerCompile?: boolean) {
     super();
     this.env = env || new Environment();
 
@@ -296,7 +296,7 @@ export class Template extends Obj {
 
 export class Environment extends EmitterObj {
   opts: any;
-  private loaders: Loader[];
+  loaders: Loader[];
   private extensions: Record<string, any>;
   extensionsList: any[];
   asyncFilters: any[];
@@ -332,9 +332,9 @@ export class Environment extends EmitterObj {
     if (!loaders) {
       // The filesystem loader is only available server-side
       if (FileSystemLoader) {
-        this.loaders = [new FileSystemLoader('views')];
+        this.loaders = [ new FileSystemLoader('views') ];
       } else if (WebLoader) {
-        this.loaders = [new WebLoader('/views')];
+        this.loaders = [ new WebLoader('/views') ];
       }
     } else {
       this.loaders = lib.isArray(loaders) ? loaders : [loaders];
