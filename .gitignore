@@ -39,3 +39,9 @@ tests/express.spec.js
 tests/express.spec.js.map
 tests/cli.spec.js
 tests/cli.spec.js.map
+nunjucks/src/compiler.js
+nunjucks/src/compiler.js.map
+tests/compiler.spec.js
+tests/compiler.spec.js.map
+tests/filters.spec.js
+tests/filters.spec.js.map
