@@ -33,3 +33,5 @@ tests/util.spec.js
 tests/util.spec.js.map
 tests/core.spec.js
 tests/core.spec.js.map
+tests/api.spec.js
+tests/api.spec.js.map

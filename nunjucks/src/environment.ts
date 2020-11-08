@@ -576,7 +576,7 @@ export class Environment extends EmitterObj {
   }
 
 
-  render(name, ctx, cb) {
+  render(name, ctx, cb?) {
     if (lib.isFunction(ctx)) {
       cb = ctx;
       ctx = null;
@@ -602,7 +602,7 @@ export class Environment extends EmitterObj {
   }
 
 
-  renderString(src, ctx, opts, cb) {
+  renderString(src, ctx, opts, cb?) {
     if (lib.isFunction(opts)) {
       cb = opts;
       opts = {};
