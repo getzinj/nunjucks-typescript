@@ -617,5 +617,7 @@ export const intFilter: (...macroArgs) => any = r.makeMacro(
 
 module.exports = {
   ... module.exports,
-  'int': intFilter
+  'int': intFilter,
+  'e': escape,
+  'd': default_
 }
