@@ -566,10 +566,15 @@ export class Compiler extends Obj {
     this._emit(')');
   }
 
+
   compileFilter(node, frame): void {
     const name = node.name;
     this.assertType(name, NunjucksSymbol);
-    this._emit('env.getFilter("' + name.value + '").call(context, ');
+
+    // Handle special case of "default" filter, which is an invalid export.
+    const filterName: string = (name.value === 'default') ? 'default_' : name.value;
+
+    this._emit('env.getFilter("' + filterName + '").call(context, ');
     this._compileAggregate(node.args, frame);
     this._emit(')');
   }

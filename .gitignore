@@ -45,3 +45,6 @@ tests/compiler.spec.js
 tests/compiler.spec.js.map
 tests/filters.spec.js
 tests/filters.spec.js.map
+nunjucks/src/environment.js
+nunjucks/src/filters.js
+nunjucks/src/filters.js.map

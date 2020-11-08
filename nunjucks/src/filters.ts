@@ -81,10 +81,6 @@ export function default_<T>(val: T, def: T, bool): T {
 }
 
 
-// TODO: it is confusing to export something called 'default'
-exports['default'] = default_; // eslint-disable-line dot-notation
-
-
 export function dictsort(val, caseSensitive, by) {
   if (!lib.isObject(val)) {
     throw new TemplateError1('dictsort filter: val must be an object');
