@@ -270,14 +270,14 @@ function walk(ast: NunjucksNode, func, depthFirst?) {
   }
 
   if (ast instanceof NunjucksNodeList) {
-    const children = mapCOW(ast.children, (node) => walk(node, func, depthFirst));
+    const children: NunjucksNode[] = mapCOW(ast.children, (node) => walk(node, func, depthFirst));
 
     if (children !== ast.children) {
       ast = createDynamicNode(ast.typename, ast.lineno, ast.colno, children);
     }
   } else if (ast instanceof CallExtension) {
-    const args = walk(ast.args, func, depthFirst);
-    const contentArgs = mapCOW(ast.contentArgs, (node) => walk(node, func, depthFirst));
+    const args: NunjucksNodeList = walk(ast.args, func, depthFirst);
+    const contentArgs: NunjucksNode[] = mapCOW(ast.contentArgs, (node) => walk(node, func, depthFirst));
 
     if (args !== ast.args || contentArgs !== ast.contentArgs) {
       ast = createDynamicNode(ast.typename, ast.extName, ast.prop, args, contentArgs);
@@ -366,13 +366,13 @@ function liftFilters(ast, asyncFilters) {
 }
 
 
-function liftSuper(ast): NunjucksSymbol | undefined {
-  return walk(ast, (blockNode) => {
+function liftSuper(ast: NunjucksNode): NunjucksSymbol | undefined {
+  return walk(ast, (blockNode: NunjucksNode) => {
     if (!(blockNode instanceof Block)) {
       return;
     }
 
-    let hasSuper = false;
+    let hasSuper: boolean = false;
     const symbol = gensym();
 
     blockNode.body = walk(blockNode.body, (node) => { // eslint-disable-line consistent-return

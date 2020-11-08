@@ -34,7 +34,7 @@ import { Pow } from './lexer/operators/pow';
 import { Neg } from './lexer/operators/neg';
 import { Pos } from './lexer/operators/pos';
 import { Compare } from './nodes/compare';
-import { NunjucksNodeList } from './nodes/nunjucksNode';
+import { NunjucksNodeList, CallExtension, NunjucksNode } from './nodes/nunjucksNode';
 import { ArrayNode } from './nodes/arrayNode';
 
 
@@ -241,10 +241,10 @@ export class Compiler extends Obj {
   }
 
 
-  compileCallExtension(node, frame, async): void {
-    const args = node.args;
-    const contentArgs = node.contentArgs;
-    const autoescape = typeof node.autoescape === 'boolean' ? node.autoescape : true;
+  compileCallExtension(node: CallExtension, frame: Frame, async?: boolean): void {
+    const args: NunjucksNodeList = node.args;
+    const contentArgs: NunjucksNode[] = node.contentArgs;
+    const autoescape: boolean = typeof node.autoescape === 'boolean' ? node.autoescape : true;
 
     if (!async) {
       this._emit(`${this.buffer} += runtime.suppressValue(`);
@@ -1252,7 +1252,7 @@ export class Compiler extends Obj {
 
 
   compile(node, frame?): void {
-    const _compile = this['compile' + node.typename];
+    const _compile: (node, frame) => void = this['compile' + node.typename];
     if (_compile) {
       _compile.call(this, node, frame);
     } else {

@@ -682,7 +682,7 @@ export class Parser extends Obj implements IParser {
         return this.parseSwitch();
       default:
         if (this.extensions.length) {
-          for (let i = 0; i < this.extensions.length; i++) {
+          for (let i: number = 0; i < this.extensions.length; i++) {
             const ext = this.extensions[i];
             if (indexOf(ext.tags || [], tok.value) !== -1) {
               return ext.parse(this, undefined, lexer); // TODO: Handle missing nodes declaration
@@ -1179,7 +1179,7 @@ export class Parser extends Obj implements IParser {
     const args = this.parseFilterArgs(name);
 
     this.advanceAfterBlockEnd(filterTok.value);
-    const body: Capture = new Capture(name.lineno, name.colno, this.parseUntilBlocks('endset'));
+    const body: Capture = new Capture(name.lineno, name.colno, this.parseUntilBlocks('endfilter'));
     this.advanceAfterBlockEnd();
 
     const node: Filter = new Filter(

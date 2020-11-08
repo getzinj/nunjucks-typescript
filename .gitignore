@@ -48,3 +48,8 @@ tests/filters.spec.js.map
 nunjucks/src/environment.js
 nunjucks/src/filters.js
 nunjucks/src/filters.js.map
+nunjucks/src/transformer.js.map
+nunjucks/src/parser/parser.js
+nunjucks/src/parser/parser.js.map
+tests/lexer.spec.js
+tests/lexer.spec.js.map

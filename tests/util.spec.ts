@@ -264,7 +264,7 @@ import { Environment, Template } from '../nunjucks';
     module.exports.isSlim = isSlim;
     module.exports.Loader = Loader;
   } else {
-    window.util = {
+    window['util'] = {
       render: render,
       equal: equal,
       jinjaEqual: jinjaEqual,
