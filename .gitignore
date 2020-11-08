@@ -31,3 +31,5 @@ tests/runtime.spec.js
 tests/runtime.spec.js.map
 tests/util.spec.js
 tests/util.spec.js.map
+tests/core.spec.js
+tests/core.spec.js.map
