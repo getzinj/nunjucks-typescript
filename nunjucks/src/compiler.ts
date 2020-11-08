@@ -381,7 +381,7 @@ export class Compiler extends Obj {
     const val = node.value;
 
     if (key instanceof NunjucksSymbol) {
-      key = new Literal(key.value, key.lineno, key.colno);
+      key = new Literal(key.lineno, key.colno, key.value);
     } else if (!(key instanceof Literal &&
         typeof key.value === 'string')) {
       this.fail('compilePair: Dict keys must be strings or names',
