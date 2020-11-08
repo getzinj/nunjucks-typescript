@@ -3,9 +3,24 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.renderString = exports.render = exports.compile = exports.reset = exports.configure = exports.precompileString = exports.precompile = exports.NodeResolveLoader = exports.PrecompiledLoader = exports.WebLoader = exports.FileSystemLoader = void 0;
+exports.renderString = exports.render = exports.compile = exports.reset = exports.configure = exports.installJinjaCompat = exports.precompileString = exports.precompile = exports.NodeResolveLoader = exports.PrecompiledLoader = exports.WebLoader = exports.FileSystemLoader = exports.Template = exports.Environment = void 0;
 
 var environment_1 = require("./src/environment");
+
+Object.defineProperty(exports, "Environment", {
+  enumerable: true,
+  get: function get() {
+    return environment_1.Environment;
+  }
+});
+Object.defineProperty(exports, "Template", {
+  enumerable: true,
+  get: function get() {
+    return environment_1.Template;
+  }
+});
+
+var environment_2 = require("./src/environment");
 
 var lib_1 = require("./src/lib");
 
@@ -60,6 +75,15 @@ Object.defineProperty(exports, "precompileString", {
     return precompile_1.precompileString;
   }
 });
+
+var jinja_compat_1 = require("./src/jinja-compat");
+
+Object.defineProperty(exports, "installJinjaCompat", {
+  enumerable: true,
+  get: function get() {
+    return jinja_compat_1.installCompat;
+  }
+});
 var e;
 
 function configure(templatesPath, opts) {
@@ -84,7 +108,7 @@ function configure(templatesPath, opts) {
     });
   }
 
-  e = new environment_1.Environment(TemplateLoader, opts);
+  e = new environment_2.Environment(TemplateLoader, opts);
 
   if (opts && opts.express) {
     e.express(opts.express);
@@ -106,7 +130,7 @@ function compile(src, env, path, eagerCompile) {
     configure();
   }
 
-  return new environment_1.Template(src, env, path, eagerCompile);
+  return new environment_2.Template(src, env, path, eagerCompile);
 }
 
 exports.compile = compile;
