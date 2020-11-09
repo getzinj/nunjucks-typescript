@@ -1,6 +1,9 @@
 import { NunjucksNode, NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNode';
 import { Parser } from '../nunjucks/src/parser/parser';
 
+declare var nunjucks;
+
+
 (function(): void {
   'use strict';
 
@@ -70,14 +73,12 @@ import { Parser } from '../nunjucks/src/parser/parser';
     KeywordArgs = require('../nunjucks/src/nodes/keywordArgs').KeywordArgs;
     If = require('../nunjucks/src/nodes/if').If;
     parser = require('../nunjucks/src/parser/parser');
-
-//    NunjucksNodeList = require('../nunjucks/src/nodes/nunjucksNode').NunjucksNodeList;
     NunjucksNode = require('../nunjucks/src/nodes/nunjucksNode').NunjucksNode;
     NunjucksSymbol = require('../nunjucks/src/nodes/nunjucksSymbol').NunjucksSymbol;
     ArrayNode = require('../nunjucks/src/nodes/arrayNode').ArrayNode;
     Dict = require('../nunjucks/src/nodes/dict').Dict;
   } else {
-    expect = window.expect;
+    expect = window['expect'];
     lib = nunjucks.lib;
     Root = nunjucks.Root;
     Group = nunjucks.Group;

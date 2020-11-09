@@ -1,7 +1,7 @@
 (function() {
   'use strict';
 
-  var expect, util, finish, render;
+  let expect, util, finish, render;
 
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
@@ -98,7 +98,7 @@
 
 
     it('should allow for objects without a prototype macro arguments in the last position', function(done) {
-      var noProto = Object.create(null);
+      const noProto = Object.create(null);
       noProto.qux = 'world';
 
       render('{% macro foo(bar, baz) %}' +

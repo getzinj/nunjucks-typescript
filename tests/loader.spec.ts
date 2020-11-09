@@ -1,3 +1,6 @@
+import { Done } from 'mocha';
+import { Loader } from '../nunjucks/src/loader';
+
 declare var nunjucks;
 
 (((): void => {
@@ -81,11 +84,13 @@ declare var nunjucks;
         expect(webLoader.async).to.be(false);
       });
 
-      it('should emit a "load" event', function(done: (err?) => void): void {
-        const loader = new WebLoader(templatesPath);
+
+      it('should emit a "load" event', function(done: Done): void {
+        const loader: Loader = new WebLoader(templatesPath);
 
         if (typeof window === 'undefined') {
           this.skip();
+          done();
         }
 
         loader.on('load', (name, source): void => {
@@ -105,8 +110,9 @@ declare var nunjucks;
           expect(loader.noCache).to.be(false);
         });
 
-        it('should emit a "load" event', (done): void => {
-          const loader = new FileSystemLoader(templatesPath);
+
+        it('should emit a "load" event', (done: Done): void => {
+          const loader: Loader = new FileSystemLoader(templatesPath);
           loader.on('load', (name, source): void => {
             expect(name).to.equal('simple-base.njk');
             done();
@@ -126,8 +132,8 @@ declare var nunjucks;
         });
 
 
-        it('should emit a "load" event', (done): void => {
-          const loader = new NodeResolveLoader();
+        it('should emit a "load" event', (done: Done): void => {
+          const loader: Loader = new NodeResolveLoader();
           loader.on('load', (name, source): void => {
             expect(name).to.equal('dummy-pkg/simple-template.html');
             done();
