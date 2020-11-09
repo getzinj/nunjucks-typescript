@@ -1,6 +1,6 @@
 'use strict';
 
-import { SafeString } from './SafeString';
+import { SafeString } from './runtime/SafeString';
 
 
 /**

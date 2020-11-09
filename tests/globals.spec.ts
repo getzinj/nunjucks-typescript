@@ -15,7 +15,7 @@ declare var nunjucks;
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
     util = require('./util.spec');
-    Environment = require('../nunjucks/src/environment').Environment;
+    Environment = require('../nunjucks/src/environment/environment').Environment;
   } else {
     expect = window['expect'];
     util = window['util'];

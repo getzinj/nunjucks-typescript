@@ -15,7 +15,7 @@ declare var nunjucks;
     expect = require('expect.js');
     util = require('./util.spec');
     lib = require('../nunjucks/src/lib');
-    r = require('../nunjucks/src/runtime');
+    r = require('../nunjucks/src/runtime/runtime');
   } else {
     expect = window['expect'];
     util = window['util'];

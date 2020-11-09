@@ -15,7 +15,7 @@ declare var nunjucks;
 
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
-    Environment = require('../nunjucks/src/environment').Environment;
+    Environment = require('../nunjucks/src/environment/environment').Environment;
     WebLoader = require('../nunjucks/src/web-loaders').WebLoader;
     FileSystemLoader = require('../nunjucks/src/file-system-loader').FileSystemLoader;
     NodeResolveLoader = require('../nunjucks/src/node-resolve-loader').NodeResolveLoader;

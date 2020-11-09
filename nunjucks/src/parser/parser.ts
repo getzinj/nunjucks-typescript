@@ -3,7 +3,7 @@
 import { indexOf } from '../lib';
 import * as lexer from '../lexer/characters';
 import { TemplateError } from '../templateError';
-import { Obj } from '../obj';
+import { Obj } from '../object/obj';
 import { Root } from '../nodes/root';
 import { Literal } from '../nodes/literal';
 import { NunjucksSymbol } from '../nodes/nunjucksSymbol';

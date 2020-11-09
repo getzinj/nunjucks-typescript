@@ -1,41 +1,41 @@
 'use strict';
 
-import { Frame } from './frame';
-import { transform } from './transformer';
-import { parse } from './parser/parser';
+import { Frame } from '../runtime/frame';
+import { transform } from '../transformer';
+import { parse } from '../parser/parser';
 import { compareOps } from './compareOps';
-import { TemplateError } from './templateError';
-import { Obj } from './obj';
-import { Literal } from './nodes/literal';
-import { NunjucksSymbol } from './nodes/nunjucksSymbol';
-import { Group } from './nodes/group';
-import { Pair } from './nodes/pair';
-import { Dict } from './nodes/dict';
-import { LookupVal } from './nodes/lookupVal';
-import { InlineIf } from './nodes/inlineIf';
-import { Caller } from './nodes/caller';
-import { FunCall } from './nodes/funCall';
-import { Filter } from './nodes/filter';
-import { Block } from './nodes/block';
-import { TemplateData } from './nodes/templateData';
-import { In } from './lexer/operators/in';
-import { Is } from './lexer/operators/is';
-import { Or } from './lexer/operators/or';
-import { And } from './lexer/operators/and';
-import { Not } from './lexer/operators/not';
-import { Add } from './lexer/operators/add';
-import { Concat } from './lexer/operators/concat';
-import { Sub } from './lexer/operators/sub';
-import { Mul } from './lexer/operators/mul';
-import { Div } from './lexer/operators/div';
-import { FloorDiv } from './lexer/operators/floorDiv';
-import { Mod } from './lexer/operators/mod';
-import { Pow } from './lexer/operators/pow';
-import { Neg } from './lexer/operators/neg';
-import { Pos } from './lexer/operators/pos';
-import { Compare } from './nodes/compare';
-import { NunjucksNodeList, CallExtension, NunjucksNode } from './nodes/nunjucksNode';
-import { ArrayNode } from './nodes/arrayNode';
+import { TemplateError } from '../templateError';
+import { Obj } from '../object/obj';
+import { Literal } from '../nodes/literal';
+import { NunjucksSymbol } from '../nodes/nunjucksSymbol';
+import { Group } from '../nodes/group';
+import { Pair } from '../nodes/pair';
+import { Dict } from '../nodes/dict';
+import { LookupVal } from '../nodes/lookupVal';
+import { InlineIf } from '../nodes/inlineIf';
+import { Caller } from '../nodes/caller';
+import { FunCall } from '../nodes/funCall';
+import { Filter } from '../nodes/filter';
+import { Block } from '../nodes/block';
+import { TemplateData } from '../nodes/templateData';
+import { In } from '../lexer/operators/in';
+import { Is } from '../lexer/operators/is';
+import { Or } from '../lexer/operators/or';
+import { And } from '../lexer/operators/and';
+import { Not } from '../lexer/operators/not';
+import { Add } from '../lexer/operators/add';
+import { Concat } from '../lexer/operators/concat';
+import { Sub } from '../lexer/operators/sub';
+import { Mul } from '../lexer/operators/mul';
+import { Div } from '../lexer/operators/div';
+import { FloorDiv } from '../lexer/operators/floorDiv';
+import { Mod } from '../lexer/operators/mod';
+import { Pow } from '../lexer/operators/pow';
+import { Neg } from '../lexer/operators/neg';
+import { Pos } from '../lexer/operators/pos';
+import { Compare } from '../nodes/compare';
+import { NunjucksNodeList, CallExtension, NunjucksNode } from '../nodes/nunjucksNode';
+import { ArrayNode } from '../nodes/arrayNode';
 
 
 
@@ -600,21 +600,22 @@ export class Compiler extends Obj {
     this._emit(')');
   }
 
+
   compileSet(node, frame): void {
-    const ids = [];
+    const ids: string[] = [];
 
     // Lookup the variable names for each identifier and create
     // new ones if necessary
-    node.targets.forEach((target): void => {
-      const name = target.value;
-      let id = frame.lookup(name);
+    node.targets.forEach((target: NunjucksSymbol): void => {
+      const name: string = target.value;
+      let id: string = frame.lookup(name);
 
       if (id === null || id === undefined) {
         id = this._tmpid();
 
         // Note: This relies on js allowing scope across
         // blocks, in case this is created inside an `if`
-        this._emitLine('var ' + id + ';');
+        this._emitLine(`var ${id};`);
       }
 
       ids.push(id);
@@ -630,16 +631,17 @@ export class Compiler extends Obj {
       this._emitLine(';');
     }
 
-    node.targets.forEach((target, i): void => {
-      const id = ids[i];
-      const name = target.value;
+    node.targets.forEach((target: NunjucksSymbol, i: number): void => {
+      const id: string = ids[i];
+      const name: string = target.value;
 
       // We are running this for every var, but it's very
       // uncommon to assign to multiple vars anyway
-      this._emitLine(`frame.set("${name}", ${id}, true);`);
+      this._emitLine(`debugger;`);
+      this._emitLine(`frame.set("${name}", ${id}, true);`); // TODO: Could this be the problem?
 
       this._emitLine('if(frame.topLevel) {');
-      this._emitLine(`context.setVariable("${name}", ${id});`);
+      this._emitLine(`context.setVariable("${name}", ${id});`); // TODO: Could this be the problem?
       this._emitLine('}');
 
       if (name.charAt(0) !== '_') {
@@ -649,6 +651,7 @@ export class Compiler extends Obj {
       }
     });
   }
+
 
   compileSwitch(node, frame): void {
     this._emit('switch (');

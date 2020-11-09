@@ -5,7 +5,7 @@ import { TemplateError } from './templateError';
 const ArrayProto = Array.prototype;
 const ObjProto = Object.prototype;
 
-const escapeMap = {
+const escapeMap: Record<string, string> = {
   '&': '&amp;',
   '"': '&quot;',
   '\'': '&#39;',
@@ -13,7 +13,7 @@ const escapeMap = {
   '>': '&gt;'
 };
 
-const escapeRegex: RegExp = /[&"'<>]/g;
+export const escapeRegex: RegExp = /[&"'<>]/g;
 
 
 export function hasOwnProp(obj, k): boolean {
@@ -21,12 +21,12 @@ export function hasOwnProp(obj, k): boolean {
 }
 
 
-export function lookupEscape(ch) {
+export function lookupEscape(ch): string | undefined {
   return escapeMap[ch];
 }
 
 
-export function _prettifyError(path, withInternals, err) {
+export function _prettifyError(path, withInternals, err): TemplateError {
   if (!err.Update) {
     // not one of ours, cast it
     err = new TemplateError(err);
@@ -80,11 +80,9 @@ export function isObject(obj): boolean {
 }
 
 /**
- * @param {string|number} attr
- * @returns {(string|number)[]}
  * @private
  */
-export function _prepareAttributeParts(attr) {
+function _prepareAttributeParts(attr: string | number): (string | number)[] {
   if (!attr) {
     return [];
   }
@@ -93,21 +91,21 @@ export function _prepareAttributeParts(attr) {
     return attr.split('.');
   }
 
-  return [attr];
+  return [ attr ];
 }
 
-/**
- * @param {string}   attribute      Attribute value. Dots allowed.
- * @returns {function(Object): *}
- */
-export function getAttrGetter(attribute) {
-  const parts = _prepareAttributeParts(attribute);
 
-  return function attrGetter(item) {
-    let _item = item;
+/**
+ * @param   attribute      Attribute value. Dots allowed.
+ */
+export function getAttrGetter(attribute: string): (obj: Record<string | number, any>) => any {
+  const parts: (string | number)[] = _prepareAttributeParts(attribute);
+
+  return function attrGetter(item: Record<string | number, any>): Record<string | number, any> | undefined {
+    let _item: Record<string | number, any> = item;
 
     for (let i = 0; i < parts.length; i++) {
-      const part = parts[i];
+      const part: string | number = parts[i];
 
       // If item is not an object, and we still got parts to handle, it means
       // that something goes wrong. Just roll out to undefined in that case.
@@ -123,14 +121,14 @@ export function getAttrGetter(attribute) {
 }
 
 
-export function groupBy(obj, val, throwOnUndefined) {
-  const result = {};
+export function groupBy(obj, val, throwOnUndefined: boolean) {
+  const result = { };
   const iterator = isFunction(val) ? val : getAttrGetter(val);
   for (let i = 0; i < obj.length; i++) {
     const value = obj[i];
     const key = iterator(value, i);
     if (key === undefined && throwOnUndefined === true) {
-      throw new TypeError(`groupby: attribute "${val}" resolved to undefined`);
+      throw new TypeError(`groupby: attribute "${ val }" resolved to undefined`);
     }
     (result[key] || (result[key] = [])).push(value);
   }
@@ -138,31 +136,32 @@ export function groupBy(obj, val, throwOnUndefined) {
 }
 
 
-export function toArray(obj) {
+export function toArray(obj: any[]): any[] {
   return Array.prototype.slice.call(obj);
 }
 
 
-export function without(array, unused?: any) {
-  const result = [];
-  if (!array) {
+export function without<T>(array: T[], ...elements: any[]): T[] {
+  const result: T[] = [];
+  if (array) {
+    const length: number = array.length;
+    const contains: any[] = elements;
+    let index: number = -1;
+
+    while (++index < length) {
+      if (indexOf(contains, array[index]) === -1) {
+        result.push(array[index]);
+      }
+    }
+    return result;
+  } else {
     return result;
   }
-  const length = array.length;
-  const contains = toArray(arguments).slice(1);
-  let index = -1;
-
-  while (++index < length) {
-    if (indexOf(contains, array[index]) === -1) {
-      result.push(array[index]);
-    }
-  }
-  return result;
 }
 
 
-export function repeat(char_, n) {
-  let str = '';
+export function repeat(char_: string, n: number): string {
+  let str: string = '';
   for (let i = 0; i < n; i++) {
     str += char_;
   }
@@ -184,32 +183,33 @@ export function each(obj, func, context) {
   }
 }
 
-export function map(obj, func) {
-  const results = [];
-  if (obj == null) {
-    return results;
-  }
-
-  if (ArrayProto.map && map === ArrayProto.map) {
-    return obj.map(func);
-  }
-
-  for (let i = 0; i < obj.length; i++) {
-    results[results.length] = func(obj[i], i);
-  }
-
-  if (obj.length === +obj.length) {
-    results.length = obj.length;
-  }
-
-  return results;
+export function map<T, V>(obj: T[], func: (src: T, index?: number, arr?: T[], thisArg?: any) => V): V[] {
+  return (obj ?? [ ]).map(func);
+  // const results: V[] = [];
+  // if (obj == null) {
+  //   return results;
+  // }
+  //
+  // if (ArrayProto.map && map === ArrayProto.map) {
+  //   return obj.map(func);
+  // }
+  //
+  // for (let i = 0; i < obj.length; i++) {
+  //   results[results.length] = func(obj[i], i);
+  // }
+  //
+  // if (obj.length === +obj.length) {
+  //   results.length = obj.length;
+  // }
+  //
+  // return results;
 }
 
 
-export function asyncIter(arr, iter, cb) {
-  let i = -1;
+export function asyncIter<T>(arr: T[], iter: (val: T, index: number, nextFn: any, cb: () => void) => void, cb: (err?, info?) => void): void {
+  let i: number = -1;
 
-  function next() {
+  function next(): void {
     i++;
 
     if (i < arr.length) {
@@ -222,12 +222,13 @@ export function asyncIter(arr, iter, cb) {
   next();
 }
 
-export function asyncFor(obj, iter, cb) {
-  const keys = keys_(obj || {});
-  const len = keys.length;
-  let i = -1;
 
-  function next() {
+export function asyncFor(obj, iter, cb): void {
+  const keys = keys_(obj || {});
+  const len: number = keys.length;
+  let i: number = -1;
+
+  function next(): void {
     i++;
     const k = keys[i];
 
@@ -242,8 +243,9 @@ export function asyncFor(obj, iter, cb) {
 }
 
 
-export function indexOf<T>(arr: T[], searchElement: T, fromIndex?: number) {
-  return Array.prototype.indexOf.call(arr || [], searchElement, fromIndex);
+export function indexOf<T>(arr: T[], searchElement: T, fromIndex?: number): number {
+  return (arr ?? [ ]).indexOf(searchElement, fromIndex);
+  //  return Array.prototype.indexOf.call(arr || [], searchElement, fromIndex);
 }
 
 
@@ -262,12 +264,12 @@ export { keys_ as keys }
 
 
 export function _entries(obj) {
-  return keys_(obj).map((k) => [k, obj[k]]);
+  return keys_(obj).map((k: string | number) => [ k, obj[k] ]);
 }
 
 
 export function _values(obj) {
-  return keys_(obj).map((k) => obj[k]);
+  return keys_(obj).map((k: string | number) => obj[k]);
 }
 
 
@@ -283,12 +285,11 @@ export function extend(obj1, obj2) {
 export const _assign = exports.extend = extend;
 
 
-export function inOperator(key, val) {
+export function inOperator(key, val): boolean {
   if (isArray(val) || isString(val)) {
     return val.indexOf(key) !== -1;
   } else if (isObject(val)) {
     return key in val;
   }
-  throw new Error('Cannot use "in" operator to search for "'
-    + key + '" in unexpected types.');
+  throw new Error(`Cannot use "in" operator to search for "${ key }" in unexpected types.`);
 }

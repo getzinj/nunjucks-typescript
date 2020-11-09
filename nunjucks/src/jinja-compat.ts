@@ -1,6 +1,6 @@
 import { Parser as ImportedParser } from './parser/parser';
-import { Compiler as ImportedCompiler } from './compiler';
-import * as ImportedRuntime from './runtime';
+import { Compiler as ImportedCompiler } from './compiler/compiler';
+import * as ImportedRuntime from './runtime/runtime';
 
 export function installCompat() {
   'use strict';

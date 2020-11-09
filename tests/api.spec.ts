@@ -16,7 +16,7 @@ declare var nunjucks;
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
     util = require('./util.spec');
-    Environment = require('../nunjucks/src/environment').Environment;
+    Environment = require('../nunjucks/src/environment/environment').Environment;
     Loader = require('../nunjucks/src/file-system-loader').FileSystemLoader;
     templatesPath = 'tests/templates';
     path = require('path');

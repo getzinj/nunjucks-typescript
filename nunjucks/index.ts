@@ -1,7 +1,7 @@
 'use strict';
 
-export { Environment, Template } from './src/environment';
-import { Environment, Template } from './src/environment';
+export { Environment, Template } from './src/environment/environment';
+import { Environment, Template } from './src/environment/environment';
 import { isObject } from './src/lib';
 import { FileSystemLoader } from './src/file-system-loader';
 export { FileSystemLoader } from './src/file-system-loader';

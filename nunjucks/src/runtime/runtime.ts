@@ -1,20 +1,20 @@
 'use strict';
 
 
-import { escape } from './lib';
+import { escape } from '../lib';
 import { Frame } from './frame';
 
 export { Frame } from './frame';
 
 export { SafeString} from './SafeString';
 import { SafeString } from './SafeString';
-export { asyncFor, isArray, asyncIter, keys as keys_, inOperator, keys } from './lib';
-import { asyncFor, isArray, asyncIter, keys as keys_, inOperator, keys } from './lib';
-export { TemplateError } from './templateError';
-import { TemplateError } from './templateError';
-export { NunjucksSymbol } from './nodes/nunjucksSymbol';
-import { NunjucksSymbol } from './nodes/nunjucksSymbol';
-import { Context } from './environment';
+export { asyncFor, isArray, asyncIter, keys as keys_, inOperator, keys } from '../lib';
+import { asyncFor, isArray, asyncIter, keys as keys_, inOperator, keys } from '../lib';
+export { TemplateError } from '../templateError';
+import { TemplateError } from '../templateError';
+export { NunjucksSymbol } from '../nodes/nunjucksSymbol';
+import { NunjucksSymbol } from '../nodes/nunjucksSymbol';
+import { Context } from '../environment/environment';
 
 
 const supportsIterators: boolean = (
@@ -71,25 +71,25 @@ export function isKeywordArgs(obj): boolean {
 }
 
 
-export function getKeywordArgs(args) {
-  const len = args.length;
+export function getKeywordArgs<T>(args: T[]): T | { } {
+  const len: number = args.length;
   if (len) {
-    const lastArg = args[len - 1];
+    const lastArg: T = args[len - 1];
     if (isKeywordArgs(lastArg)) {
       return lastArg;
     }
   }
-  return {};
+  return { };
 }
 
 
-export function numArgs(args): number {
-  const len = args.length;
+export function numArgs<T>(args: T[]): number {
+  const len: number = args.length;
   if (len === 0) {
     return 0;
   }
 
-  const lastArg = args[len - 1];
+  const lastArg: T = args[len - 1];
   if (isKeywordArgs(lastArg)) {
     return len - 1;
   } else {
@@ -98,12 +98,13 @@ export function numArgs(args): number {
 }
 
 
-export function copySafeness(dest, target) {
+export function copySafeness(dest: string | SafeString, target): string | SafeString {
   if (dest instanceof SafeString) {
     return new SafeString(target);
   }
   return target.toString();
 }
+
 
 export function markSafe(val) {
   const type: "undefined" | "object" | "boolean" | "number" | "string" | "function" | "symbol" | "bigint" = typeof val;
@@ -125,6 +126,7 @@ export function markSafe(val) {
   }
 }
 
+
 export function suppressValue(val, autoescape) {
   val = (val !== undefined && val !== null) ? val : '';
 
@@ -135,7 +137,8 @@ export function suppressValue(val, autoescape) {
   return val;
 }
 
-export function ensureDefined(val, lineno, colno) {
+
+export function ensureDefined<T>(val: T | undefined, lineno: number, colno: number): T {
   if (val === null || val === undefined) {
     throw new TemplateError(
       'attempted to output null or undefined value',
@@ -160,7 +163,7 @@ export let memberLookup: (obj, val, autoescape?) => any  = function memberLookup
 }
 
 
-export function callWrap(obj, name, context, args) {
+export function callWrap<T>(obj: (... args: any[]) => T, name: string, context, args): T {
   if (!obj) {
     throw new Error('Unable to call `' + name + '`, which is undefined or falsey');
   } else if (typeof obj !== 'function') {
@@ -170,15 +173,17 @@ export function callWrap(obj, name, context, args) {
   return obj.apply(context, args);
 }
 
-export function contextOrFrameLookup(context: Context, frame: Frame, name: string) {
-  const val = frame.lookup(name);
+
+export function contextOrFrameLookup<T>(context: Context, frame: Frame, name: string): T {
+  const val: T = frame.lookup<T>(name);
   return (val === undefined)
       ? context.lookup(name)
       : val
   ;
 }
 
-export function handleError(error, lineno, colno) {
+
+export function handleError(error, lineno: number, colno: number) {
   if (error.lineno) {
     return error;
   } else {
@@ -186,11 +191,12 @@ export function handleError(error, lineno, colno) {
   }
 }
 
-export function asyncEach(arr, dimen, iter, cb): void {
-  if (isArray(arr)) {
-    const len = arr.length;
 
-    asyncIter(arr, function iterCallback(item, i, next): void {
+export function asyncEach(arr, dimen: number, iter: (...args: any[]) => void, cb): void {
+  if (isArray(arr)) {
+    const len: number = arr.length;
+
+    asyncIter(arr, function iterCallback(item, i: number, next): void {
       switch (dimen) {
         case 1:
           iter(item, i, len, next);
@@ -207,11 +213,12 @@ export function asyncEach(arr, dimen, iter, cb): void {
       }
     }, cb);
   } else {
-    asyncFor(arr, function iterCallback(key, val, i, len, next): void {
+    asyncFor(arr, function iterCallback(key: string | number, val, i: number, len: number, next): void {
       iter(key, val, i, len, next);
     }, cb);
   }
 }
+
 
 export function asyncAll(arr, dimen, func, cb): void {
   let finished: number = 0;
@@ -273,7 +280,7 @@ export function asyncAll(arr, dimen, func, cb): void {
 export function fromIterator(arr) {
   if (typeof arr !== 'object' || arr === null || isArray(arr)) {
     return arr;
-  } else if (supportsIterators && NunjucksSymbol['iterator'] in arr) {
+  } else if (supportsIterators && Symbol['iterator'] in arr) {
     return Array.from(arr);
   } else {
     return arr;

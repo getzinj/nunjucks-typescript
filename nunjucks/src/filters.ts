@@ -1,8 +1,8 @@
 'use strict';
 
 import * as lib from './lib';
-import * as r from './runtime';
-import { SafeString } from './SafeString';
+import * as r from './runtime/runtime';
+import { SafeString } from './runtime/SafeString';
 import { TemplateError, TemplateError as TemplateError1 } from './templateError';
 
 

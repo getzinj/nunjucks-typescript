@@ -1,7 +1,7 @@
 'use strict';
 
 // A simple class system, more documentation to come
-import { keys, _assign } from './lib';
+import { keys, _assign } from '../lib';
 
 export function parentWrap(parent, prop) {
   if (typeof parent !== 'function' || typeof prop !== 'function') {

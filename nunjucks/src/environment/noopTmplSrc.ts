@@ -1,7 +1,7 @@
 /**
  * A no-op template, for use with {% include ignore missing %}
  */
-import { handleError } from './runtime';
+import { handleError } from '../runtime/runtime';
 
 
 

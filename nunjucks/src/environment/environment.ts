@@ -1,23 +1,23 @@
 'use strict';
 
 
-import * as compiler from './compiler';
-import * as expressApp from './express-app';
-import * as tests from './tests';
-import * as filters from './filters';
-import * as lib from './lib';
-import { extend, keys, indexOf } from './lib';
+import * as compiler from '../compiler/compiler';
+import * as expressApp from '../express-app';
+import * as tests from '../tests';
+import * as filters from '../filters';
+import * as lib from '../lib';
+import { extend, keys, indexOf } from '../lib';
 import waterfall from 'a-sync-waterfall';
-import { Loader } from './loader';
-import { WebLoader, PrecompiledLoader } from './web-loaders';
-import { globals } from './globals';
+import { Loader } from '../loader';
+import { WebLoader, PrecompiledLoader } from '../web-loaders';
+import { globals } from '../globals';
 import { noopTmplSrc } from './noopTmplSrc';
 import { callbackAsap } from './callbackAsap';
-import { EmitterObj } from './emitterObj';
-import { FileSystemLoader } from './file-system-loader';
-import { Obj } from './obj';
-import { Frame } from './frame';
-import * as globalRuntime from './runtime';
+import { EmitterObj } from '../object/emitterObj';
+import { FileSystemLoader } from '../file-system-loader';
+import { Obj } from '../object/obj';
+import { Frame } from '../runtime/frame';
+import * as globalRuntime from '../runtime/runtime';
 
 
 export class Context extends Obj {
@@ -43,7 +43,7 @@ export class Context extends Obj {
   }
 
 
-  lookup(name: string) {
+  lookup<T>(name: string): T {
     // This is one of the most called functions, so optimize for
     // the typical case where the name isn't in the globals
     if (name in this.env.globals && !(name in this.ctx)) {
@@ -64,7 +64,7 @@ export class Context extends Obj {
   }
 
 
-  addBlock(name: string, block): this {
+  addBlock(name: string | number, block): this {
     this.blocks[name] = this.blocks[name] || [];
     this.blocks[name].push(block);
     return this;
@@ -106,6 +106,8 @@ export class Context extends Obj {
     return exported;
   }
 }
+
+
 
 export class Template extends Obj {
   private compiled: boolean;
@@ -469,7 +471,7 @@ export class Environment extends EmitterObj {
   }
 
 
-  getTemplate(name, eagerCompile?: boolean | ((param1, param2?) => void), parentName?, ignoreMissing?, cb?: (param1, param2?) => void) {
+  getTemplate(name, eagerCompile?: boolean | ((param1, param2?) => void), parentName?: (param1, param2?) => void, ignoreMissing?: boolean, cb?: (param1, param2?) => void) {
     const that: Environment = this;
     let tmpl = null;
     if (name && name.raw) {
@@ -545,7 +547,7 @@ export class Environment extends EmitterObj {
       }
     };
 
-    lib.asyncIter(this.loaders, (loader, i, next, done) => {
+    lib.asyncIter(this.loaders, (loader: Loader, i: number, next, done: (err?, src?) => void): void => {
       function handle(err, src): void {
         if (err) {
           done(err);
@@ -560,7 +562,7 @@ export class Environment extends EmitterObj {
       // Resolve name relative to parentName
       name = that.resolveTemplate(loader, parentName, name);
 
-      if (loader.async) {
+      if (loader['async']) {
         loader.getSource(name, handle);
       } else {
         handle(null, loader.getSource(name));
