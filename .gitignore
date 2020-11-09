@@ -65,3 +65,5 @@ nunjucks/src/node-resolve-loader.js
 nunjucks/src/node-resolve-loader.js.map
 tests/loader.spec.js
 tests/loader.spec.js.map
+tests/precompile.spec.js
+tests/precompile.spec.js.map
