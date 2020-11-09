@@ -61,3 +61,7 @@ tests/tests.spec.js
 tests/tests.spec.js.map
 tests/jinja-compat.spec.js
 tests/jinja-compat.spec.js.map
+nunjucks/src/node-resolve-loader.js
+nunjucks/src/node-resolve-loader.js.map
+tests/loader.spec.js
+tests/loader.spec.js.map

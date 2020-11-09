@@ -1,13 +1,16 @@
+import * as fs from 'fs';
+
 import { Loader } from './loader';
 import { globalchokidar } from './globals';
-import * as fs from 'fs';
+import { URL } from 'url';
+import path from 'path';
 
 
 
 export class NodeResolveLoader extends Loader {
-  private readonly pathsToNames: any;
+  private readonly pathsToNames;
   private readonly noCache: boolean;
-  private watcher: any;
+  private watcher;
 
 
   constructor(opts) {
@@ -24,9 +27,10 @@ export class NodeResolveLoader extends Loader {
       }
       this.watcher = globalchokidar.chokidar.watch();
 
-      this.watcher.on('change', (fullname) => {
+      this.watcher.on('change', (fullname: string | number) => {
         this.emit('update', this.pathsToNames[fullname], fullname);
       });
+
       this.watcher.on('error', (error) => {
         console.log('Watcher error: ' + error);
       });
@@ -38,16 +42,16 @@ export class NodeResolveLoader extends Loader {
   }
 
 
-  getSource(name) {
+  getSource(name: string) {
     // Don't allow file-system traversal
     if ((/^\.?\.?(\/|\\)/).test(name)) {
       return null;
     }
-    if ((/^[A-Z]:/).test(name)) {
+    if ((/^[A-Z]:/i).test(name)) {
       return null;
     }
 
-    let fullpath;
+    let fullpath: string | number | Buffer | URL;
 
     try {
       fullpath = require.resolve(name);
