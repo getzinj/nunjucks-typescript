@@ -1,3 +1,5 @@
+declare var nunjucks;
+
 (function() {
   'use strict';
 
@@ -571,7 +573,8 @@
 
       it('should output the length of an array created with "new Array" with user-defined properties', function test() {
         const arr = new Array(0, 1); // eslint-disable-line no-array-constructor
-        arr.key = 'value';
+        // @ts-ignore
+        arr.key = 'value'; // TODO: Is this right??
         equal('{{ arr | length }}', {
           arr: arr
         }, '2');

@@ -5,12 +5,12 @@ declare var nunjucks;
 (function() {
   'use strict';
 
-  var expect;
-  var util;
-  var Environment;
-  var equal;
-  var render;
-  var finish;
+  let expect;
+  let util;
+  let Environment;
+  let equal;
+  let render;
+  let finish;
 
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
@@ -86,7 +86,7 @@ declare var nunjucks;
 
 
     it('should allow addition of globals', function(done) {
-      var env = new Environment();
+      const env = new Environment();
 
       env.addGlobal('hello', function(arg1) {
         return 'Hello ' + arg1;
@@ -99,7 +99,7 @@ declare var nunjucks;
 
 
     it('should allow chaining of globals', function(done) {
-      var env = new Environment();
+      const env = new Environment();
 
       env.addGlobal('hello', function(arg1) {
         return 'Hello ' + arg1;
@@ -115,8 +115,8 @@ declare var nunjucks;
 
 
     it('should allow getting of globals', function(done) {
-      var env = new Environment();
-      var hello = function(arg1) {
+      const env = new Environment();
+      const hello = function(arg1) {
         return 'Hello ' + arg1;
       };
 
@@ -129,8 +129,8 @@ declare var nunjucks;
 
 
     it('should allow getting boolean globals', function(done) {
-      var env = new Environment();
-      var hello = false;
+      const env = new Environment();
+      const hello = false;
 
       env.addGlobal('hello', hello);
 
@@ -141,7 +141,7 @@ declare var nunjucks;
 
 
     it('should fail on getting non-existent global', function(done) {
-      var env = new Environment();
+      const env = new Environment();
 
       // Using this format instead of .withArgs since env.getGlobal uses 'this'
       expect(function() {
@@ -153,7 +153,7 @@ declare var nunjucks;
 
 
     it('should pass context as this to global functions', function(done) {
-      var env = new Environment();
+      const env = new Environment();
 
       env.addGlobal('hello', function() {
         return 'Hello ' + this.lookup('user');
@@ -167,8 +167,8 @@ declare var nunjucks;
 
 
     it('should be exclusive to each environment', function(done) {
-      var env = new Environment();
-      var env2;
+      const env = new Environment();
+      let env2;
 
       env.addGlobal('hello', 'konichiwa');
       env2 = new Environment();
@@ -183,7 +183,7 @@ declare var nunjucks;
 
 
     it('should return errors from globals', function(done) {
-      var env = new Environment();
+      const env = new Environment();
 
       env.addGlobal('err', function() {
         throw new Error('Global error');

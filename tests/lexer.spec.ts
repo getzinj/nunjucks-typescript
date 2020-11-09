@@ -1,11 +1,13 @@
+declare var nunjucks;
+
 (function() {
   'use strict';
 
-  var expect;
-  var lib;
+  let expect;
+  let lib;
 //  var lexer;
-  var Tokenizer;
-  var tokenType;
+  let Tokenizer;
+  let tokenType;
 
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
@@ -14,7 +16,7 @@
     Tokenizer = require('../nunjucks/src/lexer/tokenizer').Tokenizer;
     tokenType = require('../nunjucks/src/lexer/tokenType');
   } else {
-    expect = window.expect;
+    expect = window['expect'];
     lib = nunjucks.lib;
 //    lexer = nunjucks.lexer;
     tokenType = nunjucks.tokenType;
@@ -26,9 +28,9 @@
 
 
   function _hasTokens(ws, tokens, types) {
-    var i;
-    var type;
-    var tok;
+    let i;
+    let type;
+    let tok;
     for (i = 0; i < types.length; i++) {
       type = types[i];
       tok = tokens.nextToken();
@@ -67,10 +69,12 @@
     return _hasTokens(true, tokens, lib.toArray(arguments).slice(1));
   }
 
+
   describe('lexer', function() {
-    var tok;
-    var tmpl;
-    var tokens;
+    let tok;
+    let tmpl;
+    let tokens;
+
 
     it('should parse template data', function() {
       tok = lex('3').nextToken();
@@ -82,6 +86,7 @@
       expect(tok.type).to.be(tokenType.TokenType.TOKEN_DATA);
       expect(tok.value).to.be(tmpl);
     });
+
 
     it('should keep track of whitespace', function() {
       tokens = lex('data {% 1 2\n   3  %} data');
@@ -99,6 +104,7 @@
         tokenType.TokenType.TOKEN_DATA);
     });
 
+
     it('should trim blocks', function() {
       tokens = lex('  {% if true %}\n    foo\n  {% endif %}\n', {
         trimBlocks: true
@@ -114,6 +120,7 @@
         tokenType.TokenType.TOKEN_SYMBOL,
         tokenType.TokenType.TOKEN_BLOCK_END);
     });
+
 
     it('should trim windows-style CRLF line endings after blocks', function() {
       tokens = lex('  {% if true %}\r\n    foo\r\n  {% endif %}\r\n', {
@@ -131,6 +138,7 @@
         tokenType.TokenType.TOKEN_BLOCK_END);
     });
 
+
     it('should not trim CR after blocks', function() {
       tokens = lex('  {% if true %}\r    foo\r\n  {% endif %}\r', {
         trimBlocks: true
@@ -147,6 +155,7 @@
         tokenType.TokenType.TOKEN_BLOCK_END,
         [tokenType.TokenType.TOKEN_DATA, '\r']);
     });
+
 
     it('should lstrip and trim blocks', function() {
       tokens = lex('test\n {% if true %}\n  foo\n {% endif %}\n</div>', {
@@ -166,6 +175,7 @@
         [tokenType.TokenType.TOKEN_DATA, '</div>']);
     });
 
+
     it('should lstrip and not collapse whitespace between blocks', function() {
       tokens = lex('   {% t %} {% t %}', {
         lstripBlocks: true
@@ -181,6 +191,7 @@
     });
 
 
+
     it('should parse variable start and end', function() {
       tokens = lex('data {{ foo }} bar bizzle');
       hasTokens(tokens,
@@ -191,6 +202,7 @@
         tokenType.TokenType.TOKEN_DATA);
     });
 
+
     it('should treat the non-breaking space as valid whitespace', function() {
       tokens = lex('{{\u00A0foo }}');
       tok = tokens.nextToken();
@@ -199,6 +211,7 @@
       expect(tok.type).to.be(tokenType.TokenType.TOKEN_SYMBOL);
       expect(tok.value).to.be('foo');
     });
+
 
     it('should parse block start and end', function() {
       tokens = lex('data {% foo %} bar bizzle');
@@ -209,6 +222,7 @@
         tokenType.TokenType.TOKEN_BLOCK_END,
         tokenType.TokenType.TOKEN_DATA);
     });
+
 
     it('should parse basic types', function() {
       tokens = lex('{{ 3 4.5 true false none foo "hello" \'boo\' r/regex/ }}');
@@ -226,6 +240,7 @@
         tokenType.TokenType.TOKEN_VARIABLE_END);
     });
 
+
     it('should parse function calls', function() {
       tokens = lex('{{ foo(bar) }}');
       hasTokens(tokens,
@@ -236,6 +251,7 @@
         tokenType.TokenType.TOKEN_RIGHT_PAREN,
         tokenType.TokenType.TOKEN_VARIABLE_END);
     });
+
 
     it('should parse groups', function() {
       tokens = lex('{{ (1, 2, 3) }}');
@@ -251,6 +267,7 @@
         tokenType.TokenType.TOKEN_VARIABLE_END);
     });
 
+
     it('should parse arrays', function() {
       tokens = lex('{{ [1, 2, 3] }}');
       hasTokens(tokens,
@@ -264,6 +281,7 @@
         tokenType.TokenType.TOKEN_RIGHT_BRACKET,
         tokenType.TokenType.TOKEN_VARIABLE_END);
     });
+
 
     it('should parse dicts', function() {
       tokens = lex('{{ {one:1, "two":2} }}');
@@ -281,6 +299,7 @@
         tokenType.TokenType.TOKEN_VARIABLE_END);
     });
 
+
     it('should parse blocks without whitespace', function() {
       tokens = lex('data{{hello}}{%if%}data');
       hasTokens(tokens,
@@ -294,6 +313,7 @@
         tokenType.TokenType.TOKEN_DATA);
     });
 
+
     it('should parse filters', function() {
       hasTokens(lex('{{ foo|bar }}'),
         tokenType.TokenType.TOKEN_VARIABLE_START,
@@ -302,6 +322,7 @@
         [tokenType.TokenType.TOKEN_SYMBOL, 'bar'],
         tokenType.TokenType.TOKEN_VARIABLE_END);
     });
+
 
     it('should parse operators', function() {
       hasTokens(lex('{{ 3+3-3*3/3 }}'),
@@ -344,6 +365,7 @@
         tokenType.TokenType.TOKEN_VARIABLE_END);
     });
 
+
     it('should parse comments', function() {
       tokens = lex('data data {# comment #} data');
       hasTokens(tokens,
@@ -351,6 +373,7 @@
         tokenType.TokenType.TOKEN_COMMENT,
         tokenType.TokenType.TOKEN_DATA);
     });
+
 
     it('should allow changing the variable start and end', function() {
       tokens = lex('data {= var =}', {
@@ -365,6 +388,7 @@
         tokenType.TokenType.TOKEN_SYMBOL,
         tokenType.TokenType.TOKEN_VARIABLE_END);
     });
+
 
     it('should allow changing the block start and end', function() {
       tokens = lex('{= =}', {
@@ -378,6 +402,7 @@
         tokenType.TokenType.TOKEN_BLOCK_END);
     });
 
+
     it('should allow changing the variable start and end', function() {
       tokens = lex('data {= var =}', {
         tags: {
@@ -391,6 +416,7 @@
         tokenType.TokenType.TOKEN_SYMBOL,
         tokenType.TokenType.TOKEN_VARIABLE_END);
     });
+
 
     it('should allow changing the comment start and end', function() {
       tokens = lex('<!-- A comment! -->', {
@@ -406,6 +432,7 @@
     /**
      * Test that this bug is fixed: https://github.com/mozilla/nunjucks/issues/235
      */
+
     it('should have individual lexer tag settings for each environment', function() {
       tokens = lex('{=', {
         tags: {
@@ -427,6 +454,7 @@
       tokens = lex('{{');
       hasTokens(tokens, tokenType.TokenType.TOKEN_VARIABLE_START);
     });
+
 
     it('should parse regular expressions', function() {
       tokens = lex('{{ r/basic regex [a-z]/ }}');
@@ -457,6 +485,7 @@
         tokenType.TokenType.TOKEN_SYMBOL,
         tokenType.TokenType.TOKEN_VARIABLE_END);
     });
+
 
     it('should keep track of token positions', function() {
       hasTokens(lex('{{ 3 != 4 == 5 <= 6 >= 7 < 8 > 9 }}'),

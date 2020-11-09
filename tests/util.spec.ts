@@ -1,7 +1,7 @@
 import { Loader } from 'nunjucks/src/loader';
 import { Environment, Template } from '../nunjucks';
 
-(function() {
+((() => {
   /* eslint-disable vars-on-top */
 
   'use strict';
@@ -274,4 +274,4 @@ import { Environment, Template } from '../nunjucks';
       Loader: Loader,
     };
   }
-}());
+})());

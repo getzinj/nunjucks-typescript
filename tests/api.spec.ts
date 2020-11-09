@@ -1,5 +1,8 @@
 import { Environment } from '../nunjucks';
 
+declare var nunjucks;
+
+
 (function(): void {
   'use strict';
 
@@ -18,7 +21,7 @@ import { Environment } from '../nunjucks';
     templatesPath = 'tests/templates';
     path = require('path');
   } else {
-    expect = window.expect;
+    expect = window['expect'];
     Environment = nunjucks.Environment;
     Loader = nunjucks.WebLoader;
     templatesPath = '../templates';
