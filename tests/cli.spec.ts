@@ -1,12 +1,14 @@
+import { Done } from 'mocha';
+
 (function() {
   'use strict';
 
-  var path = require('path');
-  var execFile = require('child_process').execFile;
-  var expect = require('expect.js');
+  const path = require('path');
+  const execFile = require('child_process').execFile;
+  const expect = require('expect.js');
 
-  var rootDir = path.resolve(path.join(__dirname, '..'));
-  var precompileBin = path.join(rootDir, 'bin', 'precompile');
+  const rootDir = path.resolve(path.join(__dirname, '..'));
+  let precompileBin = path.join(rootDir, 'bin', 'precompile');
 
   if (process.platform === 'win32') {
     precompileBin += '.cmd';
@@ -18,7 +20,7 @@
   }
 
 
-  describe('precompile cli', function() {
+  describe('precompile cli', () => {
     it('should echo a compiled template to stdout', function(done) {
       execPrecompile(['tests/templates/item.njk'], function(err, stdout, stderr) {
         if (err) {
@@ -32,8 +34,8 @@
     });
 
 
-    it('should support --name', function(done) {
-      var args = [
+    it('should support --name', (done: Done) => {
+      const args = [
         '--name', 'item.njk',
         'tests/templates/item.njk',
       ];

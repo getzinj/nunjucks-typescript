@@ -53,3 +53,5 @@ nunjucks/src/parser/parser.js
 nunjucks/src/parser/parser.js.map
 tests/lexer.spec.js
 tests/lexer.spec.js.map
+tests/globals.spec.js
+tests/globals.spec.js.map

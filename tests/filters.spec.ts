@@ -15,8 +15,8 @@
     lib = require('../nunjucks/src/lib');
     r = require('../nunjucks/src/runtime');
   } else {
-    expect = window.expect;
-    util = window.util;
+    expect = window['expect'];
+    util = window['util'];
     lib = nunjucks.lib;
     r = nunjucks.runtime;
   }
@@ -494,7 +494,6 @@
 
 
     describe('the length filter', function suite() {
-
       it('should return length of a list literal', function test() {
         equal('{{ [1,2,3] | length }}', '3');
       });
