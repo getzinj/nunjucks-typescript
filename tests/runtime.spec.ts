@@ -7,8 +7,8 @@
     expect = require('expect.js');
     util = require('./util.spec');
   } else {
-    expect = window.expect;
-    util = window.util;
+    expect = window['expect'];
+    util = window['util'];
   }
 
   finish = util.finish;

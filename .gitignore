@@ -55,3 +55,7 @@ tests/lexer.spec.js
 tests/lexer.spec.js.map
 tests/globals.spec.js
 tests/globals.spec.js.map
+nunjucks/src/tests.js
+nunjucks/src/tests.js.map
+tests/tests.spec.js
+tests/tests.spec.js.map

@@ -172,10 +172,6 @@ export function undefinedTest(value: any): boolean {
   return value === undefined;
 }
 
-export function undefined(value: any): boolean {
-  return value === undefined;
-}
-
 
 /**
  * Returns `true` if the string is uppercased.
@@ -221,5 +217,6 @@ export function mapping(value: any): boolean {
 
 module.exports = {
   ... module.exports,
-  'null': nullTest
+  'null': nullTest,
+  'undefined': undefinedTest
 };
