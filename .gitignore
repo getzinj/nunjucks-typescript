@@ -59,3 +59,5 @@ nunjucks/src/tests.js
 nunjucks/src/tests.js.map
 tests/tests.spec.js
 tests/tests.spec.js.map
+tests/jinja-compat.spec.js
+tests/jinja-compat.spec.js.map
