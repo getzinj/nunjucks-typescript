@@ -54,9 +54,9 @@ export class Frame {
   }
 
 
-  lookup<T>(name: string): T {
+  lookup(name: string) {
     const p: Frame = this.parent;
-    const val: T = this.variables[name];
+    const val = this.variables[name];
 
     return (val === undefined)
         ? p?.lookup?.(name)
@@ -75,7 +75,7 @@ export class Frame {
   }
 
 
-  push(isolateWrites: boolean): Frame {
+  push(isolateWrites?: boolean): Frame {
     return new Frame(this, isolateWrites);
   }
 

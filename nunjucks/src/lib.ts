@@ -55,7 +55,7 @@ export function _prettifyError(path, withInternals, err): TemplateError {
 //   });
 // }
 
-export function escape(val) {
+export function escape(val: string): string {
   return val.replace(escapeRegex, lookupEscape);
 }
 
@@ -121,7 +121,7 @@ export function getAttrGetter(attribute: string): (obj: Record<string | number, 
 }
 
 
-export function groupBy(obj, val, throwOnUndefined: boolean) {
+export function groupBy<A>(obj: A[], val, throwOnUndefined: boolean) {
   const result = { };
   const iterator = isFunction(val) ? val : getAttrGetter(val);
   for (let i = 0; i < obj.length; i++) {
@@ -136,7 +136,7 @@ export function groupBy(obj, val, throwOnUndefined: boolean) {
 }
 
 
-export function toArray(obj: any[]): any[] {
+export function toArray<T>(obj: T[]): T[] {
   return Array.prototype.slice.call(obj);
 }
 
@@ -169,7 +169,7 @@ export function repeat(char_: string, n: number): string {
 }
 
 
-export function each(obj, func, context) {
+export function each(obj, func: Function, context): void {
   if (obj == null) {
     return;
   }
@@ -182,6 +182,7 @@ export function each(obj, func, context) {
     }
   }
 }
+
 
 export function map<T, V>(obj: T[], func: (src: T, index?: number, arr?: T[], thisArg?: any) => V): V[] {
   return (obj ?? [ ]).map(func);
@@ -206,7 +207,12 @@ export function map<T, V>(obj: T[], func: (src: T, index?: number, arr?: T[], th
 }
 
 
-export function asyncIter<T>(arr: T[], iter: (val: T, index: number, nextFn: any, cb: () => void) => void, cb: (err?, info?) => void): void {
+export function asyncIter<T>(arr: T[],
+                             iter: (val: T,
+                                    index: number,
+                                    nextFn: any,
+                                    cb: (err?, info?) => void) => void,
+                             cb: (err?, info?) => void): void {
   let i: number = -1;
 
   function next(): void {
@@ -223,8 +229,8 @@ export function asyncIter<T>(arr: T[], iter: (val: T, index: number, nextFn: any
 }
 
 
-export function asyncFor(obj, iter, cb): void {
-  const keys = keys_(obj || {});
+export function asyncFor(obj, iter, cb: (err?, info?) => void): void {
+  const keys = keys_(obj ?? { });
   const len: number = keys.length;
   let i: number = -1;
 
@@ -249,12 +255,12 @@ export function indexOf<T>(arr: T[], searchElement: T, fromIndex?: number): numb
 }
 
 
-function keys_(obj) {
+function keys_<T, K extends keyof T>(obj: T): K[] {
   /* eslint-disable no-restricted-syntax */
-  const arr = [];
+  const arr: K[] = [];
   for (let k in obj) {
     if (hasOwnProp(obj, k)) {
-      arr.push(k);
+      arr.push(k as unknown as K);
     }
   }
   return arr;
@@ -263,18 +269,18 @@ function keys_(obj) {
 export { keys_ as keys }
 
 
-export function _entries(obj) {
-  return keys_(obj).map((k: string | number) => [ k, obj[k] ]);
+export function _entries<T, K extends keyof T>(obj: T) {
+  return keys_(obj).map((k: K): [ K, any ] => [ k, obj[k] ]);
 }
 
 
-export function _values(obj) {
-  return keys_(obj).map((k: string | number) => obj[k]);
+export function _values(obj): any[] {
+  return keys_(obj).map((k: string | number): any => obj[k]);
 }
 
 
 export function extend(obj1, obj2) {
-  obj1 = obj1 || {};
+  obj1 = obj1 ?? { };
   keys_(obj2).forEach(k => {
     obj1[k] = obj2[k];
   });

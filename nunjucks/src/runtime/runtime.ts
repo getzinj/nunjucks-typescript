@@ -60,9 +60,14 @@ export function makeMacro(argNames: string[], kwargNames, func): (...macroArgs) 
   };
 }
 
-export function makeKeywordArgs(obj) {
-  obj.__keywords = true;
-  return obj;
+export interface IHasKeywords {
+   __keywords: boolean;
+}
+
+
+export function makeKeywordArgs<T, V extends T, IHasKeywords>(obj: T): V {
+  obj['__keywords'] = true;
+  return obj as V;
 }
 
 
@@ -127,7 +132,7 @@ export function markSafe(val) {
 }
 
 
-export function suppressValue(val, autoescape) {
+export function suppressValue<V>(val: V | string, autoescape): V | string {
   val = (val !== undefined && val !== null) ? val : '';
 
   if (autoescape && !(val instanceof SafeString)) {
@@ -192,11 +197,11 @@ export function handleError(error, lineno: number, colno: number) {
 }
 
 
-export function asyncEach(arr, dimen: number, iter: (...args: any[]) => void, cb): void {
+export function asyncEach(arr, dimen: number, iter: (...args: any[]) => void, cb: (err?, info?) => void): void {
   if (isArray(arr)) {
     const len: number = arr.length;
 
-    asyncIter(arr, function iterCallback(item, i: number, next): void {
+    asyncIter(arr, function iterCallback(item: any[], i: number, next): void {
       switch (dimen) {
         case 1:
           iter(item, i, len, next);
@@ -220,9 +225,9 @@ export function asyncEach(arr, dimen: number, iter: (...args: any[]) => void, cb
 }
 
 
-export function asyncAll(arr, dimen, func, cb): void {
+export function asyncAll(arr, dimen: number, func, cb: (err?, info?) => void): void {
   let finished: number = 0;
-  let len;
+  let len: number;
   let outputArr;
 
   function done(i, output): void {

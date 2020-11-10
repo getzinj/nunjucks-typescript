@@ -154,6 +154,7 @@ export class Template extends Obj {
     }
   }
 
+
   render(ctx, parentFrame, cb?) {
     if (typeof ctx === 'function') {
       cb = ctx;
