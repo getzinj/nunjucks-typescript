@@ -1,1 +1,0 @@
-{"version":3,"file":"dict.js","sourceRoot":"","sources":["dict.ts"],"names":[],"mappings":";;;AAAA,iDAAkD;AAIlD,MAAa,IAAK,SAAQ,+BAAgB;IACxC,IAAI,QAAQ,KAAa,OAAO,MAAM,CAAC,CAAC,CAAC;IAGzC,YAAY,MAAc,EAAE,KAAa,EAAE,QAAS;QAClD,KAAK,CAAC,MAAM,EAAE,KAAK,EAAE,QAAQ,CAAC,CAAC;IACjC,CAAC;CACF;AAPD,oBAOC"}
