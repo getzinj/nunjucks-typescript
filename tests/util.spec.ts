@@ -181,7 +181,7 @@ import { Environment, Template } from '../nunjucks';
   }
 
 
-  function loadTemplate(str: string, e: Environment, ctx, loader: Loader): { t: Template; ctx: any } {
+  function loadTemplate(str: string, e: Environment, ctx: Record<string, any>, loader: Loader): { t: Template; ctx: any } {
     let tmplName: string;
     if (isSlim) {
       tmplName = randomTemplateName();
@@ -248,7 +248,7 @@ import { Environment, Template } from '../nunjucks';
     loadAsyncFilters(environmentConfig.opts, environmentConfig.e);
     loadExtensions(environmentConfig.opts, environmentConfig.e);
 
-    const __ret: { t: Template; ctx: any } = loadTemplate(str, environmentConfig.e, ctx, environmentConfig.loader);
+    const __ret: { t: Template; ctx: Record<string, any> } = loadTemplate(str, environmentConfig.e, ctx, environmentConfig.loader);
     ctx = __ret.ctx;
 
     return doRender(environmentConfig.cb, __ret.t, ctx, environmentConfig.opts);

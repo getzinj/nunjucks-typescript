@@ -36,6 +36,7 @@ import { Pos } from '../lexer/operators/pos';
 import { Compare } from '../nodes/compare';
 import { NunjucksNodeList, CallExtension, NunjucksNode } from '../nodes/nunjucksNode';
 import { ArrayNode } from '../nodes/arrayNode';
+import { repeat } from '../lib';
 
 
 
@@ -94,7 +95,12 @@ export class Compiler extends Obj {
   }
 
 
+  currentIndentLevel: number = 0;
+  readonly spacesPerIndentLevel: number = 2;
+
+
   _emitLine(code): void {
+    this._emit(repeat(repeat(' ', this.spacesPerIndentLevel), this.currentIndentLevel));
     this._emit(code + '\n');
   }
 
@@ -108,10 +114,12 @@ export class Compiler extends Obj {
     this.buffer = 'output';
     this._scopeClosers = '';
     this._emitLine(`function ${name}(env, context, frame, runtime, cb) {`);
+    this.currentIndentLevel++;
     this._emitLine(`var lineno = ${node.lineno};`);
     this._emitLine(`var colno = ${node.colno};`);
     this._emitLine(`var ${this.buffer} = "";`);
     this._emitLine('try {');
+    this.currentIndentLevel++;
   }
 
 
@@ -121,9 +129,13 @@ export class Compiler extends Obj {
     }
 
     this._closeScopeLevels();
+    this.currentIndentLevel--;
     this._emitLine('} catch (e) {');
-    this._emitLine('  cb(runtime.handleError(e, lineno, colno));');
+    this.currentIndentLevel++;
+    this._emitLine('cb(runtime.handleError(e, lineno, colno));');
+    this.currentIndentLevel--;
     this._emitLine('}');
+    this.currentIndentLevel--;
     this._emitLine('}');
     this.buffer = null;
   }
@@ -283,6 +295,7 @@ export class Compiler extends Obj {
 
         if (arg) {
           this._emitLine('function(cb) {');
+          this.currentIndentLevel++;
           this._emitLine('if(!cb) { cb = function(err) { if(err) { throw err; }}}');
           const id: string = this._pushBuffer();
 
@@ -293,6 +306,7 @@ export class Compiler extends Obj {
 
           this._popBuffer();
           this._emitLine(`return ${id};`);
+          this.currentIndentLevel--;
           this._emitLine('}');
         } else {
           this._emit('null');
@@ -355,7 +369,8 @@ export class Compiler extends Obj {
   }
 
 
-  readonly compileNunjucksSymbol = this.compileSymbol; // Alias for TypeScript project renaming of Symbol -> NunjucksSymbol
+  public readonly compileNunjucksSymbol = this.compileSymbol; // Alias for TypeScript project renaming of Symbol -> NunjucksSymbol
+  public readonly compileArrayNode = this.compileArray;  // Alias for TypeScript project renaming of Array -> ArrayNode
 
 
   compileGroup(node, frame): void {
@@ -366,9 +381,6 @@ export class Compiler extends Obj {
   compileArray(node, frame): void {
     this._compileAggregate(node, frame, '[', ']');
   }
-
-
-  public readonly compileArrayNode = this.compileArray;  // Alias for TypeScript project renaming of Array -> ArrayNode
 
 
   compileDict(node, frame): void {
@@ -388,7 +400,6 @@ export class Compiler extends Obj {
           key.lineno,
           key.colno);
     }
-
 
     this.compile(key, frame);
     this._emit(': ');
@@ -637,16 +648,19 @@ export class Compiler extends Obj {
 
       // We are running this for every var, but it's very
       // uncommon to assign to multiple vars anyway
-      this._emitLine(`debugger;`);
-      this._emitLine(`frame.set("${name}", ${id}, true);`); // TODO: Could this be the problem?
+      this._emitLine(`frame.set("${name}", ${id}, true);`);
 
       this._emitLine('if(frame.topLevel) {');
-      this._emitLine(`context.setVariable("${name}", ${id});`); // TODO: Could this be the problem?
+      this.currentIndentLevel++;
+      this._emitLine(`  context.setVariable("${name}", ${id});`);
+      this.currentIndentLevel--;
       this._emitLine('}');
 
       if (name.charAt(0) !== '_') {
         this._emitLine('if(frame.topLevel) {');
+        this.currentIndentLevel++;
         this._emitLine(`context.addExport("${name}", ${id});`);
+        this.currentIndentLevel--;
         this._emitLine('}');
       }
     });
@@ -657,6 +671,7 @@ export class Compiler extends Obj {
     this._emit('switch (');
     this.compile(node.expr, frame);
     this._emit(') {');
+    this.currentIndentLevel++;
     node.cases.forEach((c, i): void => {
       this._emit('case ');
       this.compile(c.cond, frame);
@@ -671,6 +686,7 @@ export class Compiler extends Obj {
       this._emit('default:');
       this.compile(node.default, frame);
     }
+    this.currentIndentLevel--;
     this._emit('}');
   }
 
@@ -678,6 +694,7 @@ export class Compiler extends Obj {
     this._emit('if(');
     this._compileExpression(node.cond, frame);
     this._emitLine(') {');
+    this.currentIndentLevel++;
 
     this._withScopedSyntax((): void => {
       this.compile(node.body, frame);
@@ -689,6 +706,7 @@ export class Compiler extends Obj {
 
     if (node.else_) {
       this._emitLine('}\nelse {');
+      this.currentIndentLevel++;
 
       this._withScopedSyntax((): void => {
         this.compile(node.else_, frame);
@@ -699,14 +717,17 @@ export class Compiler extends Obj {
       });
     } else if (async) {
       this._emitLine('}\nelse {');
+      this.currentIndentLevel++;
       this._emit('cb()');
     }
 
+    this.currentIndentLevel--;
     this._emitLine('}');
   }
 
   compileIfAsync(node, frame): void {
     this._emit('(function(cb) {');
+    this.currentIndentLevel++;
     this.compileIf(node, frame, true);
     this._emit('})(' + this._makeCallback());
     this._addScopeLevel();
@@ -771,9 +792,11 @@ export class Compiler extends Obj {
       this._withScopedSyntax((): void => {
         this.compile(node.body, frame);
       });
+      this.currentIndentLevel--;
       this._emitLine('}');
 
       this._emitLine('} else {');
+      this.currentIndentLevel++;
       // Iterate over the key/values of an object
       const [key, val] = node.name.children;
       const k: string = this._tmpid();
@@ -793,8 +816,10 @@ export class Compiler extends Obj {
       this._withScopedSyntax((): void => {
         this.compile(node.body, frame);
       });
+      this.currentIndentLevel--;
       this._emitLine('}');
 
+      this.currentIndentLevel--;
       this._emitLine('}');
     } else {
       // Generate a typical array iteration
@@ -812,13 +837,17 @@ export class Compiler extends Obj {
         this.compile(node.body, frame);
       });
 
+      this.currentIndentLevel--;
       this._emitLine('}');
     }
 
+    this.currentIndentLevel--;
     this._emitLine('}');
     if (node.else_) {
       this._emitLine('if (!' + len + ') {');
+      this.currentIndentLevel++;
       this.compile(node.else_, frame);
+      this.currentIndentLevel--;
       this._emitLine('}');
     }
 
@@ -851,6 +880,7 @@ export class Compiler extends Obj {
       });
 
       this._emit(i + ',' + len + ',next) {');
+      this.currentIndentLevel++;
 
       node.name.children.forEach((name): void => {
         const id = name.value;
@@ -890,7 +920,9 @@ export class Compiler extends Obj {
 
     if (node.else_) {
       this._emitLine('if (!' + arr + '.length) {');
+      this.currentIndentLevel++;
       this.compile(node.else_, frame);
+      this.currentIndentLevel--;
       this._emitLine('}');
     }
 
@@ -1005,6 +1037,7 @@ export class Compiler extends Obj {
   compileCaller(node, frame): void {
     // basically an anonymous "macro expression"
     this._emit('(function (){');
+    this.currentIndentLevel++;
     const funcId: string = this._compileMacro(node, frame);
     this._emit(`return ${funcId};})()`);
   }
@@ -1065,7 +1098,9 @@ export class Compiler extends Obj {
       this._emitLine(`if(Object.prototype.hasOwnProperty.call(${importedId}, "${name}")) {`);
       this._emitLine(`var ${id} = ${importedId}.${name};`);
       this._emitLine('} else {');
+      this.currentIndentLevel++;
       this._emitLine(`cb(new Error("cannot import '${name}'")); return;`);
+      this.currentIndentLevel--;
       this._emitLine('}');
 
       frame.set(alias, id);
@@ -1125,7 +1160,9 @@ export class Compiler extends Obj {
     this._emitLine(`parentTemplate = ${parentTemplateId}`);
 
     this._emitLine(`for(var ${k} in parentTemplate.blocks) {`);
+    this.currentIndentLevel++;
     this._emitLine(`context.addBlock(${k}, parentTemplate.blocks[${k}]);`);
+    this.currentIndentLevel--;
     this._emitLine('}');
 
     this._addScopeLevel();
@@ -1136,6 +1173,7 @@ export class Compiler extends Obj {
     this._emitLine('var tasks = [];');
     this._emitLine('tasks.push(');
     this._emitLine('function(callback) {');
+    this.currentIndentLevel++;
     const id: string = this._compileGetTemplate(node, frame, false, node.ignoreMissing);
     this._emitLine(`callback(null,${id});});`);
     this._emitLine('});');
@@ -1143,16 +1181,19 @@ export class Compiler extends Obj {
     const id2: string = this._tmpid();
     this._emitLine('tasks.push(');
     this._emitLine('function(template, callback){');
+    this.currentIndentLevel++;
     this._emitLine('template.render(context.getVariables(), frame, ' + this._makeCallback(id2));
     this._emitLine('callback(null,' + id2 + ');});');
     this._emitLine('});');
 
     this._emitLine('tasks.push(');
     this._emitLine('function(result, callback){');
+    this.currentIndentLevel++;
     this._emitLine(`${this.buffer} += result;`);
     this._emitLine('callback(null);');
     this._emitLine('});');
     this._emitLine('env.waterfall(tasks, function(){');
+    this.currentIndentLevel++;
     this._addScopeLevel();
   }
 
@@ -1168,6 +1209,7 @@ export class Compiler extends Obj {
     const buffer: string = this.buffer;
     this.buffer = 'output';
     this._emitLine('(function() {');
+    this.currentIndentLevel++;
     this._emitLine('var output = "";');
     this._withScopedSyntax((): void => {
       this.compile(node.body, frame);
@@ -1215,9 +1257,12 @@ export class Compiler extends Obj {
     this._emitLine('var parentTemplate = null;');
     this._compileChildren(node, frame);
     this._emitLine('if(parentTemplate) {');
+    this.currentIndentLevel++;
     this._emitLine('parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);');
     this._emitLine('} else {');
+    this.currentIndentLevel++;
     this._emitLine(`cb(null, ${this.buffer});`);
+    this.currentIndentLevel--;
     this._emitLine('}');
     this._emitFuncEnd(true);
 
@@ -1244,6 +1289,7 @@ export class Compiler extends Obj {
     });
 
     this._emitLine('return {');
+    this.currentIndentLevel++;
 
     blocks.forEach((block, i): void => {
       const blockName: string = `b_${block.name.value}`;

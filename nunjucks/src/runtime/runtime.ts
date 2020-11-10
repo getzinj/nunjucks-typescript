@@ -17,8 +17,8 @@ import { NunjucksSymbol } from '../nodes/nunjucksSymbol';
 import { Context } from '../environment/environment';
 
 
-const supportsIterators: boolean = (
-    typeof NunjucksSymbol === 'function' && NunjucksSymbol['iterator'] && typeof Array.from === 'function'
+export const supportsIterators: boolean = (
+    typeof Symbol === 'function' && Symbol['iterator'] && typeof Array.from === 'function'
 );
 
 
