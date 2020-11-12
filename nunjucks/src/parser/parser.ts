@@ -94,7 +94,8 @@ export class Parser extends Obj implements IParser {
     if (colno !== undefined) {
       colno += 1;
     }
-    return new TemplateError(msg, lineno, colno);
+    const line: string = this.parserTokenStream.currentLine;
+    return new TemplateError(msg, lineno, colno, line);
   }
 
 

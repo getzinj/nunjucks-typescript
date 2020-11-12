@@ -1,3 +1,5 @@
+import { repeat } from './lib';
+
 export class TemplateError extends Error {
   private firstUpdate = true;
   public cause;
@@ -23,7 +25,7 @@ export class TemplateError extends Error {
   get stack() { return this.getStack.call(this); }
 
 
-  constructor(message, public readonly lineno?: number, public readonly colno?: number) {
+  constructor(message, public readonly lineno?: number, public readonly colno?: number, public readonly line?: string) {
     super(message);
 
     if (message instanceof Error) {
@@ -54,6 +56,16 @@ export class TemplateError extends Error {
 
     msg += '\n ';
     if (this.firstUpdate) {
+      if (this.line) {
+        msg += this.line;
+        msg += '\n';
+        if (this.colno) {
+          msg += repeat(' ', this.colno);
+          msg += '^';
+          msg += '\n';
+        }
+      }
+
       msg += ' ';
     }
 

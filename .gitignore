@@ -204,3 +204,5 @@ nunjucks/src/nodes/templateRef.js
 nunjucks/src/nodes/templateRef.js.map
 nunjucks/src/nodes/value.js
 nunjucks/src/nodes/value.js.map
+nunjucks/src/parser/parserTokenStream.js
+nunjucks/src/parser/parserTokenStream.js.map

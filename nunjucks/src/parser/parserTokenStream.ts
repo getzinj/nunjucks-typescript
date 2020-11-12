@@ -7,6 +7,9 @@ import { TokenType } from '../lexer/tokenType';
 export class ParserTokenStream {
   private peeked: Token | null;
 
+  get currentLine(): string { return this.tokens.currentLine; }
+
+
   constructor(public tokens: Tokenizer) { }
 
 

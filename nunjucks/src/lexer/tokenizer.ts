@@ -21,6 +21,9 @@ export class Tokenizer {
   private readonly trimBlocks: boolean;
   private readonly lstripBlocks: boolean;
   private readonly src: string;
+  private currentLine_: string = '';
+
+  public get currentLine(): string { return this.currentLine_; }
 
 
   constructor(str: string, opts?: ITokenizerOptions) {
@@ -432,11 +435,19 @@ export class Tokenizer {
 
 
   forward(): void {
+    if (this.currentLine_ === '') {
+      const nextNewlineIndex: number = this.str.indexOf('\n');
+      this.currentLine_ = this.str.substring(this.index, (nextNewlineIndex === -1) ? undefined: nextNewlineIndex);
+    }
     this.index++;
+
 
     if (this.previous() === '\n') {
       this.lineno++;
       this.colno = 0;
+
+      const nextNewlineIndex: number = this.str.indexOf('\n');
+      this.currentLine_ = this.str.substring(this.index, (nextNewlineIndex === -1) ? undefined: nextNewlineIndex);
     } else {
       this.colno++;
     }
@@ -456,11 +467,14 @@ export class Tokenizer {
     if (this.current() === '\n') {
       this.lineno--;
 
-      const idx: number = this.src.lastIndexOf('\n', this.index - 1);
-      if (idx === -1) {
+      const previousNewlineIndex: number = this.src.lastIndexOf('\n', this.index - 1);
+
+      this.currentLine_ = this.str.substring(previousNewlineIndex, this.index);
+
+      if (previousNewlineIndex === -1) {
         this.colno = this.index;
       } else {
-        this.colno = this.index - idx;
+        this.colno = this.index - previousNewlineIndex;
       }
     } else {
       this.colno--;
