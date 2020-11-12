@@ -60,17 +60,17 @@ export function escape(val: string): string {
 }
 
 
-export function isFunction(obj): boolean {
+export function isFunction(obj): obj is Function {
   return ObjProto.toString.call(obj) === '[object Function]';
 }
 
 
-export function isArray(obj): boolean {
+export function isArray<T>(obj): obj is Array<T> {
   return ObjProto.toString.call(obj) === '[object Array]';
 }
 
 
-export function isString(obj): boolean {
+export function isString(obj): obj is string {
   return ObjProto.toString.call(obj) === '[object String]';
 }
 

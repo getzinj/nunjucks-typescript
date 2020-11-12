@@ -10,7 +10,7 @@ export class FilterAsync extends Filter {
   public symbol;
 
 
-  constructor(lineno: number, colno: number, name: string, args: NunjucksNodeList, symbol: NunjucksSymbol) {
+  constructor(lineno: number, colno: number, name: NunjucksSymbol, args: NunjucksNodeList, symbol: NunjucksSymbol) {
     super(lineno, colno, name, args, symbol);
   }
 

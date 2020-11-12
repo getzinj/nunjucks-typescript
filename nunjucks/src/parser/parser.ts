@@ -33,21 +33,23 @@ import { Case } from '../nodes/case';
 import { FromImport } from '../nodes/fromImport';
 import { Output } from '../nodes/output';
 import { Capture } from '../nodes/capture';
-import { In } from '../lexer/operators/in';
-import { Is } from '../lexer/operators/is';
-import { Or } from '../lexer/operators/or';
-import { And } from '../lexer/operators/and';
-import { Not } from '../lexer/operators/not';
-import { Add } from '../lexer/operators/add';
-import { Concat } from '../lexer/operators/concat';
-import { Sub } from '../lexer/operators/sub';
-import { Mul } from '../lexer/operators/mul';
-import { Div } from '../lexer/operators/div';
-import { FloorDiv } from '../lexer/operators/floorDiv';
-import { Mod } from '../lexer/operators/mod';
-import { Pow } from '../lexer/operators/pow';
-import { Neg } from '../lexer/operators/neg';
-import { Pos } from '../lexer/operators/pos';
+import {
+  In,
+  Add,
+  And,
+  Concat,
+  Div,
+  FloorDiv,
+  Is,
+  Mod,
+  Mul,
+  Neg,
+  Not,
+  Or,
+  Pos,
+  Pow,
+  Sub
+} from '../lexer/operators/operators';
 import { Compare } from '../nodes/compare';
 import { CompareOperand } from '../nodes/compareOperand';
 import { Tokenizer } from '../lexer/tokenizer';
@@ -1340,7 +1342,7 @@ export class Parser extends Obj implements IParser {
 
     while ((tok = this.parserTokenStream.nextToken())) {
       if (tok.type === TokenType.TOKEN_DATA) {
-        let data = tok.value;
+        let data: string = tok.value;
         const nextToken: Token = this.parserTokenStream.peekToken();
         const nextVal: string = nextToken && nextToken.value;
 
@@ -1367,7 +1369,7 @@ export class Parser extends Obj implements IParser {
             [ new TemplateData(tok.lineno, tok.colno, data)]));
       } else if (tok.type === TokenType.TOKEN_BLOCK_START) {
         this.dropLeadingWhitespace = false;
-        const n = this.parseStatement();
+        const n: NunjucksNode = this.parseStatement();
         if (!n) {
           break;
         }
@@ -1380,9 +1382,16 @@ export class Parser extends Obj implements IParser {
       } else if (tok.type === TokenType.TOKEN_COMMENT) {
         this.dropLeadingWhitespace = tok.value.charAt(tok.value.length - this.tokens.tags.COMMENT_END.length - 1) === '-';
       } else {
+        const expected: string[] = [
+            'TOKEN_DATA',
+            'TOKEN_BLOCK_START',
+            'TOKEN_VARIABLE_START',
+            'TOKEN_COMMENT'
+        ];
+        const expectedList: string = expected.join(', ');
+
         // Ignore comments, otherwise this should be an error
-        this.fail('Unexpected token at top-level: ' +
-          tok.type, tok.lineno, tok.colno);
+        this.fail('Unexpected token at top-level: ' + tok.type + ', expected: ' + expectedList, tok.lineno, tok.colno);
       }
     }
 

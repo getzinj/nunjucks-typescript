@@ -32,12 +32,12 @@ export class Context extends Obj {
     this.env = env || new Environment();
 
     // Make a duplicate of ctx
-    this.ctx = extend({}, ctx);
+    this.ctx = extend({ }, ctx);
 
-    this.blocks = {};
-    this.exported = [];
+    this.blocks = { };
+    this.exported = [ ];
 
-    keys(blocks).forEach((name): void => {
+    keys(blocks).forEach((name: string): void => {
       this.addBlock(name, blocks[name]);
     });
   }
@@ -65,7 +65,7 @@ export class Context extends Obj {
 
 
   addBlock(name: string | number, block): this {
-    this.blocks[name] = this.blocks[name] || [];
+    this.blocks[name] = this.blocks[name] || [ ];
     this.blocks[name].push(block);
     return this;
   }
@@ -80,8 +80,8 @@ export class Context extends Obj {
   }
 
 
-  getSuper(env, name: string, block, frame, runtime, cb): void {
-    const idx = indexOf(this.blocks[name] || [], block);
+  getSuper(env, name: string, block, frame: Frame, runtime, cb): void {
+    const idx: number = indexOf(this.blocks[name] || [ ], block);
     const blk = this.blocks[name][idx + 1];
     const context: this = this;
 
@@ -98,8 +98,8 @@ export class Context extends Obj {
   }
 
 
-  getExported(): {} {
-    const exported: {} = {};
+  getExported(): { } {
+    const exported: { } = { };
     this.exported.forEach((name): void => {
       exported[name] = this.ctx[name];
     });
@@ -112,14 +112,20 @@ export class Context extends Obj {
 export class Template extends Obj {
   private compiled: boolean;
   private readonly path: string;
-  private readonly env: Environment | undefined;
+  private readonly env: Environment;
   private readonly tmplProps;
-  private readonly tmplStr;
-  private blocks;
-  private rootRenderFunc;
+  private readonly tmplStr: string;
+  private blocks: Record<string, any>;
+  private rootRenderFunc: (env: Environment,
+                           context: Context,
+                           frame: Frame,
+                           runtime: typeof globalRuntime,
+                           callback:
+                               (err: any, info?: any) => void
+                          ) => void;
 
 
-  constructor(src, env, path?: string, eagerCompile?: boolean) {
+  constructor(src, env: Environment | undefined | null, path?: string, eagerCompile?: boolean) {
     super();
     this.env = env || new Environment();
 
@@ -133,7 +139,7 @@ export class Template extends Obj {
           break;
         default:
           throw new Error(
-              `Unexpected template object type ${src.type}; expected 'code', or 'string'`);
+              `Unexpected template object type ${ src.type }; expected 'code', or 'string'`);
       }
     } else if (lib.isString(src)) {
       this.tmplStr = src;
@@ -158,7 +164,7 @@ export class Template extends Obj {
   render(ctx, parentFrame, cb?) {
     if (typeof ctx === 'function') {
       cb = ctx;
-      ctx = {};
+      ctx = { };
     } else if (typeof parentFrame === 'function') {
       cb = parentFrame;
       parentFrame = null;
@@ -182,8 +188,8 @@ export class Template extends Obj {
       }
     }
 
-    const context: Context = new Context(ctx || {}, this.blocks, this.env);
-    const frame = parentFrame ? parentFrame.push(true) : new Frame();
+    const context: Context = new Context(ctx || { }, this.blocks, this.env);
+    const frame: Frame = parentFrame ? parentFrame.push(true) : new Frame();
     frame.topLevel = true;
     let syncResult = null;
     let didError: boolean = false;
@@ -224,7 +230,7 @@ export class Template extends Obj {
   getExported(ctx, parentFrame, cb) { // eslint-disable-line consistent-return
     if (typeof ctx === 'function') {
       cb = ctx;
-      ctx = {};
+      ctx = { };
     }
 
     if (typeof parentFrame === 'function') {
@@ -243,11 +249,11 @@ export class Template extends Obj {
       }
     }
 
-    const frame = parentFrame ? parentFrame.push() : new Frame();
+    const frame: Frame = parentFrame ? parentFrame.push() : new Frame();
     frame.topLevel = true;
 
     // Run the rootRenderFunc to populate the context with exported vars
-    const context: Context = new Context(ctx || {}, this.blocks, this.env);
+    const context: Context = new Context(ctx || { }, this.blocks, this.env);
     this.rootRenderFunc(this.env, context, frame, globalRuntime, (err): void => {
       if (err) {
         cb(err, null);
@@ -257,14 +263,16 @@ export class Template extends Obj {
     });
   }
 
+
   compile(): void {
     if (!this.compiled) {
       this._compile();
     }
   }
 
+
   _compile(): void {
-    var props;
+    let props;
 
     if (this.tmplProps) {
       props = this.tmplProps;
@@ -284,10 +292,11 @@ export class Template extends Obj {
     this.compiled = true;
   }
 
-  _getBlocks(props): {} {
-    var blocks: {} = {};
 
-    lib.keys(props).forEach((k): void => {
+  _getBlocks(props: { [x: string]: any; }): Record<string, any> {
+    const blocks: Record<string, any> = { };
+
+    lib.keys(props).forEach((k: string): void => {
       if (k.slice(0, 2) === 'b_') {
         blocks[k.slice(2)] = props[k];
       }
@@ -297,25 +306,27 @@ export class Template extends Obj {
   }
 }
 
+
+
 export class Environment extends EmitterObj {
   opts: any;
-  loaders: Loader[];
+  loaders: Loader[ ];
   private extensions: Record<string, any>;
-  extensionsList: any[];
-  asyncFilters: any[];
+  extensionsList: any[ ];
+  asyncFilters: any[ ];
   private tests: Record<string, any>;
   private filters: Record<string, any>;
   globals: any;
 
 
-  init(loaders, opts): void {
+  init(loaders: Loader | Loader[], opts): void {
     // The dev flag determines the trace that'll be shown on errors.
     // If set to true, returns the full trace from the error point,
     // otherwise will return trace starting from Template.render
     // (the full trace from within nunjucks may confuse developers using
     //  the library)
     // defaults to false
-    opts = this.opts = opts || {};
+    opts = this.opts = opts || { };
     this.opts.dev = !!opts.dev;
 
     // The autoescape flag sets global autoescaping. If true,
@@ -330,7 +341,7 @@ export class Environment extends EmitterObj {
     this.opts.trimBlocks = !!opts.trimBlocks;
     this.opts.lstripBlocks = !!opts.lstripBlocks;
 
-    this.loaders = [];
+    this.loaders = [ ];
 
     if (!loaders) {
       // The filesystem loader is only available server-side
@@ -340,7 +351,7 @@ export class Environment extends EmitterObj {
         this.loaders = [ new WebLoader('/views') ];
       }
     } else {
-      this.loaders = lib.isArray(loaders) ? loaders : [loaders];
+      this.loaders = lib.isArray(loaders) ? loaders : [ loaders ];
     }
 
     // It's easy to use precompiled templates: just include them
@@ -355,11 +366,11 @@ export class Environment extends EmitterObj {
     this._initLoaders();
 
     this.globals = globals();
-    this.filters = {};
-    this.tests = {};
-    this.asyncFilters = [];
-    this.extensions = {};
-    this.extensionsList = [];
+    this.filters = { };
+    this.tests = { };
+    this.asyncFilters = [ ];
+    this.extensions = { };
+    this.extensionsList = [ ];
 
     lib._entries(filters).forEach(([name, filter]) => this.addFilter(name, filter));
     lib._entries(tests).forEach(([name, test]) => this.addTest(name, test));
@@ -367,9 +378,9 @@ export class Environment extends EmitterObj {
 
 
   _initLoaders(): void {
-    this.loaders.forEach((loader) => {
+    this.loaders.forEach((loader: Loader): void => {
       // Caching and cache busting
-      loader.cache = {};
+      loader.cache = { };
       if (typeof loader.on === 'function') {
         loader.on('update', (name, fullname) => {
           loader.cache[name] = null;
@@ -384,13 +395,13 @@ export class Environment extends EmitterObj {
 
 
   invalidateCache(): void {
-    this.loaders.forEach((loader) => {
-      loader.cache = {};
+    this.loaders.forEach((loader: Loader): void => {
+      loader.cache = { };
     });
   }
 
 
-  addExtension(name, extension): Environment {
+  addExtension(name: string, extension): Environment {
     extension.__name = name;
     this.extensions[name] = extension;
     this.extensionsList.push(extension);
@@ -608,9 +619,9 @@ export class Environment extends EmitterObj {
   renderString(src, ctx, opts, cb?) {
     if (lib.isFunction(opts)) {
       cb = opts;
-      opts = {};
+      opts = { };
     }
-    opts = opts || {};
+    opts = opts || { };
 
     const tmpl: Template = new Template(src, this, opts.path);
     return tmpl.render(ctx, undefined, cb);

@@ -111,16 +111,14 @@ export function copySafeness(dest: string | SafeString, target): string | SafeSt
 }
 
 
-export function markSafe(val) {
+export function markSafe(val: string | SafeString | ((... args: any[]) => (string | SafeString))): SafeString | string | ((...args: any[]) => (string | SafeString)) {
   const type: "undefined" | "object" | "boolean" | "number" | "string" | "function" | "symbol" | "bigint" = typeof val;
 
   if (type === 'string') {
     return new SafeString(val);
-  } else if (type !== 'function') {
-    return val;
-  } else {
-    return function wrapSafe(args) {
-      const ret = val.apply(this, arguments);
+  } else if (type === 'function') {
+    return function wrapSafe(...args: any[]): SafeString {
+      const ret: string | SafeString = (val as (... args) => (string | SafeString)).apply(this, arguments);
 
       if (typeof ret === 'string') {
         return new SafeString(ret);
@@ -128,6 +126,8 @@ export function markSafe(val) {
 
       return ret;
     };
+  } else {
+    return val;
   }
 }
 

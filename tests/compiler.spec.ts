@@ -1,5 +1,7 @@
 import { Parser } from '../nunjucks/src/parser/parser';
 import { CallExtension } from '../nunjucks/src/nodes/nunjucksNode';
+import { Environment } from '../nunjucks';
+import { TokenType } from '../nunjucks/src/lexer/tokenType';
 
 
 
@@ -900,8 +902,8 @@ import { CallExtension } from '../nunjucks/src/nodes/nunjucksNode';
           '<div>{{ foo() }}</div>',
           '{% endblock %}',
         ].join('\n');
-        const env = new Environment(new Loader('tests/templates'));
-        const tmpl = new Template(tmplStr, env, 'user-error.njk');
+        const env: Environment = new Environment(new Loader('tests/templates'));
+        const tmpl: any = new Template(tmplStr, env, 'user-error.njk');
 
         function foo(): void {
           throw new Error('ERROR');
@@ -1891,7 +1893,7 @@ import { CallExtension } from '../nunjucks/src/nodes/nunjucksNode';
           body = parser.parseUntilBlocks('intermediate', 'endtest');
 
           if (parser.skipSymbol('intermediate')) {
-            parser.skip(lexer.TOKEN_BLOCK_END);
+            parser.skip(TokenType.TOKEN_BLOCK_END);
             intermediate = parser.parseUntilBlocks('endtest');
           }
 

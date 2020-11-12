@@ -206,3 +206,5 @@ nunjucks/src/nodes/value.js
 nunjucks/src/nodes/value.js.map
 nunjucks/src/parser/parserTokenStream.js
 nunjucks/src/parser/parserTokenStream.js.map
+nunjucks/src/lexer/operators/operators.js
+nunjucks/src/lexer/operators/operators.js.map
