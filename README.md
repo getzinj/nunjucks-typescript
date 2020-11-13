@@ -1,4 +1,4 @@
-# Nunjucks
+# Nunjucks-TypeScript
 
   [![NPM Version][npm-image]][npm-url]
   [![NPM Downloads][downloads-image]][downloads-url]
@@ -6,8 +6,8 @@
   [![Windows Build][appveyor-image]][appveyor-url]
   [![Test Codecov][codecov-image]][codecov-url]
 
-[Nunjucks](https://mozilla.github.io/nunjucks/) is a full featured
-templating engine for javascript. It is heavily inspired by
+Nunjucks-TypeScript is a TypeScript port of version 3.2.2 of [Nunjucks](https://mozilla.github.io/nunjucks/), a 
+full-featured templating engine for javascript by [James Long](longster@gmail.com). Nunjucks, in turn, was heavily inspired by
 [jinja2](http://jinja.pocoo.org/). View the docs
 [here](https://mozilla.github.io/nunjucks/).
 
@@ -28,27 +28,3 @@ Supported in all modern browsers. For IE8 support, use [es5-shim](https://github
 ## Tests
 
 Run the tests with `npm test`.
-
-Watch `master` branch's [tests running in the browser](https://mozilla.github.io/nunjucks/files/tests/browser/).
-
-## Mailing List
-
-Join our mailing list and get help with and issues you have:
-https://groups.google.com/forum/?fromgroups#!forum/nunjucks
-
-## Want to help?
-
-Contributions are always welcome! Before you submit an issue or pull request, please read our [contribution guidelines](CONTRIBUTING.md).
-
-[Contributors](https://github.com/mozilla/nunjucks/graphs/contributors)
-
-[npm-image]: https://img.shields.io/npm/v/nunjucks.svg
-[npm-url]: https://npmjs.org/package/nunjucks
-[downloads-image]: https://img.shields.io/npm/dm/nunjucks.svg
-[downloads-url]: https://npmjs.org/package/nunjucks
-[travis-image]: https://img.shields.io/travis/mozilla/nunjucks/master.svg?label=linux
-[travis-url]: https://travis-ci.org/mozilla/nunjucks
-[appveyor-image]: https://img.shields.io/appveyor/ci/fdintino/nunjucks/master.svg?label=windows
-[appveyor-url]: https://ci.appveyor.com/project/fdintino/nunjucks
-[codecov-image]: https://img.shields.io/codecov/c/gh/mozilla/nunjucks.svg
-[codecov-url]: https://codecov.io/gh/mozilla/nunjucks/branch/master
