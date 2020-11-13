@@ -13,10 +13,10 @@
     "node"
   ],
   "include": [
-    "nunjucks/src/**/*"
+    "nunjucks/src/**/*",
+    "tests/**/*"
   ],
   "exclude": [
-    "node_modules",
-    "**/*.spec.ts"
+    "node_modules"
   ]
 }

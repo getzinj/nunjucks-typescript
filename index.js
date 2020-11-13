@@ -3,87 +3,39 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.renderString = exports.render = exports.compile = exports.reset = exports.configure = exports.installJinjaCompat = exports.precompileString = exports.precompile = exports.NodeResolveLoader = exports.PrecompiledLoader = exports.WebLoader = exports.FileSystemLoader = exports.Template = exports.Environment = void 0;
-
-var environment_1 = require("./src/environment");
-
-Object.defineProperty(exports, "Environment", {
-  enumerable: true,
-  get: function get() {
-    return environment_1.Environment;
-  }
-});
-Object.defineProperty(exports, "Template", {
-  enumerable: true,
-  get: function get() {
-    return environment_1.Template;
-  }
-});
-
-var environment_2 = require("./src/environment");
-
-var lib_1 = require("./src/lib");
-
-var file_system_loader_1 = require("./src/file-system-loader");
-
-var file_system_loader_2 = require("./src/file-system-loader");
-
-Object.defineProperty(exports, "FileSystemLoader", {
-  enumerable: true,
-  get: function get() {
-    return file_system_loader_2.FileSystemLoader;
-  }
-});
 
 var web_loaders_1 = require("./src/web-loaders");
 
-var web_loaders_2 = require("./src/web-loaders");
-
-Object.defineProperty(exports, "WebLoader", {
-  enumerable: true,
-  get: function get() {
-    return web_loaders_2.WebLoader;
-  }
-});
-Object.defineProperty(exports, "PrecompiledLoader", {
-  enumerable: true,
-  get: function get() {
-    return web_loaders_2.PrecompiledLoader;
-  }
-});
-
 var node_resolve_loader_1 = require("./src/node-resolve-loader");
 
-Object.defineProperty(exports, "NodeResolveLoader", {
-  enumerable: true,
-  get: function get() {
-    return node_resolve_loader_1.NodeResolveLoader;
-  }
-});
+var file_system_loader_1 = require("./src/file-system-loader");
+
+var loader_1 = require("./src/loader");
+
+var compiler_1 = require("./src/compiler/compiler");
 
 var precompile_1 = require("./src/precompile");
 
-Object.defineProperty(exports, "precompile", {
-  enumerable: true,
-  get: function get() {
-    return precompile_1.precompile;
-  }
-});
-Object.defineProperty(exports, "precompileString", {
-  enumerable: true,
-  get: function get() {
-    return precompile_1.precompileString;
-  }
-});
+var parser_1 = require("./src/parser/parser");
 
-var jinja_compat_1 = require("./src/jinja-compat");
+var lib_1 = require("./src/lib");
 
-Object.defineProperty(exports, "installJinjaCompat", {
-  enumerable: true,
-  get: function get() {
-    return jinja_compat_1.installCompat;
-  }
-});
+var jinja_compat_1 = require("./src/jinja-compat"); // const lib = require('./src/lib');
+
+
+var _require = require('./src/environment/environment'),
+    Environment = _require.Environment,
+    Template = _require.Template; //const loaders = require('./src/loaders');
+//const precompile = require('./src/precompile');
+//const compiler = require('./src/compiler');
+//const parser = require('./src/parser');
+//const lexer = require('./src/lexer');
+// const runtime = require('./src/runtime');
+// const nodes = require('./src/nodes');
+// const installJinjaCompat = require('./src/jinja-compat');
+// A single instance of an environment, since this is so commonly used
+
+
 var e;
 
 function configure(templatesPath, opts) {
@@ -108,7 +60,7 @@ function configure(templatesPath, opts) {
     });
   }
 
-  e = new environment_2.Environment(TemplateLoader, opts);
+  e = new Environment(TemplateLoader, opts);
 
   if (opts && opts.express) {
     e.express(opts.express);
@@ -117,40 +69,42 @@ function configure(templatesPath, opts) {
   return e;
 }
 
-exports.configure = configure;
+module.exports = {
+  Environment: Environment,
+  Template: Template,
+  Loader: loader_1.Loader,
+  FileSystemLoader: file_system_loader_1.FileSystemLoader,
+  NodeResolveLoader: node_resolve_loader_1.NodeResolveLoader,
+  PrecompiledLoader: web_loaders_1.PrecompiledLoader,
+  WebLoader: web_loaders_1.WebLoader,
+  compiler: compiler_1.Compiler,
+  parser: parser_1.Parser,
+  installJinjaCompat: jinja_compat_1.installCompat,
+  configure: configure,
+  reset: function reset() {
+    e = undefined;
+  },
+  compile: function compile(src, env, path, eagerCompile) {
+    if (!e) {
+      configure();
+    }
 
-function reset() {
-  e = undefined;
-}
+    return new Template(src, env, path, eagerCompile);
+  },
+  render: function render(name, ctx, cb) {
+    if (!e) {
+      configure();
+    }
 
-exports.reset = reset;
+    return e.render(name, ctx, cb);
+  },
+  renderString: function renderString(src, ctx, cb) {
+    if (!e) {
+      configure();
+    }
 
-function compile(src, env, path, eagerCompile) {
-  if (!e) {
-    configure();
-  }
-
-  return new environment_2.Template(src, env, path, eagerCompile);
-}
-
-exports.compile = compile;
-
-function render(name, ctx, cb) {
-  if (!e) {
-    configure();
-  }
-
-  return e.render(name, ctx, cb);
-}
-
-exports.render = render;
-
-function renderString(src, ctx, cb) {
-  if (!e) {
-    configure();
-  }
-
-  return e.renderString(src, ctx, {}, cb);
-}
-
-exports.renderString = renderString;
+    return e.renderString(src, ctx, cb);
+  },
+  precompile: precompile_1.precompile !== null && precompile_1.precompile !== void 0 ? precompile_1.precompile : undefined,
+  precompileString: precompile_1.precompileString !== null && precompile_1.precompileString !== void 0 ? precompile_1.precompileString : undefined
+};
