@@ -3,6 +3,10 @@
   "description": "TypeScript port of nunjucks v.3.2.2: A powerful templating engine with inheritance, asynchronous control, and more (jinja2 inspired) by James Long",
   "version": "0.0.1",
   "author": "Jeffrey Getzin <getzinj@gmail.com>",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/getzinj/nunjucks-typescript.git"
+  },
   "dependencies": {
     "a-sync-waterfall": "^1.0.0",
     "asap": "^2.0.3",
@@ -97,16 +101,9 @@
     "sourceMap": false,
     "instrument": false
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mozilla/nunjucks.git"
-  },
   "keywords": [
     "template",
     "templating"
   ],
-  "license": "BSD-2-Clause",
-  "bugs": {
-    "url": "https://github.com/mozilla/nunjucks/issues"
-  }
+  "license": "BSD-2-Clause"
 }
