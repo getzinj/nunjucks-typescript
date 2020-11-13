@@ -7,6 +7,6 @@ export class CallExtensionAsync extends CallExtension {
 
 
   constructor(lineno: number, colno: number, ext, prop, args, contentArgs) {
-    super(lineno, colno, ext, prop, args, contentArgs);
+    super(ext, prop, args, contentArgs);
   }
 }

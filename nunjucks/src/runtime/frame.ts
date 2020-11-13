@@ -54,7 +54,7 @@ export class Frame {
   }
 
 
-  lookup<T>(name: string): T {
+  lookup(name: string) {
     const p: Frame = this.parent;
     const val = this.variables[name];
 

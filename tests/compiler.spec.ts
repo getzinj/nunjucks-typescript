@@ -2,10 +2,11 @@ import { Parser } from '../nunjucks/src/parser/parser';
 import { CallExtension } from '../nunjucks/src/nodes/nunjucksNode';
 import { Environment } from '../nunjucks';
 import { TokenType } from '../nunjucks/src/lexer/tokenType';
+import { IExtension } from '../nunjucks/src/parser/IExtension';
 
 
 
-(function(): void {
+(((): void => {
   'use strict';
 
   let expect;
@@ -39,8 +40,8 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
   Loader = util.Loader;
 
 
-  describe('compiler', function(): void {
-    it('should compile templates', function(done: (err?) => void): void {
+  describe('compiler', (): void => {
+    it('should compile templates', (done: (err?) => void): void => {
       equal('Hello world', 'Hello world');
       equal('Hello world, {{ name }}',
         {
@@ -59,19 +60,19 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should escape newlines', function(done: (err?) => void): void {
+    it('should escape newlines', (done: (err?) => void): void => {
       equal('foo\\nbar', 'foo\\nbar');
       finish(done);
     });
 
 
-    it('should escape Unicode line seperators', function(done: (err?) => void): void {
+    it('should escape Unicode line seperators', (done: (err?) => void): void => {
       equal('\u2028', '\u2028');
       finish(done);
     });
 
 
-    it('should compile references', function(done: (err?) => void): void {
+    it('should compile references', (done: (err?) => void): void => {
       equal('{{ foo.bar }}',
         {
           foo: {
@@ -92,7 +93,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile references - object without prototype', function(done: (err?) => void): void {
+    it('should compile references - object without prototype', (done: (err?) => void): void => {
       const context = Object.create(null);
       context.foo = Object.create(null);
       context.foo.bar = 'baz';
@@ -109,7 +110,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should fail silently on undefined values', function(done: (err?) => void): void {
+    it('should fail silently on undefined values', (done: (err?) => void): void => {
       equal('{{ foo }}', '');
       equal('{{ foo.bar }}', '');
       equal('{{ foo.bar.baz }}', '');
@@ -118,7 +119,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should not treat falsy values the same as undefined', function(done: (err?) => void): void {
+    it('should not treat falsy values the same as undefined', (done: (err?) => void): void => {
       equal('{{ foo }}', {
         foo: 0
       }, '0');
@@ -129,37 +130,35 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should display none as empty string', function(done: (err?) => void): void {
+    it('should display none as empty string', (done: (err?) => void): void => {
       equal('{{ none }}', '');
       finish(done);
     });
 
 
-    it('should compile none as falsy', function(done: (err?) => void): void {
+    it('should compile none as falsy', (done: (err?) => void): void => {
       equal('{% if not none %}yes{% endif %}', 'yes');
       finish(done);
     });
 
 
-    it('should compile none as null, not undefined', function(done: (err?) => void): void {
+    it('should compile none as null, not undefined', (done: (err?) => void): void => {
       equal('{{ none|default("d", false) }}', '');
       finish(done);
     });
 
 
-    it('should compile function calls', function(done: (err?) => void): void {
+    it('should compile function calls', (done: (err?) => void): void => {
       equal('{{ foo("msg") }}',
         {
-          foo: function(str): string {
-            return str + 'hi';
-          }
+          foo: (str): string => str + 'hi'
         },
         'msghi');
       finish(done);
     });
 
 
-    it('should compile function calls with correct scope', function(done: (err?) => void): void {
+    it('should compile function calls with correct scope', (done: (err?) => void): void => {
       equal('{{ foo.bar() }}', {
         foo: {
           bar: function(): string {
@@ -173,7 +172,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile switch statements', function(): void {
+    it('should compile switch statements', (): void => {
       // standard switches
       const tpl1: string = '{% switch foo %}{% case "bar" %}BAR{% case "baz" %}BAZ{% default %}NEITHER FOO NOR BAR{% endswitch %}';
       // test no-default switches
@@ -197,7 +196,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile if blocks', function(done: (err?) => void): void {
+    it('should compile if blocks', (done: (err?) => void): void => {
       const tmpl: string = ('Give me some {% if hungry %}pizza' +
           '{% else %}water{% endif %}');
 
@@ -287,7 +286,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile the ternary operator', function(done: (err?) => void): void {
+    it('should compile the ternary operator', (done: (err?) => void): void => {
       equal('{{ "foo" if bar else "baz" }}', 'baz');
       equal('{{ "foo" if bar else "baz" }}', {
         bar: true
@@ -297,7 +296,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile inline conditionals', function(done: (err?) => void): void {
+    it('should compile inline conditionals', (done: (err?) => void): void => {
       const tmpl: string = 'Give me some {{ "pizza" if hungry else "water" }}';
 
       equal(tmpl, {
@@ -344,30 +343,30 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
       }[block];
 
 
-      describe('the ' + block + ' tag', function(): void {
+      describe('the ' + block + ' tag', (): void => {
 
-        it('should loop over simple arrays', function(): void {
+        it('should loop over simple arrays', (): void => {
           equal(
             '{% ' + block + ' i in arr %}{{ i }}{% ' + end + ' %}',
             { arr: [1, 2, 3, 4, 5] },
             '12345');
         });
 
-        it('should loop normally with an {% else %} tag and non-empty array', function(): void {
+        it('should loop normally with an {% else %} tag and non-empty array', (): void => {
           equal(
             '{% ' + block + ' i in arr %}{{ i }}{% else %}empty{% ' + end + ' %}',
             { arr: [1, 2, 3, 4, 5] },
             '12345');
         });
 
-        it('should execute the {% else %} block when looping over an empty array', function(): void {
+        it('should execute the {% else %} block when looping over an empty array', (): void => {
           equal(
             '{% ' + block + ' i in arr %}{{ i }}{% else %}empty{% ' + end + ' %}',
             { arr: [] },
             'empty');
         });
 
-        it('should support destructured looping', function(): void {
+        it('should support destructured looping', (): void => {
           equal(
             '{% ' + block + ' a, b, c in arr %}' +
             '{{ a }},{{ b }},{{ c }}.{% ' + end + ' %}',
@@ -375,29 +374,29 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             'x,y,z.1,2,3.');
         });
 
-        it('should do loop over key-values of a literal in-template Object', function(): void {
+        it('should do loop over key-values of a literal in-template Object', (): void => {
           equal(
             '{% ' + block + ' k, v in { one: 1, two: 2 } %}' +
             '-{{ k }}:{{ v }}-{% ' + end + ' %}', '-one:1--two:2-');
         });
 
-        it('should support loop.index', function(): void {
+        it('should support loop.index', (): void => {
           equal('{% ' + block + ' i in [7,3,6] %}{{ loop.index }}{% ' + end + ' %}', '123');
         });
 
-        it('should support loop.index0', function(): void {
+        it('should support loop.index0', (): void => {
           equal('{% ' + block + ' i in [7,3,6] %}{{ loop.index0 }}{% ' + end + ' %}', '012');
         });
 
-        it('should support loop.revindex', function(): void {
+        it('should support loop.revindex', (): void => {
           equal('{% ' + block + ' i in [7,3,6] %}{{ loop.revindex }}{% ' + end + ' %}', '321');
         });
 
-        it('should support loop.revindex0', function(): void {
+        it('should support loop.revindex0', (): void => {
           equal('{% ' + block + ' i in [7,3,6] %}{{ loop.revindex0 }}{% ' + end + ' %}', '210');
         });
 
-        it('should support loop.first', function(): void {
+        it('should support loop.first', (): void => {
           equal(
             '{% ' + block + ' i in [7,3,6] %}' +
             '{% if loop.first %}{{ i }}{% endif %}' +
@@ -405,7 +404,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             '7');
         });
 
-        it('should support loop.last', function(): void {
+        it('should support loop.last', (): void => {
           equal(
             '{% ' + block + ' i in [7,3,6] %}' +
             '{% if loop.last %}{{ i }}{% endif %}' +
@@ -413,15 +412,15 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             '6');
         });
 
-        it('should support loop.length', function(): void {
+        it('should support loop.length', (): void => {
           equal('{% ' + block + ' i in [7,3,6] %}{{ loop.length }}{% ' + end + ' %}', '333');
         });
 
-        it('should fail silently when looping over an undefined variable', function(): void {
+        it('should fail silently when looping over an undefined variable', (): void => {
           equal('{% ' + block + ' i in foo %}{{ i }}{% ' + end + ' %}', '');
         });
 
-        it('should fail silently when looping over an undefined property', function(): void {
+        it('should fail silently when looping over an undefined property', (): void => {
           equal(
             '{% ' + block + ' i in foo.bar %}{{ i }}{% ' + end + ' %}',
             { foo: {} },
@@ -429,27 +428,27 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
         });
         // TODO: this behavior differs from jinja2
 
-        it('should fail silently when looping over a null variable', function(): void {
+        it('should fail silently when looping over a null variable', (): void => {
           equal(
             '{% ' + block + ' i in foo %}{{ i }}{% ' + end + ' %}',
             { foo: null },
             '');
         });
 
-        it('should loop over two-dimensional arrays', function(): void {
+        it('should loop over two-dimensional arrays', (): void => {
           equal('{% ' + block + ' x, y in points %}[{{ x }},{{ y }}]{% ' + end + ' %}',
             { points: [[1, 2], [3, 4], [5, 6]] },
             '[1,2][3,4][5,6]');
         });
 
-        it('should loop over four-dimensional arrays', function(): void {
+        it('should loop over four-dimensional arrays', (): void => {
           equal(
             '{% ' + block + ' a, b, c, d in arr %}[{{ a }},{{ b }},{{ c }},{{ d }}]{% ' + end + '%}',
             { arr: [[1, 2, 3, 4], [5, 6, 7, 8]] },
             '[1,2,3,4][5,6,7,8]');
         });
 
-        it('should support loop.index with two-dimensional loops', function(): void {
+        it('should support loop.index with two-dimensional loops', (): void => {
           equal('{% ' + block + ' x, y in points %}{{ loop.index }}{% ' + end + ' %}',
             {
               points: [[1, 2], [3, 4], [5, 6]]
@@ -457,7 +456,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             '123');
         });
 
-        it('should support loop.revindex with two-dimensional loops', function(): void {
+        it('should support loop.revindex with two-dimensional loops', (): void => {
           equal('{% ' + block + ' x, y in points %}{{ loop.revindex }}{% ' + end + ' %}',
             {
               points: [[1, 2], [3, 4], [5, 6]]
@@ -465,7 +464,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             '321');
         });
 
-        it('should support key-value looping over an Object variable', function(): void {
+        it('should support key-value looping over an Object variable', (): void => {
           equal('{% ' + block + ' k, v in items %}({{ k }},{{ v }}){% ' + end + ' %}',
             {
               items: {
@@ -476,7 +475,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             '(foo,1)(bar,2)');
         });
 
-        it('should support loop.index when looping over an Object\'s key-value pairs', function(): void {
+        it('should support loop.index when looping over an Object\'s key-value pairs', (): void => {
           equal('{% ' + block + ' k, v in items %}{{ loop.index }}{% ' + end + ' %}',
             {
               items: {
@@ -487,7 +486,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             '12');
         });
 
-        it('should support loop.revindex when looping over an Object\'s key-value pairs', function(): void {
+        it('should support loop.revindex when looping over an Object\'s key-value pairs', (): void => {
           equal('{% ' + block + ' k, v in items %}{{ loop.revindex }}{% ' + end + ' %}',
             {
               items: {
@@ -498,7 +497,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             '21');
         });
 
-        it('should support loop.length when looping over an Object\'s key-value pairs', function(): void {
+        it('should support loop.length when looping over an Object\'s key-value pairs', (): void => {
           equal('{% ' + block + ' k, v in items %}{{ loop.length }}{% ' + end + ' %}',
             {
               items: {
@@ -509,7 +508,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             '22');
         });
 
-        it('should support include tags in the body of the loop', function(): void {
+        it('should support include tags in the body of the loop', (): void => {
           equal('{% ' + block + ' item, v in items %}{% include "item.njk" %}{% ' + end + ' %}',
             {
               items: {
@@ -520,7 +519,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             'showing fooshowing bar');
         });
 
-        it('should work with {% set %} and {% include %} tags', function(): void {
+        it('should work with {% set %} and {% include %} tags', (): void => {
           equal(
             '{% set item = passed_var %}' +
             '{% include "item.njk" %}\n' +
@@ -580,7 +579,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     runLoopTests('asyncAll');
 
 
-    it('should allow overriding var with none inside nested scope', function(done: (err?) => void): void {
+    it('should allow overriding var with none inside nested scope', (done: (err?) => void): void => {
       equal(
         '{% set var = "foo" %}' +
         '{% for i in [1] %}{% set var = none %}{{ var }}{% endfor %}',
@@ -597,12 +596,12 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
       } else {
         opts = {
           asyncFilters: {
-            getContents: function(tmpl, cb): void {
+            getContents: (tmpl, cb): void => {
               fs.readFile(tmpl, cb);
             },
 
-            getContentsArr: function(arr, cb): void {
-              fs.readFile(arr[0], function(err, res): void {
+            getContentsArr: (arr, cb): void => {
+              fs.readFile(arr[0], (err, res): void => {
                 cb(err, [res]);
               });
             }
@@ -614,7 +613,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             tmpl: 'tests/templates/for-async-content.njk'
           },
           opts,
-          function(err, res): void {
+            (err, res): void => {
             expect(res).to.be('somecontenthere');
           });
 
@@ -623,7 +622,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             tmpl: 'tests/templates/for-async-content.njk'
           },
           opts,
-          function(err, res): void {
+            (err, res): void => {
             expect(res).to.be('somecontenthere');
           });
 
@@ -632,7 +631,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             tmpl: 'tests/templates/for-async-content.njk'
           },
           opts,
-          function(err, res): void {
+            (err, res): void => {
             expect(res).to.be('yes');
           });
 
@@ -641,7 +640,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             tmpl: 'tests/templates/for-async-content.njk'
           },
           opts,
-          function(err, res): void {
+            (err, res): void => {
             expect(res).to.be('somecontenthere*somecontenthere*');
           });
 
@@ -650,7 +649,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             tmpl: 'tests/templates/for-async-content.njk'
           },
           opts,
-          function(err, res): void {
+            (err, res): void => {
             expect(res).to.be('somecontenthere');
           });
 
@@ -659,7 +658,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             tmpl: 'tests/templates/for-async-content.njk'
           },
           opts,
-          function(err, res): void {
+            (err, res): void => {
             expect(res).to.be('oof');
           });
 
@@ -671,7 +670,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             tmpl: 'tests/templates/for-async-content.njk'
           },
           opts,
-          function(err, res): void {
+            (err, res): void => {
             expect(res).to.be('somecontenthere*somecontenthere*');
           });
 
@@ -680,7 +679,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             tmpl: 'tests/templates/for-async-content.njk'
           },
           opts,
-          function(err, res): void {
+            (err, res): void => {
             expect(res).to.be('somecontenthere');
           });
 
@@ -689,7 +688,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             tmpl: 'tests/templates/for-async-content.njk'
           },
           opts,
-          function(err, res): void {
+            (err, res): void => {
             expect(res).to.be('hello somecontenthere');
           });
 
@@ -698,7 +697,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             tmpl: 'tests/templates/for-async-content.njk'
           },
           opts,
-          function(err, res): void {
+            (err, res): void => {
             expect(res).to.be('somecontenthere');
           });
 
@@ -707,7 +706,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             tmpl: 'tests/templates/for-async-content.njk'
           },
           opts,
-          function(err, res): void {
+            (err, res): void => {
             expect(res).to.be('somecontenthere\n');
           });
 
@@ -716,7 +715,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             tmpl: 'tests/templates/for-async-content.njk'
           },
           opts,
-          function(err, res): void {
+            (err, res): void => {
             expect(res).to.be('somecontenthere\nsomecontenthere\n');
           });
 
@@ -725,7 +724,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             tmpl: 'tests/templates/for-async-content.njk'
           },
           opts,
-          function(err, res): void {
+            (err, res): void => {
             expect(res).to.be('-0:somecontenthere\n-' +
               '-1:somecontenthere\n-' +
               '-2:somecontenthere\n-' +
@@ -738,32 +737,32 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile basic arithmetic operators', function(): void {
+    it('should compile basic arithmetic operators', (): void => {
       equal('{{ 3 + 4 - 5 * 6 / 10 }}', '4');
     });
 
 
-    it('should compile the exponentiation (**) operator', function(): void {
+    it('should compile the exponentiation (**) operator', (): void => {
       equal('{{ 4**5 }}', '1024');
     });
 
 
-    it('should compile the integer division (//) operator', function(): void {
+    it('should compile the integer division (//) operator', (): void => {
       equal('{{ 9//5 }}', '1');
     });
 
 
-    it('should compile the modulus operator', function(): void {
+    it('should compile the modulus operator', (): void => {
       equal('{{ 9%5 }}', '4');
     });
 
 
-    it('should compile numeric negation operator', function(): void {
+    it('should compile numeric negation operator', (): void => {
       equal('{{ -5 }}', '-5');
     });
 
 
-    it('should compile comparison operators', function(): void {
+    it('should compile comparison operators', (): void => {
       equal('{% if 3 < 4 %}yes{% endif %}', 'yes');
       equal('{% if 3 > 4 %}yes{% endif %}', '');
       equal('{% if 9 >= 10 %}yes{% endif %}', '');
@@ -783,16 +782,14 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
 
       equal('{% if foo(20) > bar %}yes{% endif %}',
         {
-          foo: function(n): number {
-            return n - 1;
-          },
+          foo: (n): number => n - 1,
           bar: 15
         },
         'yes');
     });
 
 
-    it('should compile python-style ternary operators', function(): void {
+    it('should compile python-style ternary operators', (): void => {
       equal('{{ "yes" if 1 is odd else "no"  }}', 'yes');
       equal('{{ "yes" if 2 is even else "no"  }}', 'yes');
       equal('{{ "yes" if 2 is odd else "no"  }}', 'no');
@@ -800,7 +797,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile the "in" operator for Arrays', function(): void {
+    it('should compile the "in" operator for Arrays', (): void => {
       equal('{% if 1 in [1, 2] %}yes{% endif %}', 'yes');
       equal('{% if 1 in [2, 3] %}yes{% endif %}', '');
       equal('{% if 1 not in [1, 2] %}yes{% endif %}', '');
@@ -811,7 +808,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile the "in" operator for objects', function(): void {
+    it('should compile the "in" operator for objects', (): void => {
       equal('{% if "a" in obj %}yes{% endif %}',
         { obj: { a: true } },
         'yes');
@@ -821,19 +818,19 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile the "in" operator for strings', function(): void {
+    it('should compile the "in" operator for strings', (): void => {
       equal('{% if "foo" in "foobar" %}yes{% endif %}', 'yes');
     });
 
 
-    it('should throw an error when using the "in" operator on unexpected types', function(done: (err?) => void): void {
+    it('should throw an error when using the "in" operator on unexpected types', (done: (err?) => void): void => {
       render(
         '{% if "a" in 1 %}yes{% endif %}',
         {},
         {
           noThrow: true
         },
-        function(err, res): void {
+          (err, res): void => {
           expect(res).to.be(undefined);
           expect(err).to.match(
             /Cannot use "in" operator to search for "a" in unexpected types\./
@@ -847,7 +844,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
         {
           noThrow: true
         },
-        function(err, res): void {
+          (err, res): void => {
           expect(res).to.be(undefined);
           expect(err).to.match(
             /Cannot use "in" operator to search for "a" in unexpected types\./
@@ -860,7 +857,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
 
     if (!isSlim) {
 
-      it('should throw exceptions when called synchronously', function(): void {
+      it('should throw exceptions when called synchronously', (): void => {
         const tmpl = new Template('{% from "doesnotexist" import foo %}');
 
         function templateRender(): void {
@@ -870,17 +867,17 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
       });
 
 
-      it('should include error line in raised TemplateError', function(done: (err?) => void): void {
+      it('should include error line in raised TemplateError', (done: (err?) => void): void => {
         const tmplStr: string = [
           '{% set items = ["a", "b",, "c"] %}',
           '{{ items | join(",") }}',
         ].join('\n');
 
         const loader = new Loader('tests/templates');
-        const env = new Environment(loader);
+        const env: Environment = new Environment(loader);
         const tmpl = new Template(tmplStr, env, 'parse-error.njk');
 
-        tmpl.render({}, function(err, res): void {
+        tmpl.render({}, (err, res): void => {
           expect(res).to.be(undefined);
           expect(err.toString()).to.match(/Template render error: \(parse-error\.njk\) \[Line 1, Column 26\]/);
           expect(err.toString()).to.match(/unexpected token: ,/);
@@ -896,7 +893,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
       });
 
 
-      it('should include error line when exception raised in user function', function(done: (err?) => void): void {
+      it('should include error line when exception raised in user function', (done: (err?) => void): void => {
         const tmplStr: string = [
           '{% block content %}',
           '<div>{{ foo() }}</div>',
@@ -909,7 +906,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
           throw new Error('ERROR');
         }
 
-        tmpl.render({foo: foo}, function(err, res): void {
+        tmpl.render({foo: foo}, (err, res): void => {
           expect(res).to.be(undefined);
           expect(err.toString()).to.be([
             'Template render error: (user-error.njk) [Line 1, Column 11]',
@@ -921,7 +918,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     }
 
 
-    it('should throw exceptions from included templates when called synchronously', function(): void {
+    it('should throw exceptions from included templates when called synchronously', (): void => {
       function templateRender(): void {
         render('{% include "broken-import.njk" %}', {str: 'abc'});
       }
@@ -929,12 +926,12 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should pass errors from included templates to callback when async', function(done: (err?) => void): void {
+    it('should pass errors from included templates to callback when async', (done: (err?) => void): void => {
       render(
         '{% include "broken-import.njk" %}',
         {str: 'abc'},
         {noThrow: true},
-        function(err, res): void {
+          (err, res): void => {
           expect(err).to.match(/template not found: doesnotexist/);
           expect(res).to.be(undefined);
           done();
@@ -942,7 +939,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile string concatenations with tilde', function(done: (err?) => void): void {
+    it('should compile string concatenations with tilde', (done: (err?) => void): void => {
       equal('{{ 4 ~ \'hello\' }}', '4hello');
       equal('{{ 4 ~ 5 }}', '45');
       equal('{{ \'a\' ~ \'b\' ~ 5 }}', 'ab5');
@@ -950,7 +947,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros', function(done: (err?) => void): void {
+    it('should compile macros', (done: (err?) => void): void => {
       equal(
         '{% macro foo() %}This is a macro{% endmacro %}' +
         '{{ foo() }}',
@@ -959,7 +956,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros with optional args', function(done: (err?) => void): void {
+    it('should compile macros with optional args', (done: (err?) => void): void => {
       equal(
         '{% macro foo(x, y) %}{{ y }}{% endmacro %}' +
         '{{ foo(1) }}',
@@ -968,7 +965,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros with args that can be passed to filters', function(done: (err?) => void): void {
+    it('should compile macros with args that can be passed to filters', (done: (err?) => void): void => {
       equal(
         '{% macro foo(x) %}{{ x|title }}{% endmacro %}' +
         '{{ foo("foo") }}',
@@ -977,7 +974,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros with positional args', function(done: (err?) => void): void {
+    it('should compile macros with positional args', (done: (err?) => void): void => {
       equal(
         '{% macro foo(x, y) %}{{ y }}{% endmacro %}' +
         '{{ foo(1, 2) }}',
@@ -986,7 +983,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros with arg defaults', function(done: (err?) => void): void {
+    it('should compile macros with arg defaults', (done: (err?) => void): void => {
       equal(
         '{% macro foo(x, y, z=5) %}{{ y }}{% endmacro %}' +
         '{{ foo(1, 2) }}',
@@ -999,7 +996,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros with keyword args', function(done: (err?) => void): void {
+    it('should compile macros with keyword args', (done: (err?) => void): void => {
       equal(
         '{% macro foo(x, y, z=5) %}{{ y }}{% endmacro %}' +
         '{{ foo(1, y=2) }}',
@@ -1008,7 +1005,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros with only keyword args', function(done: (err?) => void): void {
+    it('should compile macros with only keyword args', (done: (err?) => void): void => {
       equal(
         '{% macro foo(x, y, z=5) %}{{ x }}{{ y }}{{ z }}' +
         '{% endmacro %}' +
@@ -1018,7 +1015,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros with keyword args overriding defaults', function(done: (err?) => void): void {
+    it('should compile macros with keyword args overriding defaults', (done: (err?) => void): void => {
       equal(
         '{% macro foo(x, y, z=5) %}{{ x }}{{ y }}{{ z }}' +
         '{% endmacro %}' +
@@ -1028,7 +1025,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros with out-of-order keyword args', function(done: (err?) => void): void {
+    it('should compile macros with out-of-order keyword args', (done: (err?) => void): void => {
       equal(
         '{% macro foo(x, y=2, z=5) %}{{ x }}{{ y }}{{ z }}' +
         '{% endmacro %}' +
@@ -1038,7 +1035,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros', function(done: (err?) => void): void {
+    it('should compile macros', (done: (err?) => void): void => {
       equal(
         '{% macro foo(x, y=2, z=5) %}{{ x }}{{ y }}{{ z }}' +
         '{% endmacro %}' +
@@ -1048,7 +1045,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros with multiple overridden arg defaults', function(done: (err?) => void): void {
+    it('should compile macros with multiple overridden arg defaults', (done: (err?) => void): void => {
       equal(
         '{% macro foo(x, y=2, z=5) %}{{ x }}{{ y }}{{ z }}' +
         '{% endmacro %}' +
@@ -1058,7 +1055,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macro calls inside blocks', function(done: (err?) => void): void {
+    it('should compile macro calls inside blocks', (done: (err?) => void): void => {
       equal(
         '{% extends "base.njk" %}' +
         '{% macro foo(x, y=2, z=5) %}{{ x }}{{ y }}{{ z }}' +
@@ -1071,7 +1068,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros defined in one block and called in another', function(done: (err?) => void): void {
+    it('should compile macros defined in one block and called in another', (done: (err?) => void): void => {
       equal(
         '{% block bar %}' +
         '{% macro foo(x, y=2, z=5) %}{{ x }}{{ y }}{{ z }}' +
@@ -1085,7 +1082,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros that include other templates', function(done: (err?) => void): void {
+    it('should compile macros that include other templates', (done: (err?) => void): void => {
       equal(
         '{% macro foo() %}{% include "include.njk" %}{% endmacro %}' +
         '{{ foo() }}',
@@ -1097,7 +1094,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros that set vars', function(done: (err?) => void): void {
+    it('should compile macros that set vars', (done: (err?) => void): void => {
       equal(
         '{% macro foo() %}{% set x = "foo"%}{{ x }}{% endmacro %}' +
         '{% set x = "bar" %}' +
@@ -1110,7 +1107,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should not leak variables set in macro to calling scope', function(done: (err?) => void): void {
+    it('should not leak variables set in macro to calling scope', (done: (err?) => void): void => {
       equal(
         '{% macro setFoo() %}' +
         '{% set x = "foo" %}' +
@@ -1128,7 +1125,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should not leak variables set in nested scope within macro out to calling scope', function(done: (err?) => void): void {
+    it('should not leak variables set in nested scope within macro out to calling scope', (done: (err?) => void): void => {
       equal(
         '{% macro setFoo() %}' +
         '{% for y in [1] %}{% set x = "foo" %}{{ x }}{% endfor %}' +
@@ -1146,7 +1143,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
 
 
 
-    it('should compile macros without leaking set to calling scope', function(done: (err?) => void): void {
+    it('should compile macros without leaking set to calling scope', (done: (err?) => void): void => {
       // This test checks that the issue #577 is resolved.
       // If the bug is not fixed, and set variables leak into the
       // caller scope, there will be too many "foo"s here ("foofoofoo"),
@@ -1171,7 +1168,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile macros that cannot see variables in caller scope', function(done: (err?) => void): void {
+    it('should compile macros that cannot see variables in caller scope', (done: (err?) => void): void => {
       equal(
         '{% macro one(var) %}{{ two() }}{% endmacro %}' +
         '{% macro two() %}{{ var }}{% endmacro %}' +
@@ -1181,7 +1178,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile call blocks', function(done: (err?) => void): void {
+    it('should compile call blocks', (done: (err?) => void): void => {
       equal(
         '{% macro wrap(el) %}' +
         '<{{ el }}>{{ caller() }}</{{ el }}>' +
@@ -1193,7 +1190,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile call blocks with args', function(done: (err?) => void): void {
+    it('should compile call blocks with args', (done: (err?) => void): void => {
       equal(
         '{% macro list(items) %}' +
         '<ul>{% for i in items %}' +
@@ -1207,7 +1204,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile call blocks using imported macros', function(done: (err?) => void): void {
+    it('should compile call blocks using imported macros', (done: (err?) => void): void => {
       equal(
         '{% import "import.njk" as imp %}' +
         '{% call imp.wrap("span") %}Hey{% endcall %}',
@@ -1216,7 +1213,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should import templates', function(done: (err?) => void): void {
+    it('should import templates', (done: (err?) => void): void => {
       equal(
         '{% import "import.njk" as imp %}' +
         '{{ imp.foo() }} {{ imp.bar }}',
@@ -1243,7 +1240,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should import templates with context', function(done: (err?) => void): void {
+    it('should import templates with context', (done: (err?) => void): void => {
       equal(
         '{% set bar = "BAR" %}' +
         '{% import "import-context.njk" as imp with context %}' +
@@ -1284,7 +1281,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should import templates without context', function(done: (err?) => void): void {
+    it('should import templates without context', (done: (err?) => void): void => {
       equal(
         '{% set bar = "BAR" %}' +
         '{% import "import-context.njk" as imp without context %}' +
@@ -1301,7 +1298,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should default to importing without context', function(done: (err?) => void): void {
+    it('should default to importing without context', (done: (err?) => void): void => {
       equal(
         '{% set bar = "BAR" %}' +
         '{% import "import-context.njk" as imp %}' +
@@ -1318,7 +1315,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should inherit templates', function(done: (err?) => void): void {
+    it('should inherit templates', (done: (err?) => void): void => {
       equal('{% extends "base.njk" %}', 'FooBarBazFizzle');
       equal('hola {% extends "base.njk" %} hizzle mumble', 'FooBarBazFizzle');
 
@@ -1338,13 +1335,13 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
       finish(done);
     });
 
-    it('should not call blocks not defined from template inheritance', function(done: (err?) => void): void {
+    it('should not call blocks not defined from template inheritance', (done: (err?) => void): void => {
       let count: number = 0;
       render(
         '{% extends "base.njk" %}' +
         '{% block notReal %}{{ foo() }}{% endblock %}',
-        { foo: function(): void { count++; } },
-        function(): void {
+        { foo: (): void => { count++; }},
+          (): void => {
           expect(count).to.be(0);
         });
 
@@ -1352,7 +1349,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should conditionally inherit templates', function(done: (err?) => void): void {
+    it('should conditionally inherit templates', (done: (err?) => void): void => {
       equal(
         '{% if false %}{% extends "base.njk" %}{% endif %}' +
         '{% block block1 %}BAR{% endblock %}',
@@ -1385,8 +1382,8 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should error if same block is defined multiple times', function(done: (err?) => void): void {
-      const func: () => void = function(): void {
+    it('should error if same block is defined multiple times', (done: (err?) => void): void => {
+      const func: () => void = (): void => {
         render(
             '{% extends "simple-base.njk" %}' +
             '{% block test %}{% endblock %}' +
@@ -1399,7 +1396,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should render nested blocks in child template', function(done: (err?) => void): void {
+    it('should render nested blocks in child template', (done: (err?) => void): void => {
       equal(
         '{% extends "base.njk" %}' +
         '{% block block1 %}{% block nested %}BAR{% endblock %}{% endblock %}',
@@ -1409,7 +1406,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should render parent blocks with super()', function(done: (err?) => void): void {
+    it('should render parent blocks with super()', (done: (err?) => void): void => {
       equal(
         '{% extends "base.njk" %}' +
         '{% block block1 %}{{ super() }}BAR{% endblock %}',
@@ -1425,7 +1422,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should let super() see global vars from child template', function(done: (err?) => void): void {
+    it('should let super() see global vars from child template', (done: (err?) => void): void => {
       equal(
         '{% extends "base-show.njk" %}{% set var = "child" %}' +
         '{% block main %}{{ super() }}{% endblock %}',
@@ -1435,7 +1432,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should not let super() see vars from child block', function(done: (err?) => void): void {
+    it('should not let super() see vars from child block', (done: (err?) => void): void => {
       equal(
         '{% extends "base-show.njk" %}' +
         '{% block main %}{% set var = "child" %}{{ super() }}{% endblock %}',
@@ -1445,7 +1442,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should let child templates access parent global scope', function(done: (err?) => void): void {
+    it('should let child templates access parent global scope', (done: (err?) => void): void => {
       equal(
         '{% extends "base-set.njk" %}' +
         '{% block main %}{{ var }}{% endblock %}',
@@ -1455,7 +1452,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should not let super() modify calling scope', function(done: (err?) => void): void {
+    it('should not let super() modify calling scope', (done: (err?) => void): void => {
       equal(
         '{% extends "base-set-inside-block.njk" %}' +
         '{% block main %}{{ super() }}{{ var }}{% endblock %}',
@@ -1465,7 +1462,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should not let child templates set vars in parent scope', function(done: (err?) => void): void {
+    it('should not let child templates set vars in parent scope', (done: (err?) => void): void => {
       equal(
         '{% extends "base-set-and-show.njk" %}' +
         '{% block main %}{% set var = "child" %}{% endblock %}',
@@ -1475,7 +1472,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should render blocks in their own scope', function(done: (err?) => void): void {
+    it('should render blocks in their own scope', (done: (err?) => void): void => {
       equal(
         '{% set var = "parent" %}' +
         '{% block main %}{% set var = "inner" %}{% endblock %}' +
@@ -1486,21 +1483,21 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should include templates', function(done: (err?) => void): void {
+    it('should include templates', (done: (err?) => void): void => {
       equal('hello world {% include "include.njk" %}',
         'hello world FooInclude ');
       finish(done);
     });
 
 
-    it('should include 130 templates without call stack size exceed', function(done: (err?) => void): void {
+    it('should include 130 templates without call stack size exceed', (done: (err?) => void): void => {
       equal('{% include "includeMany.njk" %}',
         new Array(131).join('FooInclude \n'));
       finish(done);
     });
 
 
-    it('should include templates with context', function(done: (err?) => void): void {
+    it('should include templates with context', (done: (err?) => void): void => {
       equal('hello world {% include "include.njk" %}',
         {
           name: 'james'
@@ -1510,13 +1507,13 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should include templates that can see including scope, but not write to it', function(done: (err?) => void): void {
+    it('should include templates that can see including scope, but not write to it', (done: (err?) => void): void => {
       equal('{% set var = 1 %}{% include "include-set.njk" %}{{ var }}', '12\n1');
       finish(done);
     });
 
 
-    it('should include templates dynamically', function(done: (err?) => void): void {
+    it('should include templates dynamically', (done: (err?) => void): void => {
       equal('hello world {% include tmpl %}',
         {
           name: 'thedude',
@@ -1527,7 +1524,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should include templates dynamically based on a set var', function(done: (err?) => void): void {
+    it('should include templates dynamically based on a set var', (done: (err?) => void): void => {
       equal('hello world {% set tmpl = "include.njk" %}{% include tmpl %}',
         {
           name: 'thedude'
@@ -1537,7 +1534,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should include templates dynamically based on an object attr', function(done: (err?) => void): void {
+    it('should include templates dynamically based on an object attr', (done: (err?) => void): void => {
       equal('hello world {% include data.tmpl %}',
         {
           name: 'thedude',
@@ -1551,14 +1548,14 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should throw an error when including a file that does not exist', function(done: (err?) => void): void {
+    it('should throw an error when including a file that does not exist', (done: (err?) => void): void => {
       render(
         '{% include "missing.njk" %}',
         {},
         {
           noThrow: true
         },
-        function(err, res): void {
+          (err, res): void => {
           expect(res).to.be(undefined);
           expect(err).to.match(/template not found: missing.njk/);
         }
@@ -1568,7 +1565,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should fail silently on missing templates if requested', function(done: (err?) => void): void {
+    it('should fail silently on missing templates if requested', (done: (err?) => void): void => {
       equal('hello world {% include "missing.njk" ignore missing %}',
         'hello world ');
 
@@ -1585,7 +1582,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
      * This test checks that this issue is resolved: http://stackoverflow.com/questions/21777058/loop-index-in-included-nunjucks-file
      */
 
-    it('should have access to "loop" inside an include', function(done: (err?) => void): void {
+    it('should have access to "loop" inside an include', (done: (err?) => void): void => {
       equal('{% for item in [1,2,3] %}{% include "include-in-loop.njk" %}{% endfor %}',
         '1,0,true\n2,1,false\n3,2,false\n');
 
@@ -1602,7 +1599,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should maintain nested scopes', function(done: (err?) => void): void {
+    it('should maintain nested scopes', (done: (err?) => void): void => {
       equal(
         '{% for i in [1,2] %}' +
         '{% for i in [3,4] %}{{ i }}{% endfor %}' +
@@ -1613,7 +1610,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should allow blocks in for loops', function(done: (err?) => void): void {
+    it('should allow blocks in for loops', (done: (err?) => void): void => {
       equal(
         '{% extends "base2.njk" %}' +
         '{% block item %}hello{{ item }}{% endblock %}',
@@ -1623,7 +1620,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should make includes inherit scope', function(done: (err?) => void): void {
+    it('should make includes inherit scope', (done: (err?) => void): void => {
       equal(
         '{% for item in [1,2] %}' +
         '{% include "item.njk" %}' +
@@ -1634,7 +1631,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile a set block', function(done: (err?) => void): void {
+    it('should compile a set block', (done: (err?) => void): void => {
       equal('{% set username = "foo" %}{{ username }}',
         {
           username: 'james'
@@ -1700,7 +1697,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile set with frame references', function(done: (err?) => void): void {
+    it('should compile set with frame references', (done: (err?) => void): void => {
       equal('{% set username = user.name %}{{ username }}',
         {
           user: {
@@ -1713,7 +1710,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile set assignments of the same variable', function(done: (err?) => void): void {
+    it('should compile set assignments of the same variable', (done: (err?) => void): void => {
       equal(
         '{% set x = "hello" %}' +
         '{% if false %}{% set x = "world" %}{% endif %}' +
@@ -1730,7 +1727,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile block-set', function(done: (err?) => void): void {
+    it('should compile block-set', (done: (err?) => void): void => {
       equal(
         '{% set block_content %}{% endset %}' +
         '{{ block_content }}',
@@ -1795,7 +1792,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should compile block-set wrapping an inherited block', function(done: (err?) => void): void {
+    it('should compile block-set wrapping an inherited block', (done: (err?) => void): void => {
       equal(
         '{% extends "base-set-wraps-block.njk" %}' +
         '{% block somevar %}foo{% endblock %}',
@@ -1805,13 +1802,13 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should throw errors', function(done: (err?) => void): void {
+    it('should throw errors', (done: (err?) => void): void => {
       render('{% from "import.njk" import boozle %}',
         {},
         {
           noThrow: true
         },
-        function(err): void {
+          (err): void => {
           expect(err).to.match(/cannot import 'boozle'/);
         });
 
@@ -1819,37 +1816,16 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should allow custom tag compilation', function(done: (err?) => void): void {
-      function TestExtension(): void {
-        this.tags = ['test'];
-
-        this.parse = function(parser, nodes) {
-          let content;
-          let tag;
-          parser.advanceAfterBlockEnd();
-
-          content = parser.parseUntilBlocks('endtest');
-          tag = new CallExtension(this, 'run', null, [content]);
-          parser.advanceAfterBlockEnd();
-
-          return tag;
-        };
-
-        this.run = function(context, content) {
-          // Reverse the string
-          return content().split('').reverse().join('');
-        };
-      }
-
+    it('should allow custom tag compilation', (done: (err?) => void): void => {
       equal('{% test %}123456789{% endtest %}', null,
-        { extensions: { TestExtension: new TestExtension() } },
+        { extensions: { TestExtension: new ShouldAllowCustomTagCompilationExtension() } },
         '987654321');
 
       finish(done);
     });
 
 
-    it('should allow custom tag compilation without content', function(done: (err?) => void): void {
+    it('should allow custom tag compilation without content', (done: (err?) => void): void => {
       function TestExtension(): void {
         // jshint validthis: true
         this.tags = ['test'];
@@ -1862,7 +1838,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
           return new CallExtension(this, 'run', args, null);
         };
 
-        this.run = function(context, arg1) {
+        this.run = (context, arg1) => {
           // Reverse the string
           return arg1.split('').reverse().join('');
         };
@@ -1876,103 +1852,61 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should allow complicated custom tag compilation', function(done: (err?) => void): void {
-      function TestExtension(): void {
-        // jshint validthis: true
-        this.tags = ['test'];
-
-        /* normally this is automatically done by Environment */
-        this._name = TestExtension;
-
-        this.parse = function(parser, nodes, lexer) {
-          let body;
-          let intermediate = null;
-
-          parser.advanceAfterBlockEnd();
-
-          body = parser.parseUntilBlocks('intermediate', 'endtest');
-
-          if (parser.skipSymbol('intermediate')) {
-            parser.skip(TokenType.TOKEN_BLOCK_END);
-            intermediate = parser.parseUntilBlocks('endtest');
-          }
-
-          parser.advanceAfterBlockEnd();
-
-          return new CallExtension(this, 'run', null, [body, intermediate]);
-        };
-
-        this.run = function(context, body, intermediate) {
-          let output = body().split('').join(',');
-          if (intermediate) {
-            // Reverse the string.
-            output += intermediate().split('').reverse().join('');
-          }
-          return output;
-        };
-      }
+    it('should allow complicated custom tag compilation', (done: (err?) => void): void => {
+      // function TestExtension(): void {
+      //   // jshint validthis: true
+      //   this.tags = ['test'];
+      //
+      //   /* normally this is automatically done by Environment */
+      //   this._name = TestExtension;
+      //
+      //   this.parse = function(parser, nodes, lexer) {
+      //     let body;
+      //     let intermediate = null;
+      //
+      //     parser.advanceAfterBlockEnd();
+      //
+      //     body = parser.parseUntilBlocks('intermediate', 'endtest');
+      //
+      //     if (parser.skipSymbol('intermediate')) {
+      //       parser.skip(TokenType.TOKEN_BLOCK_END);
+      //       intermediate = parser.parseUntilBlocks('endtest');
+      //     }
+      //
+      //     parser.advanceAfterBlockEnd();
+      //
+      //     return new CallExtension(this, 'run', null, [body, intermediate]);
+      //   };
+      //
+      //   this.run = function(context, body, intermediate) {
+      //     let output = body().split('').join(',');
+      //     if (intermediate) {
+      //       // Reverse the string.
+      //       output += intermediate().split('').reverse().join('');
+      //     }
+      //     return output;
+      //   };
+      // }
 
       equal('{% test %}abcdefg{% endtest %}', null,
-        { extensions: { TestExtension: new TestExtension() } },
+        { extensions: { TestExtension: new ShouldAllowComplicatedCustomTagCompilationExtension() } },
         'a,b,c,d,e,f,g');
 
       equal('{% test %}abcdefg{% intermediate %}second half{% endtest %}',
         null,
-        { extensions: { TestExtension: new TestExtension() } },
+        { extensions: { TestExtension: new ShouldAllowComplicatedCustomTagCompilationExtension() } },
         'a,b,c,d,e,f,gflah dnoces');
 
       finish(done);
     });
 
 
-    it('should allow custom tag with args compilation', function(done: (err?) => void): void {
+    it('should allow custom tag with args compilation', (done: (err?) => void): void => {
       let opts;
-
-      function TestExtension(): void {
-        // jshint validthis: true
-        this.tags = ['test'];
-
-        /* normally this is automatically done by Environment */
-        this._name = TestExtension;
-
-        this.parse = function(parser: Parser, nodes) {
-          let body;
-          let args;
-          const tok = parser.parserTokenStream.nextToken();
-
-          // passing true makes it tolerate when no args exist
-          args = parser.parseSignature(true);
-          parser.advanceAfterBlockEnd(tok.value);
-
-          body = parser.parseUntilBlocks('endtest');
-          parser.advanceAfterBlockEnd();
-
-          return new CallExtension(this, 'run', args, [body]);
-        };
-
-        this.run = function(context, prefix, kwargs, body) {
-          let output;
-          if (typeof prefix === 'function') {
-            body = prefix;
-            prefix = '';
-            kwargs = {};
-          } else if (typeof kwargs === 'function') {
-            body = kwargs;
-            kwargs = {};
-          }
-
-          output = prefix + body().split('').reverse().join('');
-          if (kwargs.cutoff) {
-            output = output.slice(0, kwargs.cutoff);
-          }
-
-          return output;
-        };
-      }
 
       opts = {
         extensions: {
-          TestExtension: new TestExtension()
+          TestExtension: new ShouldAllowCustomTagWithArgsCompilationExtension()
         }
       };
 
@@ -1992,7 +1926,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should autoescape by default', function(done: (err?) => void): void {
+    it('should autoescape by default', (done: (err?) => void): void => {
       equal('{{ foo }}', {
         foo: '"\'<>&'
       }, '&quot;&#39;&lt;&gt;&amp;');
@@ -2000,7 +1934,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should autoescape if autoescape is on', function(done: (err?) => void): void {
+    it('should autoescape if autoescape is on', (done: (err?) => void): void => {
       equal(
         '{{ foo }}',
         { foo: '"\'<>&' },
@@ -2032,7 +1966,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
 
       equal(
         '{{ foo }}',
-        { foo: { toString: function(): string { return '<p>foo</p>'; } } },
+        { foo: { toString: (): string => '<p>foo</p>'} },
         { autoescape: true },
         '&lt;p&gt;foo&lt;/p&gt;');
 
@@ -2055,7 +1989,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
 
       equal(
         '{{ foo | safe }}',
-        { foo: { toString: function(): string { return '<p>foo</p>'; } } },
+        { foo: { toString: (): string => '<p>foo</p>'} },
         { autoescape: true },
         '<p>foo</p>');
 
@@ -2063,7 +1997,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should not autoescape safe strings', function(done: (err?) => void): void {
+    it('should not autoescape safe strings', (done: (err?) => void): void => {
       equal(
         '{{ foo|safe }}',
         { foo: '"\'<>&' },
@@ -2074,7 +2008,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should not autoescape macros', function(done: (err?) => void): void {
+    it('should not autoescape macros', (done: (err?) => void): void => {
       render(
         '{% macro foo(x, y) %}{{ x }} and {{ y }}{% endmacro %}' +
         '{{ foo("<>&", "<>") }}',
@@ -2082,7 +2016,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
         {
           autoescape: true
         },
-        function(err, res): void {
+          (err, res): void => {
           expect(res).to.be('&lt;&gt;&amp; and &lt;&gt;');
         }
       );
@@ -2094,7 +2028,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
         {
           autoescape: true
         },
-        function(err, res): void {
+          (err, res): void => {
           expect(res).to.be('<>& and &lt;&gt;');
         }
       );
@@ -2103,7 +2037,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should not autoescape super()', function(done: (err?) => void): void {
+    it('should not autoescape super()', (done: (err?) => void): void => {
       render(
         '{% extends "base3.njk" %}' +
         '{% block block1 %}{{ super() }}{% endblock %}',
@@ -2111,7 +2045,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
         {
           autoescape: true
         },
-        function(err, res): void {
+          (err, res): void => {
           expect(res).to.be('<b>Foo</b>');
         }
       );
@@ -2120,7 +2054,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should not autoescape when extension set false', function(done: (err?) => void): void {
+    it('should not autoescape when extension set false', (done: (err?) => void): void => {
       function TestExtension(): void {
         // jshint validthis: true
         this.tags = ['test'];
@@ -2134,7 +2068,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
           return new CallExtension(this, 'run', args, null);
         };
 
-        this.run = function(): string {
+        this.run = (): string => {
           // Reverse the string
           return '<b>Foo</b>';
         };
@@ -2147,7 +2081,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
           extensions: { TestExtension: new TestExtension() },
           autoescape: true
         },
-        function(err, res): void {
+          (err, res): void => {
           expect(res).to.be('<b>Foo</b>');
         }
       );
@@ -2156,7 +2090,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should pass context as this to filters', function(done: (err?) => void): void {
+    it('should pass context as this to filters', (done: (err?) => void): void => {
       render(
         '{{ foo | hallo }}',
         { foo: 1, bar: 2 },
@@ -2167,7 +2101,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
             }
           }
         },
-        function(err, res): void {
+          (err, res): void => {
           expect(res).to.be('3');
         }
       );
@@ -2176,7 +2110,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should render regexs', function(done: (err?) => void): void {
+    it('should render regexs', (done: (err?) => void): void => {
       equal('{{ r/name [0-9] \\// }}',
         '/name [0-9] \\//');
 
@@ -2187,12 +2121,12 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should throw an error when {% call %} is passed an object that is not a function', function(done: (err?) => void): void {
+    it('should throw an error when {% call %} is passed an object that is not a function', (done: (err?) => void): void => {
       render(
         '{% call foo() %}{% endcall %}',
         {foo: 'bar'},
         {noThrow: true},
-        function(err, res): void {
+          (err, res): void => {
           expect(res).to.be(undefined);
           expect(err).to.match(/Unable to call `\w+`, which is not a function/);
         });
@@ -2201,14 +2135,14 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should throw an error when including a file that calls an undefined macro', function(done: (err?) => void): void {
+    it('should throw an error when including a file that calls an undefined macro', (done: (err?) => void): void => {
       render(
         '{% include "undefined-macro.njk" %}',
         {},
         {
           noThrow: true
         },
-        function(err, res): void {
+          (err, res): void => {
           expect(res).to.be(undefined);
           expect(err).to.match(/Unable to call `\w+`, which is undefined or falsey/);
         }
@@ -2218,14 +2152,14 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should throw an error when including a file that calls an undefined macro even inside {% if %} tag', function(done: (err?) => void): void {
+    it('should throw an error when including a file that calls an undefined macro even inside {% if %} tag', (done: (err?) => void): void => {
       render(
         '{% if true %}{% include "undefined-macro.njk" %}{% endif %}',
         {},
         {
           noThrow: true
         },
-        function(err, res): void {
+          (err, res): void => {
           expect(res).to.be(undefined);
           expect(err).to.match(/Unable to call `\w+`, which is undefined or falsey/);
         }
@@ -2235,12 +2169,12 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should throw an error when including a file that imports macro that calls an undefined macro', function(done: (err?) => void): void {
+    it('should throw an error when including a file that imports macro that calls an undefined macro', (done: (err?) => void): void => {
       render(
         '{% include "import-macro-call-undefined-macro.njk" %}',
         { list: [1, 2, 3] },
         { noThrow: true },
-        function(err, res): void {
+          (err, res): void => {
           expect(res).to.be(undefined);
           expect(err).to.match(/Unable to call `\w+`, which is undefined or falsey/);
         }
@@ -2251,7 +2185,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
 
 
 
-    it('should control whitespaces correctly', function(done: (err?) => void): void {
+    it('should control whitespaces correctly', (done: (err?) => void): void => {
       equal(
         '{% if true -%}{{"hello"}} {{"world"}}{% endif %}',
         'hello world');
@@ -2269,7 +2203,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should control expression whitespaces correctly', function(done: (err?) => void): void {
+    it('should control expression whitespaces correctly', (done: (err?) => void): void => {
       equal(
         'Well, {{- \' hello, \' -}} my friend',
         'Well, hello, my friend'
@@ -2287,7 +2221,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should get right value when macro parameter conflict with global macro name', function(done: (err?) => void): void {
+    it('should get right value when macro parameter conflict with global macro name', (done: (err?) => void): void => {
       render(
         '{# macro1 and macro2 definition #}' +
         '{% macro macro1() %}' +
@@ -2298,7 +2232,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
         '{% endmacro %}' +
         '' +
         '{# calling macro2 #}' +
-        '{{macro2("this should be outputted") }}', {}, {}, function(err, res): void {
+        '{{macro2("this should be outputted") }}', {}, {}, (err, res): void => {
           expect(res.trim()).to.eql('this should be outputted');
         });
 
@@ -2306,7 +2240,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should get right value when macro include macro', function(done: (err?) => void): void {
+    it('should get right value when macro include macro', (done: (err?) => void): void => {
       render(
         '{# macro1 and macro2 definition #}' +
         '{% macro macro1() %} foo' +
@@ -2317,7 +2251,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
         '{% endmacro %}' +
         '' +
         '{# calling macro2 #}' +
-        '{{macro2("this should not be outputted") }}', {}, {}, function(err, res): void {
+        '{{macro2("this should not be outputted") }}', {}, {}, (err, res): void => {
           expect(res.trim()).to.eql('foo');
         });
 
@@ -2325,7 +2259,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should allow access to outer scope in call blocks', function(done: (err?) => void): void {
+    it('should allow access to outer scope in call blocks', (done: (err?) => void): void => {
       render(
         '{% macro inside() %}' +
         '{{ caller() }}' +
@@ -2336,7 +2270,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
         '{{ var }}' +
         '{% endcall %}' +
         '{% endmacro %}' +
-        '{{ outside("foobar") }}', {}, {}, function(err, res): void {
+        '{{ outside("foobar") }}', {}, {}, (err, res): void => {
           expect(res.trim()).to.eql('foobar\nfoobar');
         });
 
@@ -2344,7 +2278,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
     });
 
 
-    it('should not leak scope from call blocks to parent', function(done: (err?) => void): void {
+    it('should not leak scope from call blocks to parent', (done: (err?) => void): void => {
       render(
         '{% set var = "expected" %}' +
         '{% macro inside() %}' +
@@ -2356,7 +2290,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
         '{% endcall %}' +
         '{% endmacro %}' +
         '{{ outside() }}' +
-        '{{ var }}', {}, {}, function(err, res): void {
+        '{{ var }}', {}, {}, (err, res): void => {
           expect(res.trim()).to.eql('expected');
         });
 
@@ -2366,7 +2300,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
 
     if (!isSlim) {
 
-      it('should import template objects', function(done: (err?) => void): void {
+      it('should import template objects', (done: (err?) => void): void => {
         const tmpl = new Template('{% macro foo() %}Inside a macro{% endmacro %}' +
             '{% set bar = "BAZ" %}');
 
@@ -2390,7 +2324,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
       });
 
 
-      it('should inherit template objects', function(done: (err?) => void): void {
+      it('should inherit template objects', (done: (err?) => void): void => {
         const tmpl = new Template('Foo{% block block1 %}Bar{% endblock %}' +
             '{% block block2 %}Baz{% endblock %}Whizzle');
 
@@ -2413,7 +2347,7 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
       });
 
 
-      it('should include template objects', function(done: (err?) => void): void {
+      it('should include template objects', (done: (err?) => void): void => {
         const tmpl = new Template('FooInclude {{ name }}');
 
         equal('hello world {% include tmpl %}',
@@ -2427,14 +2361,14 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
       });
 
 
-      it('should throw an error when invalid expression whitespaces are used', function(done: (err?) => void): void {
+      it('should throw an error when invalid expression whitespaces are used', (done: (err?) => void): void => {
         render(
           ' {{ 2 + 2- }}',
           {},
           {
             noThrow: true
           },
-          function(err, res): void {
+            (err, res): void => {
             expect(res).to.be(undefined);
             expect(err).to.match(/unexpected token: }}/);
           }
@@ -2446,30 +2380,29 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
   });
 
 
-  describe('the filter tag', function(): void {
-
-    it('should apply the title filter to the body', function(done: (err?) => void): void {
+  describe('the filter tag', (): void => {
+    it('should apply the title filter to the body', (done: (err?) => void): void => {
       equal('{% filter title %}may the force be with you{% endfilter %}',
         'May The Force Be With You');
       finish(done);
     });
 
 
-    it('should apply the replace filter to the body', function(done: (err?) => void): void {
+    it('should apply the replace filter to the body', (done: (err?) => void): void => {
       equal('{% filter replace("force", "forth") %}may the force be with you{% endfilter %}',
         'may the forth be with you');
       finish(done);
     });
 
 
-    it('should work with variables in the body', function(done: (err?) => void): void {
+    it('should work with variables in the body', (done: (err?) => void): void => {
       equal('{% set foo = "force" %}{% filter replace("force", "forth") %}may the {{ foo }} be with you{% endfilter %}',
         'may the forth be with you');
       finish(done);
     });
 
 
-    it('should work with blocks in the body', function(done: (err?) => void): void {
+    it('should work with blocks in the body', (done: (err?) => void): void => {
       equal(
         '{% extends "filter-block.html" %}' +
         '{% block block1 %}force{% endblock %}',
@@ -2477,4 +2410,108 @@ import { TokenType } from '../nunjucks/src/lexer/tokenType';
       finish(done);
     });
   });
-}());
+})());
+
+
+
+class ShouldAllowCustomTagWithArgsCompilationExtension implements IExtension {
+  readonly tags: string[] = ['test'];
+  readonly _name: Function = this.constructor;
+
+
+  public parse(parser: Parser, nodes) {
+    let body;
+    let args;
+    const tok = parser.parserTokenStream.nextToken();
+
+    // passing true makes it tolerate when no args exist
+    args = parser.parseSignature(true);
+    parser.advanceAfterBlockEnd(tok.value);
+
+    body = parser.parseUntilBlocks('endtest');
+    parser.advanceAfterBlockEnd();
+
+    return new CallExtension(this, 'run', args, [body]);
+  }
+
+
+  public run(context: any, prefix: string | (() => string), kwargs: { cutoff?: any; } | (() => string), body: () => string): string {
+    let output;
+    if (typeof prefix === 'function') {
+      body = prefix;
+      kwargs = {};
+      prefix = '';
+    } else if (typeof kwargs === 'function') {
+      body = kwargs;
+      kwargs = {};
+    }
+
+    output = prefix + body().split('').reverse().join('');
+    if (kwargs.cutoff) {
+      output = output.slice(0, kwargs.cutoff);
+    }
+
+    return output;
+  }
+}
+
+
+
+class ShouldAllowComplicatedCustomTagCompilationExtension implements IExtension {
+  readonly tags: string[] = ['test'];
+  readonly _name: Function = this.constructor;
+
+
+  public parse(parser, nodes, lexer): CallExtension {
+    let body;
+    let intermediate = null;
+
+    parser.advanceAfterBlockEnd();
+
+    body = parser.parseUntilBlocks('intermediate', 'endtest');
+
+    if (parser.skipSymbol('intermediate')) {
+      parser.skip(TokenType.TOKEN_BLOCK_END);
+      intermediate = parser.parseUntilBlocks('endtest');
+    }
+
+    parser.advanceAfterBlockEnd();
+
+    return new CallExtension(this, 'run', null, [body, intermediate]);
+  }
+
+
+  public run(context, body: () => string, intermediate: () => string): string {
+    let output: string = body().split('').join(',');
+    if (intermediate) {
+      // Reverse the string.
+      output += intermediate().split('').reverse().join('');
+    }
+    return output;
+  }
+}
+
+
+
+class ShouldAllowCustomTagCompilationExtension implements IExtension {
+  readonly tags: string[] = ['test'];
+
+
+  public parse(parser, nodes): CallExtension {
+    let content;
+    let tag: CallExtension;
+    parser.advanceAfterBlockEnd();
+
+    content = parser.parseUntilBlocks('endtest');
+    tag = new CallExtension(this, 'run', null, [content]);
+    parser.advanceAfterBlockEnd();
+
+    return tag;
+  }
+
+
+  public run(context, body: () => string): string {
+    // Reverse the string
+    return body().split('').reverse().join('');
+  }
+}

@@ -18,6 +18,7 @@ import { FileSystemLoader } from '../file-system-loader';
 import { Obj } from '../object/obj';
 import { Frame } from '../runtime/frame';
 import * as globalRuntime from '../runtime/runtime';
+import { IExtension } from '../parser/IExtension';
 
 
 export class Context extends Obj {
@@ -311,7 +312,7 @@ export class Template extends Obj {
 export class Environment extends EmitterObj {
   opts: any;
   loaders: Loader[ ];
-  private extensions: Record<string, any>;
+  private extensions;
   extensionsList: any[ ];
   asyncFilters: any[ ];
   private tests: Record<string, any>;
@@ -401,7 +402,7 @@ export class Environment extends EmitterObj {
   }
 
 
-  addExtension(name: string, extension): Environment {
+  addExtension(name, extension: IExtension): Environment {
     extension.__name = name;
     this.extensions[name] = extension;
     this.extensionsList.push(extension);

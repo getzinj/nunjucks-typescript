@@ -1,5 +1,11 @@
 import { Loader } from 'nunjucks/src/loader';
 import { Environment, Template } from '../nunjucks';
+import { IExtension } from './compiler.spec';
+
+export interface IExtensionOption {
+  extensions: IExtension[];
+}
+
 
 ((() => {
   /* eslint-disable vars-on-top */
@@ -169,7 +175,7 @@ import { Environment, Template } from '../nunjucks';
   }
 
 
-  function loadExtensions(opts, e: Environment): void {
+  function loadExtensions(opts: IExtensionOption, e: Environment): void {
     if (opts.extensions) {
       let name: string | number;
       for (name in opts.extensions) {
