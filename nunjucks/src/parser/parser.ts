@@ -67,18 +67,17 @@ export class Parser extends Obj implements IParser {
   extensions: IExtension[] | undefined;
   private dropLeadingWhitespace: boolean;
   private breakOnBlocks: string[] | undefined;
-  private peeked: Token | null;
   readonly parserTokenStream: ParserTokenStream;
 
 
   constructor(public readonly tokens: Tokenizer) {
     super();
 
-    this.peeked = null;
     this.breakOnBlocks = null;
     this.dropLeadingWhitespace = false;
 
     this.parserTokenStream = new ParserTokenStream(this.tokens);
+    this.parserTokenStream.peeked = null;
 
     this.extensions = [];
   }

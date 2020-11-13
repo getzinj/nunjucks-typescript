@@ -1,6 +1,8 @@
 import { Loader } from 'nunjucks/src/loader';
 import { Environment, Template } from '../nunjucks';
-import { IExtension } from './compiler.spec';
+import { IExtension } from '../nunjucks/src/parser/IExtension';
+
+
 
 export interface IExtensionOption {
   extensions: IExtension[];

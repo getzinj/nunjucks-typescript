@@ -1,29 +1,38 @@
 'use strict';
 
-export { Environment, Template } from './src/environment/environment';
-import { Environment, Template } from './src/environment/environment';
-import { isObject } from './src/lib';
-import { FileSystemLoader } from './src/file-system-loader';
-export { FileSystemLoader } from './src/file-system-loader';
 import { WebLoader, PrecompiledLoader } from './src/web-loaders';
-export { WebLoader, PrecompiledLoader } from './src/web-loaders';
-export { NodeResolveLoader } from './src/node-resolve-loader';
-export { precompile, precompileString } from './src/precompile';
-export { installCompat as installJinjaCompat } from './src/jinja-compat';
+import { NodeResolveLoader } from './src/node-resolve-loader';
+import { FileSystemLoader } from './src/file-system-loader';
+import { Loader } from './src/loader';
+import { Compiler } from './src/compiler/compiler';
+import { precompile, precompileString } from './src/precompile';
+import { Parser } from './src/parser/parser';
+import { isObject } from './src/lib';
+import { installCompat } from './src/jinja-compat';
 
-let e: Environment;
+// const lib = require('./src/lib');
+const {Environment, Template} = require('./src/environment/environment');
+//const loaders = require('./src/loaders');
+//const precompile = require('./src/precompile');
+//const compiler = require('./src/compiler');
+//const parser = require('./src/parser');
+//const lexer = require('./src/lexer');
+// const runtime = require('./src/runtime');
+// const nodes = require('./src/nodes');
+// const installJinjaCompat = require('./src/jinja-compat');
+
+// A single instance of an environment, since this is so commonly used
+let e;
 
 
-export function configure(templatesPath?, opts?): Environment {
+function configure(templatesPath?, opts?: INunjucksOptions) {
   opts = opts || {};
-
   if (isObject(templatesPath)) {
     opts = templatesPath;
     templatesPath = null;
   }
 
   let TemplateLoader;
-
   if (FileSystemLoader) {
     TemplateLoader = new FileSystemLoader(templatesPath, {
       watch: opts.watch,
@@ -46,34 +55,52 @@ export function configure(templatesPath?, opts?): Environment {
 }
 
 
-export function reset(): void {
-  e = undefined;
+
+module.exports = {
+  Environment: Environment,
+  Template: Template,
+  Loader: Loader,
+  FileSystemLoader: FileSystemLoader,
+  NodeResolveLoader: NodeResolveLoader,
+  PrecompiledLoader: PrecompiledLoader,
+  WebLoader: WebLoader,
+  compiler: Compiler,
+  parser: Parser,
+  installJinjaCompat: installCompat,
+  configure: configure,
+  reset() {
+    e = undefined;
+  },
+  compile(src, env, path, eagerCompile) {
+    if (!e) {
+      configure();
+    }
+    return new Template(src, env, path, eagerCompile);
+  },
+
+  render(name, ctx, cb) {
+    if (!e) {
+      configure();
+    }
+
+    return e.render(name, ctx, cb);
+  },
+  renderString(src, ctx, cb) {
+    if (!e) {
+      configure();
+    }
+
+    return e.renderString(src, ctx, cb);
+  },
+  precompile: precompile ?? undefined,
+  precompileString: precompileString ?? undefined,
+};
+
+
+
+export interface INunjucksOptions {
+  watch?: boolean;
+  noCache?: boolean;
+  web?;
+  express?;
 }
-
-
-export function compile(src, env, path, eagerCompile): Template {
-  if (!e) {
-    configure();
-  }
-
-  return new Template(src, env, path, eagerCompile);
-}
-
-
-export function render(name, ctx, cb) {
-  if (!e) {
-    configure();
-  }
-
-  return e.render(name, ctx, cb);
-}
-
-
-export function renderString(src, ctx, cb) {
-  if (!e) {
-    configure();
-  }
-
-  return e.renderString(src, ctx, {}, cb);
-}
-

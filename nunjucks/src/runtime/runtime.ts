@@ -1,20 +1,19 @@
 'use strict';
 
 
-import { escape } from '../lib';
+import { escape, asyncFor, isArray, asyncIter, keys as keys_, inOperator, keys } from '../lib';
 import { Frame } from './frame';
+import { SafeString } from './SafeString';
+import { TemplateError } from '../templateError';
+import { NunjucksSymbol } from '../nodes/nunjucksSymbol';
+import { Context } from '../environment/environment';
 
 export { Frame } from './frame';
 
 export { SafeString} from './SafeString';
-import { SafeString } from './SafeString';
 export { asyncFor, isArray, asyncIter, keys as keys_, inOperator, keys } from '../lib';
-import { asyncFor, isArray, asyncIter, keys as keys_, inOperator, keys } from '../lib';
 export { TemplateError } from '../templateError';
-import { TemplateError } from '../templateError';
 export { NunjucksSymbol } from '../nodes/nunjucksSymbol';
-import { NunjucksSymbol } from '../nodes/nunjucksSymbol';
-import { Context } from '../environment/environment';
 
 
 export const supportsIterators: boolean = (
@@ -58,10 +57,6 @@ export function makeMacro(argNames: string[], kwargNames, func): (...macroArgs) 
 
     return func.apply(this, args);
   };
-}
-
-export interface IHasKeywords {
-   __keywords: boolean;
 }
 
 
@@ -155,7 +150,7 @@ export function ensureDefined<T>(val: T | undefined, lineno: number, colno: numb
 }
 
 
-export let memberLookup: (obj, val, autoescape?) => any  = function memberLookup(obj, val) {
+export var memberLookup: (obj, val, autoescape?) => any  = function memberLookup(obj, val) {
   if (obj === undefined || obj === null) {
     return undefined;
   }
@@ -179,13 +174,13 @@ export function callWrap<T>(obj: (... args: any[]) => T, name: string, context, 
 }
 
 
-export function contextOrFrameLookup<T>(context: Context, frame: Frame, name: string): T {
-  const val: T = frame.lookup<T>(name);
+export var contextOrFrameLookup = function contextOrFrameLookup(context: Context, frame: Frame, name: string) {
+  const val = frame.lookup(name);
   return (val === undefined)
       ? context.lookup(name)
       : val
   ;
-}
+};
 
 
 export function handleError(error, lineno: number, colno: number) {
@@ -225,7 +220,7 @@ export function asyncEach(arr, dimen: number, iter: (...args: any[]) => void, cb
 }
 
 
-export function asyncAll(arr, dimen: number, func, cb: (err?, info?) => void): void {
+export function asyncAll(arr: any, dimen: number, func, cb: (err?, info?) => void): void {
   let finished: number = 0;
   let len: number;
   let outputArr;
@@ -247,7 +242,7 @@ export function asyncAll(arr, dimen: number, func, cb: (err?, info?) => void): v
       cb(null, '');
     } else {
       for (let i = 0; i < arr.length; i++) {
-        const item = arr[i];
+        const item: any = arr[i];
 
         switch (dimen) {
           case 1:

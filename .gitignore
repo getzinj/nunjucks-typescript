@@ -136,8 +136,8 @@ nunjucks/src/nodes/asyncAll.js
 nunjucks/src/nodes/asyncAll.js.map
 nunjucks/src/nodes/asyncEach.js
 nunjucks/src/nodes/asyncEach.js.map
-nunjucks/src/nodes/block.js
-nunjucks/src/nodes/block.js.map
+nunjucks/src/nodes/slice.js
+nunjucks/src/nodes/slice.js.map
 nunjucks/src/nodes/caller.js
 nunjucks/src/nodes/caller.js.map
 nunjucks/src/nodes/callExtensionAsync.js
@@ -208,3 +208,9 @@ nunjucks/src/parser/parserTokenStream.js
 nunjucks/src/parser/parserTokenStream.js.map
 nunjucks/src/lexer/operators/operators.js
 nunjucks/src/lexer/operators/operators.js.map
+nunjucks/src/nodes/block.js
+nunjucks/src/nodes/block.js.map
+nunjucks/src/nodes/jinja/slice.js
+nunjucks/src/nodes/jinja/slice.js.map
+nunjucks/src/runtime/IHasKeywords.js
+nunjucks/src/runtime/IHasKeywords.js.map

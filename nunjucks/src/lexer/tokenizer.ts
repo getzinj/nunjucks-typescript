@@ -11,17 +11,17 @@ import { Tag } from '../tag';
 
 
 export class Tokenizer {
-  private index: number;
+  index: number;
   private readonly str: string;
   private readonly len: number;
-  private lineno: number;
-  private colno: number;
-  private in_code: boolean;
+  lineno: number;
+  colno: number;
+  in_code: boolean;
   public readonly tags: Record<string, any>;
-  private readonly trimBlocks: boolean;
-  private readonly lstripBlocks: boolean;
+  readonly trimBlocks: boolean;
+  readonly lstripBlocks: boolean;
   private readonly src: string;
-  private currentLine_: string = '';
+  currentLine_: string = '';
 
   public get currentLine(): string { return this.currentLine_; }
 
