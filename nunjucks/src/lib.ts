@@ -64,6 +64,7 @@ export function isFunction(obj): obj is Function {
   return ObjProto.toString.call(obj) === '[object Function]';
 }
 
+export type ArrayLike<T> = T[] | Record<number, T>;
 
 export function isArray<T>(obj): obj is Array<T> {
   return ObjProto.toString.call(obj) === '[object Array]';
@@ -269,7 +270,7 @@ function keys_<T, K extends keyof T>(obj: T): K[] {
 export { keys_ as keys }
 
 
-export function _entries<T, K extends keyof T>(obj: T) {
+export function _entries<T, K extends keyof T, V extends T[K]>(obj: T): [K, V][] {
   return keys_(obj).map((k: K): [ K, any ] => [ k, obj[k] ]);
 }
 

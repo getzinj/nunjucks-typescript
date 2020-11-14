@@ -1,3 +1,5 @@
+import { Done } from 'mocha';
+
 declare var nunjucks;
 
 (function() {
@@ -1014,30 +1016,71 @@ declare var nunjucks;
     });
 
 
-    it('urlencode', function(done) {
-      equal('{{ "&" | urlencode }}', '%26');
-      equal('{{ arr | urlencode | safe }}', {
-        arr: [[1, 2], ['&1', '&2']]
-      }, '1=2&%261=%262');
-      equal('{{ obj | urlencode | safe }}', {
-        obj: {
-          1: 2,
-          '&1': '&2'
-        }
-      }, '1=2&%261=%262');
-      finish(done);
+    describe('urlencode()', () => {
+      it('urlencode', (done: Done) => {
+        equal('{{ "&" | urlencode }}', '%26');
+        equal('{{ arr | urlencode | safe }}', {
+          arr: [[1, 2], ['&1', '&2']]
+        }, '1=2&%261=%262');
+        equal('{{ obj | urlencode | safe }}', {
+          obj: {
+            1: 2,
+            '&1': '&2'
+          }
+        }, '1=2&%261=%262');
+        finish(done);
+      });
+
+
+      it('urlencode - object without prototype', (done: Done) => {
+        const obj = Object.create(null);
+        obj['1'] = 2;
+        obj['&1'] = '&2';
+
+        equal('{{ obj | urlencode | safe }}', {
+          obj: obj
+        }, '1=2&%261=%262');
+        finish(done);
+      });
     });
 
 
-    it('urlencode - object without prototype', function(done) {
-      const obj = Object.create(null);
-      obj['1'] = 2;
-      obj['&1'] = '&2';
+    describe('entities()', () => {
+      it('entities1', (done: Done) => {
+        equal('{{ "He ain\'t at the A&P!™" | entities }}', 'He ain&apos;t at the A&amp;P!&trade;');
+        finish(done);
+      });
 
-      equal('{{ obj | urlencode | safe }}', {
-        obj: obj
-      }, '1=2&%261=%262');
-      finish(done);
+
+      it('array', (done: Done) => {
+        equal('{{ arr | entities | safe }}', {
+          arr: [[1, 2], ['&1', '&2']]
+        }, '1=2,&amp;1=&amp;2');
+        finish(done);
+      });
+
+
+      it('object', (done: Done) => {
+        equal('{{ obj | entities | safe }}', {
+          obj: {
+            1: 2,
+            '&1': '&2'
+          }
+        }, '1=2,&amp;1=&amp;2');
+        finish(done);
+      });
+
+
+      it('entities - object without prototype', (done: Done) => {
+        const obj = Object.create(null);
+        obj['1'] = 2;
+        obj['&1'] = '&2';
+
+        equal('{{ obj | entities | safe }}', {
+          obj: obj
+        }, '1=2,&amp;1=&amp;2');
+        finish(done);
+      });
     });
 
 

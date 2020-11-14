@@ -1,6 +1,8 @@
 'use strict';
 
+import * as he from 'he';
 import * as lib from './lib';
+import { isArray, _entries } from './lib';
 import * as r from './runtime/runtime';
 import { SafeString } from './runtime/SafeString';
 import { TemplateError, TemplateError as TemplateError1 } from './templateError';
@@ -527,6 +529,56 @@ export function urlencode(obj) {
   } else {
     let keyvals = (lib.isArray(obj)) ? obj : lib._entries(obj);
     return keyvals.map(([k, v]): string => `${enc(k)}=${enc(v)}`).join('&');
+  }
+}
+
+
+
+type KeyType = string | symbol | number;
+type Simple = KeyType | boolean;
+type SimpleTuple = [ Simple, Simple ];
+type SimpleObject = Record<KeyType, Simple>;
+
+
+function isSimple(val): val is Simple {
+  return (typeof val === 'string') || (typeof val === 'symbol') || (typeof val === 'number') || (typeof val === 'boolean');
+}
+
+
+function isSimpleTuple(val): val is SimpleTuple {
+  return (isArray(val) && val.length === 2 && isSimple(val[0]) && isSimple(val[1]));
+}
+
+
+export function entities(obj: SafeString): SafeString;
+export function entities(obj: Simple): SafeString;
+export function entities(obj: SimpleObject): SafeString;
+export function entities(obj: SimpleTuple): SafeString;
+export function entities(obj: (SimpleTuple | SimpleObject)[]): SafeString;
+export function entities(obj: Simple | SafeString | SimpleTuple | SimpleObject | (SimpleObject | SimpleTuple)[]): SafeString {
+  const encoder: (str: string) => string = (str: string): string => he.encode(str, { useNamedReferences: true });
+  const safer: (str: string) => SafeString = (str: string): SafeString => r.markSafe(str);
+
+  if (obj instanceof SafeString) {
+    return safer(encoder(obj.val));
+  } else if (lib.isString(obj)) {
+    return safer(encoder(obj));
+  } else if (isSimple(obj)) {
+    return safer(String(obj))
+  } else if (isSimpleTuple(obj)) {
+    return safer(`${ entities(obj[0]).val }=${ entities(obj[1]).val }`);
+  } else if (isArray(obj)) {
+    const simpleThingArray: (SimpleObject | SimpleTuple)[] = obj;
+
+    return safer(simpleThingArray
+        .map((simpleThing: SimpleObject | SimpleTuple): string => isSimpleTuple(simpleThing)
+            ? entities(simpleThing).val
+            : entities(simpleThing).val)
+        .join(','));
+  } else if (typeof obj === 'object') {
+    return entities(_entries(obj));
+  } else {
+    return safer(String(obj));
   }
 }
 

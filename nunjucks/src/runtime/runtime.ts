@@ -1,7 +1,7 @@
 'use strict';
 
 
-import { escape, asyncFor, isArray, asyncIter, keys as keys_, inOperator, keys } from '../lib';
+import { ArrayLike, escape, asyncFor, isArray, asyncIter, keys as keys_, inOperator, keys } from '../lib';
 import { Frame } from './frame';
 import { SafeString } from './SafeString';
 import { TemplateError } from '../templateError';
@@ -106,20 +106,18 @@ export function copySafeness(dest: string | SafeString, target): string | SafeSt
 }
 
 
-export function markSafe(val: string | SafeString | ((... args: any[]) => (string | SafeString))): SafeString | string | ((...args: any[]) => (string | SafeString)) {
-  const type: "undefined" | "object" | "boolean" | "number" | "string" | "function" | "symbol" | "bigint" = typeof val;
-
-  if (type === 'string') {
+export function markSafe(val: string | SafeString): SafeString;
+export function markSafe(val: (... args: any[]) => (string | SafeString)): SafeString;
+export function markSafe(val: string | SafeString | ((... args: any[]) => (string | SafeString))): SafeString | (() => SafeString) {
+  if (typeof val === 'string') {
     return new SafeString(val);
-  } else if (type === 'function') {
+  } else if (val instanceof SafeString) {
+    return val;
+  } else if (typeof val === 'function') {
     return function wrapSafe(...args: any[]): SafeString {
-      const ret: string | SafeString = (val as (... args) => (string | SafeString)).apply(this, arguments);
+      const ret: string | SafeString = (val as (... args: any[]) => (string | SafeString)).apply(this, arguments);
 
-      if (typeof ret === 'string') {
-        return new SafeString(ret);
-      }
-
-      return ret;
+      return (typeof ret === 'string') ? new SafeString(ret) : ret;
     };
   } else {
     return val;
@@ -127,8 +125,8 @@ export function markSafe(val: string | SafeString | ((... args: any[]) => (strin
 }
 
 
-export function suppressValue<V>(val: V | string, autoescape): V | string {
-  val = (val !== undefined && val !== null) ? val : '';
+export function suppressValue<V>(val: V | string, autoescape: boolean): V | string {
+  val = val ?? '';
 
   if (autoescape && !(val instanceof SafeString)) {
     val = escape(val.toString());
@@ -150,16 +148,17 @@ export function ensureDefined<T>(val: T | undefined, lineno: number, colno: numb
 }
 
 
-export var memberLookup: (obj, val, autoescape?) => any  = function memberLookup(obj, val) {
+export var memberLookup: <O, I extends keyof O>(obj: O, val: I, autoescape?: boolean) => any  = function memberLookup<O, I extends keyof O>(obj: O, val: I) {
   if (obj === undefined || obj === null) {
     return undefined;
+  } else {
+    const element: O[I] = obj[val];
+    if (typeof element === 'function') {
+        return (...args: any[]) => element.apply(obj, args);
+      } else {
+        return element;
+      }
   }
-
-  if (typeof obj[val] === 'function') {
-    return (...args) => obj[val].apply(obj, args);
-  }
-
-  return obj[val];
 }
 
 
@@ -183,8 +182,8 @@ export var contextOrFrameLookup = function contextOrFrameLookup(context: Context
 };
 
 
-export function handleError(error, lineno: number, colno: number) {
-  if (error.lineno) {
+export function handleError<T, V extends T & { lineno }>(error: T | V, lineno: number, colno: number): V | TemplateError {
+  if ('lineno' in error) { // TODO: Probably a TemplateError but can we assume that's what the author originally intended?
     return error;
   } else {
     return new TemplateError(error, lineno, colno);
@@ -219,13 +218,18 @@ export function asyncEach(arr, dimen: number, iter: (...args: any[]) => void, cb
   }
 }
 
+type errFn = (err?, info?: string) => void;
 
-export function asyncAll(arr: any, dimen: number, func, cb: (err?, info?) => void): void {
+export function asyncAll<T>(arr: ArrayLike<T>, dimen: 1, func: (item1, i: number, length: number, doneFn) => void, cb: errFn): void;
+export function asyncAll<T>(arr: ArrayLike<T>, dimen: 2, func: (item1, item2, i: number, length: number, doneFn) => void, cb: errFn): void;
+export function asyncAll<T>(arr: ArrayLike<T>, dimen: 3, func: (item1, item2, item3, i: number, length: number, doneFn) => void, cb: errFn): void;
+export function asyncAll<T>(arr: ArrayLike<T>, dimen: number, func: (...args: any[]) => void, cb: errFn): void {
   let finished: number = 0;
   let len: number;
-  let outputArr;
+  let outputArr: string[];
 
-  function done(i, output): void {
+
+  function done(i: number, output: string): void {
     finished++;
     outputArr[i] = output;
 
@@ -241,8 +245,8 @@ export function asyncAll(arr: any, dimen: number, func, cb: (err?, info?) => voi
     if (len === 0) {
       cb(null, '');
     } else {
-      for (let i = 0; i < arr.length; i++) {
-        const item: any = arr[i];
+      for (let i: number = 0; i < arr.length; i++) {
+        const item: T = arr[i];
 
         switch (dimen) {
           case 1:
@@ -255,21 +259,21 @@ export function asyncAll(arr: any, dimen: number, func, cb: (err?, info?) => voi
             func(item[0], item[1], item[2], i, len, done);
             break;
           default:
-            item.push(i, len, done);
+            (item as unknown as any[]).push(i, len, done);
             func.apply(this, item);
         }
       }
     }
   } else {
-    const keys = keys_(arr || {});
+    const keys: number[] = keys_(arr || { });
     len = keys.length;
     outputArr = new Array(len);
 
     if (len === 0) {
       cb(null, '');
     } else {
-      for (let i = 0; i < keys.length; i++) {
-        const k = keys[i];
+      for (let i: number = 0; i < keys.length; i++) {
+        const k: number = keys[i];
         func(k, arr[k], i, len, done);
       }
     }
@@ -277,7 +281,7 @@ export function asyncAll(arr: any, dimen: number, func, cb: (err?, info?) => voi
 }
 
 
-export function fromIterator(arr) {
+export function fromIterator<T>(arr): T[] {
   if (typeof arr !== 'object' || arr === null || isArray(arr)) {
     return arr;
   } else if (supportsIterators && Symbol['iterator'] in arr) {
