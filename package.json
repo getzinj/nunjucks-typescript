@@ -1,7 +1,7 @@
 {
   "name": "@getzinj/nunjucks-typescript",
   "description": "TypeScript port of nunjucks v.3.2.2: A powerful templating engine with inheritance, asynchronous control, and more (jinja2 inspired) by James Long",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Jeffrey Getzin <getzinj@gmail.com>",
   "repository": {
     "type" : "git",
@@ -92,6 +92,7 @@
   "files": [
     "bin/**",
     "browser/**",
+    "nunjucks/src/**",
     "src/**"
   ],
   "nyc": {
