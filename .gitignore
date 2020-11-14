@@ -235,3 +235,4 @@ nunjucks/src/parser/IParser.js
 nunjucks/src/parser/IParser.js.map
 tests/setup.spec.js
 tests/setup.spec.js.map
+.npmrc
