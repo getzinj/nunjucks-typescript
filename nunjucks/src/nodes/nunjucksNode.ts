@@ -7,7 +7,7 @@ export class NunjucksNode {
   get fields(): string[] { return [ ]; }
 
 
-  constructor(lineno: number, colno: number,  ...args) {
+  constructor(lineno: number, colno: number,  ...args: any[]) {
     this.lineno = lineno;
     this.colno = colno;
     this.assignValuesToFields(args);
@@ -24,16 +24,16 @@ export class NunjucksNode {
 
 
   findAll(type, results?) {
-    results = results || [];
+    results = results ?? [];
 
-    this.fields.forEach((field: string) => traverseAndCheck(this[field], type, results));
+    this.fields.forEach( (field: string): void => traverseAndCheck(this[field], type, results) );
 
     return results;
   }
 
 
   iterFields(func) {
-    this.fields.forEach((field) => {
+    this.fields.forEach((field: string) => {
       func(this[field], field);
     });
   }
@@ -125,14 +125,14 @@ export function print(str, indent?, inline?): void {
 
 
 // Print the AST in a nicely formatted tree format for debugging
-export function printNodes(node, indent): void {
+export function printNodes(node: NunjucksNode, indent): void {
   indent = indent || 0;
 
   print(node.typename + ': ', indent);
 
   if (node instanceof NunjucksNodeList) {
     print('\n');
-    node.children.forEach((n) => {
+    node.children.forEach((n: NunjucksNode): void => {
       printNodes(n, indent + 2);
     });
   } else if (node instanceof CallExtension) {
@@ -143,19 +143,19 @@ export function printNodes(node, indent): void {
     }
 
     if (node.contentArgs) {
-      node.contentArgs.forEach((n) => {
+      node.contentArgs.forEach((n: NunjucksNode): void => {
         printNodes(n, indent + 2);
       });
     }
   } else {
-    let nodes = [];
-    let props = null;
+    const nodes: [string | number, any][] = [];
+    let props: Record<string | number, any> = null;
 
-    node.iterFields((val, fieldName) => {
+    node.iterFields((val, fieldName: string | number): void => {
       if (val instanceof NunjucksNode) {
         nodes.push([fieldName, val]);
       } else {
-        props = props || {};
+        props = props ?? { };
         props[fieldName] = val;
       }
     });
@@ -166,10 +166,10 @@ export function printNodes(node, indent): void {
       print('\n');
     }
 
-    nodes.forEach(([fieldName, n]) => {
+    nodes.forEach( ([fieldName, n]): void => {
       print(`[${fieldName}] =>`, indent + 2);
       printNodes(n, indent + 4);
-    });
+    } );
   }
 }
 

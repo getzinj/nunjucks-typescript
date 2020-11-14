@@ -1,6 +1,7 @@
 'use strict';
 
 import { TemplateError } from './templateError';
+import { Context } from './environment/environment';
 
 const ArrayProto = Array.prototype;
 const ObjProto = Object.prototype;
@@ -83,16 +84,17 @@ export function isObject(obj): boolean {
 /**
  * @private
  */
-function _prepareAttributeParts(attr: string | number): (string | number)[] {
+function _prepareAttributeParts(attr: null | undefined): [ ]
+function _prepareAttributeParts(attr: number): [ number ]
+function _prepareAttributeParts(attr: string): string[]
+function _prepareAttributeParts(attr: string | number | null | undefined): (string | number)[] {
   if (!attr) {
-    return [];
-  }
-
-  if (typeof attr === 'string') {
+    return [ ];
+  } else if (typeof attr === 'string') {
     return attr.split('.');
+  } else {
+    return [ attr ];
   }
-
-  return [ attr ];
 }
 
 
@@ -100,13 +102,13 @@ function _prepareAttributeParts(attr: string | number): (string | number)[] {
  * @param   attribute      Attribute value. Dots allowed.
  */
 export function getAttrGetter(attribute: string): (obj: Record<string | number, any>) => any {
-  const parts: (string | number)[] = _prepareAttributeParts(attribute);
+  const parts: string[] = _prepareAttributeParts(attribute);
 
   return function attrGetter(item: Record<string | number, any>): Record<string | number, any> | undefined {
-    let _item: Record<string | number, any> = item;
+    let _item: Record<string, any> = item;
 
     for (let i = 0; i < parts.length; i++) {
-      const part: string | number = parts[i];
+      const part: string = parts[i];
 
       // If item is not an object, and we still got parts to handle, it means
       // that something goes wrong. Just roll out to undefined in that case.
@@ -126,7 +128,7 @@ export function groupBy<A>(obj: A[], val, throwOnUndefined: boolean) {
   const result = { };
   const iterator = isFunction(val) ? val : getAttrGetter(val);
   for (let i = 0; i < obj.length; i++) {
-    const value = obj[i];
+    const value: A = obj[i];
     const key = iterator(value, i);
     if (key === undefined && throwOnUndefined === true) {
       throw new TypeError(`groupby: attribute "${ val }" resolved to undefined`);
@@ -142,7 +144,7 @@ export function toArray<T>(obj: T[]): T[] {
 }
 
 
-export function without<T>(array: T[], ...elements: any[]): T[] {
+export function without<T>(array: T[], ...elements: T[]): T[] {
   const result: T[] = [];
   if (array) {
     const length: number = array.length;
@@ -170,15 +172,13 @@ export function repeat(char_: string, n: number): string {
 }
 
 
-export function each(obj, func: Function, context): void {
+export function each<T>(obj: T[], func: (this: Context, value: T, i: number, obj: T[]) => void, context: Context): void {
   if (obj == null) {
     return;
-  }
-
-  if (ArrayProto.forEach && obj.forEach === ArrayProto.forEach) {
+  } else if (ArrayProto.forEach && obj.forEach === ArrayProto.forEach) {
     obj.forEach(func, context);
   } else if (obj.length === +obj.length) {
-    for (let i = 0, l = obj.length; i < l; i++) {
+    for (let i: number = 0, l: number = obj.length; i < l; i++) {
       func.call(context, obj[i], i, obj);
     }
   }
@@ -230,7 +230,7 @@ export function asyncIter<T>(arr: T[],
 }
 
 
-export function asyncFor(obj, iter, cb: (err?, info?) => void): void {
+export function asyncFor<T>(obj: T[], iter, cb: (err?, info?) => void): void {
   const keys = keys_(obj ?? { });
   const len: number = keys.length;
   let i: number = -1;
@@ -282,7 +282,7 @@ export function _values(obj): any[] {
 
 export function extend(obj1, obj2) {
   obj1 = obj1 ?? { };
-  keys_(obj2).forEach(k => {
+  keys_(obj2).forEach((k: string | number | symbol): void => {
     obj1[k] = obj2[k];
   });
   return obj1;

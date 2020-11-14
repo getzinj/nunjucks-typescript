@@ -1,16 +1,18 @@
-import { NunjucksNode } from './nunjucksNode';
+import { NunjucksNode, NunjucksNodeList } from './nunjucksNode';
 
 
 
 export class Macro extends NunjucksNode {
-  get typename(): string { return 'Macro'; }
+  get typename(): string {
+    return 'Macro';
+  }
 
-  public name;
-  public args;
+  public name: NunjucksNode;
+  public args: NunjucksNodeList;
   public body;
 
 
-  constructor(lineno: number, colno: number, name, args, body?) {
+  constructor(lineno: number, colno: number, name: NunjucksNode, args: NunjucksNodeList, body?) {
     super(lineno, colno, name, args, body);
   }
 

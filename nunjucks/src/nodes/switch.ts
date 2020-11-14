@@ -1,16 +1,17 @@
+import { Case } from './case';
 import { NunjucksNode } from './nunjucksNode';
 
 
 
 export class Switch extends NunjucksNode {
-  get typename(): string { return 'Switch'; }
+  get typename(): string {
+    return 'Switch';
+  }
 
-  public expr;
-  public cases;
   public default;
 
 
-  constructor(lineno: number, colno: number, expr, cases, defaultCase) {
+  constructor(lineno: number, colno: number, public expr: NunjucksNode, public cases: Case[], defaultCase) {
     super(lineno, colno, expr, cases, defaultCase);
   }
 

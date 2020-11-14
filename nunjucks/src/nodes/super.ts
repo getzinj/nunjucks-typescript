@@ -1,15 +1,15 @@
 import { NunjucksNode } from './nunjucksNode';
+import { NunjucksSymbol } from './nunjucksSymbol';
 
 
 
 export class Super extends NunjucksNode {
-  get typename(): string { return 'Super'; }
+  get typename(): string {
+    return 'Super';
+  }
 
-  public blockName;
-  public symbol;
 
-
-  constructor(lineno: number, colno: number, blockName, symbol) {
+  constructor(lineno: number, colno: number, public blockName: NunjucksNode, public symbol: NunjucksSymbol) {
     super(lineno, colno, blockName, symbol);
   }
 

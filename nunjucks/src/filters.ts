@@ -2,8 +2,8 @@
 
 import * as he from 'he';
 import * as lib from './lib';
-import { isArray, _entries } from './lib';
 import * as r from './runtime/runtime';
+import { isArray, _entries } from './lib';
 import { SafeString } from './runtime/SafeString';
 import { TemplateError, TemplateError as TemplateError1 } from './templateError';
 
@@ -19,7 +19,7 @@ export function normalize<T, V>(value: T | null | undefined | false, defaultValu
 export const abs: (x: number) => number = Math.abs;
 
 
-export function isNaN(num): boolean {
+export function isNaN(num: number): boolean {
   return num !== num; // eslint-disable-line no-self-compare
 }
 
@@ -52,14 +52,14 @@ export function batch<T>(arr: T[], linecount: number, fillWith: T): T[][] {
 }
 
 
-export function capitalize(str) {
+export function capitalize(str: string | SafeString): string | SafeString {
   str = normalize(str, '');
   const ret: string = str.toLowerCase();
   return r.copySafeness(str, ret.charAt(0).toUpperCase() + ret.slice(1));
 }
 
 
-export function center(str, width) {
+export function center(str: string | SafeString, width?: number): string | SafeString {
   str = normalize(str, '');
   width = width || 80;
 
@@ -88,9 +88,9 @@ export function dictsort(val, caseSensitive, by) {
     throw new TemplateError1('dictsort filter: val must be an object');
   }
 
-  let array = [];
+  const array = [];
   // deliberately include properties from the object's prototype
-  for (let k in val) { // eslint-disable-line guard-for-in, no-restricted-syntax
+  for (const k in val) { // eslint-disable-line guard-for-in, no-restricted-syntax
     array.push([k, val[k]]);
   }
 
@@ -146,23 +146,23 @@ export function safe(str) {
 }
 
 
-export function first(arr) {
+export function first<T>(arr: T[]): T {
   return arr[0];
 }
 
 
-export function forceescape(str) {
+export function forceescape(str: string | SafeString): SafeString {
   str = (str === null || str === undefined) ? '' : str;
   return r.markSafe(lib.escape(str.toString()));
 }
 
 
-export function groupby(arr, attr): {} {
+export function groupby(arr, attr) {
   return lib.groupBy(arr, attr, this.env.opts.throwOnUndefined);
 }
 
 
-export function indent(str, width, indentfirst) {
+export function indent(str, width: number, indentfirst?: boolean) {
   str = normalize(str, '');
 
   if (str === '') {
@@ -193,7 +193,7 @@ export function join(arr, del, attr) {
 }
 
 
-export function last(arr) {
+export function last<T>(arr: T[]): T {
   return arr[arr.length - 1];
 }
 
@@ -239,7 +239,7 @@ export function lower(str): string {
 }
 
 
-export function nl2br(str) {
+export function nl2br(str: string | SafeString): string | SafeString {
   if (str === null || str === undefined) {
     return '';
   }
@@ -247,7 +247,7 @@ export function nl2br(str) {
 }
 
 
-export function random(arr) {
+export function random<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
@@ -258,12 +258,12 @@ export function random(arr) {
  * @param {boolean} expectedTestResult
  * @returns {function(array, string, *): array}
  */
-export function getSelectOrReject(expectedTestResult): (arr, testName: string, secondArg) => any {
-  function filter(arr, testName: string = 'truthy', secondArg) {
+export function getSelectOrReject<T>(expectedTestResult): (arr: T[], testName: string, secondArg) => T[] {
+  function filter(arr: T[], testName: string = 'truthy', secondArg): T[] {
     const context = this;
-    const test = context.env.getTest(testName);
+    const test: Function = context.env.getTest(testName);
 
-    return lib.toArray(arr).filter(function examineTestResult(item): boolean {
+    return lib.toArray(arr).filter(function examineTestResult(item: T): boolean {
       return test.call(context, item, secondArg) === expectedTestResult;
     });
   }
@@ -271,21 +271,24 @@ export function getSelectOrReject(expectedTestResult): (arr, testName: string, s
   return filter;
 }
 
+
 export const reject: (arr, testName: string, secondArg) => any = getSelectOrReject(false);
 
-export function rejectattr(arr, attr) {
-  return arr.filter((item): boolean => !item[attr]);
+
+export function rejectattr<T, K extends keyof T>(arr: T[], attr: K): T[] {
+  return arr.filter((item: T): boolean => !item[attr]);
 }
 
 
 export const select: (arr, testName: string, secondArg) => any = getSelectOrReject(true);
 
-export function selectattr(arr, attr) {
-  return arr.filter((item): boolean => !!item[attr]);
+
+export function selectattr<T, K extends keyof T>(arr: T[], attr: K): T[] {
+  return arr.filter((item: T): boolean => !!item[attr]);
 }
 
 
-export function replace(str: string, old: string | RegExp, new_: string, maxCount?: number) {
+export function replace(str: string, old: string | RegExp, new_: string, maxCount?: number): string | SafeString {
   const originalStr: string = str;
 
   if (old instanceof RegExp) {
@@ -362,7 +365,7 @@ export function reverse(val) {
     arr = list(val);
   } else {
     // Copy it
-    arr = lib.map(val, (v) => v);
+    arr = [... val];
   }
 
   arr.reverse();
@@ -373,11 +376,12 @@ export function reverse(val) {
   return arr;
 }
 
-export function round(val, precision, method): number {
+
+export function round(val: number, precision: number, method: string): number {
   precision = precision || 0;
   const factor: number = Math.pow(10, precision);
-  let rounder;
 
+  let rounder: (val: number) => number;
   if (method === 'ceil') {
     rounder = Math.ceil;
   } else if (method === 'floor') {
@@ -389,20 +393,21 @@ export function round(val, precision, method): number {
   return rounder(val * factor) / factor;
 }
 
-export function slice(arr, slices, fillWith) {
+
+export function slice<T>(arr: T[], slices: number, fillWith: T): T[][] {
   const sliceLength: number = Math.floor(arr.length / slices);
   const extra: number = arr.length % slices;
-  const res = [];
+  const res: T[][] = [];
   let offset: number = 0;
 
-  for (let i = 0; i < slices; i++) {
+  for (let i: number = 0; i < slices; i++) {
     const start: number = offset + (i * sliceLength);
     if (i < extra) {
       offset++;
     }
     const end: number = offset + ((i + 1) * sliceLength);
 
-    const currSlice = arr.slice(start, end);
+    const currSlice: T[] = arr.slice(start, end);
     if (fillWith && i >= extra) {
       currSlice.push(fillWith);
     }
@@ -411,6 +416,7 @@ export function slice(arr, slices, fillWith) {
 
   return res;
 }
+
 
 export function sum(arr, attr, start: number = 0) {
   if (attr) {
@@ -425,10 +431,10 @@ export const sort: (...macroArgs) => any = r.makeMacro(
     ['value', 'reverse', 'case_sensitive', 'attribute'], [],
     function sortFilter(arr, reversed, caseSens, attr) {
     // Copy it
-    let array = lib.map(arr, (v) => v);
-    let getAttribute: (item) => (undefined) = lib.getAttrGetter(attr);
+      const array = lib.map(arr, (v) => v);
+      const getAttribute: (item) => (undefined) = lib.getAttrGetter(attr);
 
-    array.sort((a, b): 1 | -1 | number => {
+      array.sort((a, b): 1 | -1 | number => {
       let x = (attr) ? getAttribute(a) : a;
       let y = (attr) ? getAttribute(b) : b;
 
@@ -456,15 +462,16 @@ export const sort: (...macroArgs) => any = r.makeMacro(
     return array;
   });
 
-export function string(obj) {
+
+export function string(obj): string | SafeString {
   return r.copySafeness(obj, obj);
 }
 
 
-export function striptags(input, preserveLinebreaks) {
+export function striptags(input, preserveLinebreaks): string | SafeString {
   input = normalize(input, '');
-  let tags: RegExp = /<\/?([a-z][a-z0-9]*)\b[^>]*>|<!--[\s\S]*?-->/gi;
-  let trimmedInput = trim(input.replace(tags, ''));
+  const tags: RegExp = /<\/?([a-z][a-z0-9]*)\b[^>]*>|<!--[\s\S]*?-->/gi;
+  const trimmedInput: string | SafeString = trim(input.replace(tags, ''));
   let res: string = '';
   if (preserveLinebreaks) {
     res = trimmedInput
@@ -479,20 +486,20 @@ export function striptags(input, preserveLinebreaks) {
 }
 
 
-export function title(str) {
+export function title(str: string | SafeString): string | SafeString {
   str = normalize(str, '');
-  let words = str.split(' ').map((word) => capitalize(word));
+  const words: (string | SafeString)[] = str.split(' ').map(capitalize);
   return r.copySafeness(str, words.join(' '));
 }
 
 
-export function trim(str) {
+export function trim(str: string | SafeString): string | SafeString {
   return r.copySafeness(str, str.replace(/^\s*|\s*$/g, ''));
 }
 
 
-export function truncate(input, length, killwords, end) {
-  const orig = input;
+export function truncate(input: string | SafeString, length: number, killWords?: boolean, end?: number): string | SafeString {
+  const orig: string | SafeString = input;
   input = normalize(input, '');
   length = length || 255;
 
@@ -500,10 +507,10 @@ export function truncate(input, length, killwords, end) {
     return input;
   }
 
-  if (killwords) {
+  if (killWords) {
     input = input.substring(0, length);
   } else {
-    let idx = input.lastIndexOf(' ', length);
+    let idx: number = input.lastIndexOf(' ', length);
     if (idx === -1) {
       idx = length;
     }
@@ -522,13 +529,13 @@ export function upper(str): string {
 }
 
 
-export function urlencode(obj) {
+export function urlencode(obj: string | SimplestTuple[] | SimplestObject): string {
   const enc: (uriComponent: (string | number | boolean)) => string = encodeURIComponent;
   if (lib.isString(obj)) {
     return enc(obj);
   } else {
-    let keyvals = (lib.isArray(obj)) ? obj : lib._entries(obj);
-    return keyvals.map(([k, v]): string => `${enc(k)}=${enc(v)}`).join('&');
+    const keyVals: SimplestTuple[] = (lib.isArray(obj)) ? obj : lib._entries(obj);
+    return keyVals.map(([k, v]: [string | number, string | number]): string => `${ enc(k) }=${ enc(v) }`).join('&');
   }
 }
 
@@ -537,7 +544,9 @@ export function urlencode(obj) {
 type KeyType = string | symbol | number;
 type Simple = KeyType | boolean;
 type SimpleTuple = [ Simple, Simple ];
+type SimplestTuple = [ string | number, string | number | boolean ];
 type SimpleObject = Record<KeyType, Simple>;
+type SimplestObject = Record<string | number, string | number>;
 
 
 function isSimple(val): val is Simple {
@@ -593,20 +602,20 @@ const wwwRe: RegExp = /^www\./;
 const tldRe: RegExp = /\.(?:org|net|com)(?:\:|\/|$)/;
 
 
-export function urlize(str, length, nofollow) {
+export function urlize(str, length, nofollow): string {
   if (isNaN(length)) {
     length = Infinity;
   }
 
   const noFollowAttr: string = (nofollow === true ? ' rel="nofollow"' : '');
 
-  const words = str.split(/(\s+)/).filter((word) => {
+  const words: string[] = str.split(/(\s+)/).filter((word: string): boolean => {
     // If the word has no length, bail. This can happen for str with
     // trailing whitespace.
-    return word && word.length;
-  }).map((word) => {
-    const matches = word.match(puncRe);
-    const possibleUrl = (matches) ? matches[1] : word;
+    return !!(word?.length);
+  }).map((word: string): string => {
+    const matches: RegExpMatchArray = word.match(puncRe);
+    const possibleUrl: string = (matches) ? matches[1] : word;
     const shortUrl: string = possibleUrl.substr(0, length);
 
     // url that starts with http or https

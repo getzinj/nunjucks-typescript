@@ -1,17 +1,24 @@
 'use strict';
 
+interface CyclerObj<T> {
+  current: T | null;
+  reset(): void;
+  next(): T;
+}
 
-export function cycler(items) {
-  var index = -1;
+
+export function cycler<T>(items: T[]): CyclerObj<T> {
+  let index: number = -1;
 
   return {
     current: null,
-    reset() {
+
+    reset(): void {
       index = -1;
       this.current = null;
     },
 
-    next() {
+    next(): T {
       index++;
       if (index >= items.length) {
         index = 0;
@@ -19,17 +26,17 @@ export function cycler(items) {
 
       this.current = items[index];
       return this.current;
-    },
+    }
   };
 }
 
 
-export function joiner(sep) {
-  sep = sep || ',';
-  let first = true;
+export function joiner(sep: string): () => string {
+  sep = sep ?? ',';
+  let first: boolean = true;
 
-  return () => {
-    const val = first ? '' : sep;
+  return (): string => {
+    const val: string = first ? '' : sep;
     first = false;
     return val;
   };
@@ -41,7 +48,7 @@ export function joiner(sep) {
 // uses it, they will each have their own copy.
 export function globals() {
   return {
-    range(start, stop, step) {
+    range(start, stop, step: number) {
       if (typeof stop === 'undefined') {
         stop = start;
         start = 0;
@@ -50,13 +57,13 @@ export function globals() {
         step = 1;
       }
 
-      const arr = [];
+      const arr: number[] = [];
       if (step > 0) {
-        for (let i = start; i < stop; i += step) {
+        for (let i: number = start; i < stop; i += step) {
           arr.push(i);
         }
       } else {
-        for (let i = start; i > stop; i += step) { // eslint-disable-line for-direction
+        for (let i: number = start; i > stop; i += step) { // eslint-disable-line for-direction
           arr.push(i);
         }
       }
@@ -74,6 +81,7 @@ export function globals() {
     }
   };
 }
+
 
 export const globalchokidar = {
   chokidar: undefined

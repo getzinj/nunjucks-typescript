@@ -1,13 +1,15 @@
 'use strict';
 
 
+import { Template } from './environment/environment';
+
 export function precompileGlobal(templates, opts) {
-  let out = '';
+  let out: string = '';
   opts = opts || {};
 
-  for (let i = 0; i < templates.length; i++) {
-    const name = JSON.stringify(templates[i].name);
-    const template = templates[i].template;
+  for (let i: number = 0; i < templates.length; i++) {
+    const name: string = JSON.stringify(templates[i].name);
+    const template: Template = templates[i].template;
 
     out += '(function() {' +
       '(window.nunjucksPrecompiled = window.nunjucksPrecompiled || {})' +

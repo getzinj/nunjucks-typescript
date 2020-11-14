@@ -7,7 +7,7 @@ import { NunjucksSymbol } from './nunjucksSymbol';
 export class FilterAsync extends Filter {
   get typename(): string { return 'FilterAsync'; }
 
-  public symbol;
+  public symbol: NunjucksSymbol;
 
 
   constructor(lineno: number, colno: number, name: NunjucksSymbol, args: NunjucksNodeList, symbol: NunjucksSymbol) {

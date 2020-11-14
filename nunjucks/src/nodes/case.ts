@@ -1,14 +1,17 @@
-import { NunjucksNode } from './nunjucksNode';
+import { NunjucksNode, NunjucksNodeList } from './nunjucksNode';
 
 
 
 export class Case extends NunjucksNode {
-  get typename(): string { return 'Case'; }
+  get typename(): string {
+    return 'Case';
+  }
 
-  public cond;
-  public body;
+  public cond: NunjucksNode;
+  public body: NunjucksNodeList;
 
-  constructor(lineno: number, colno: number, cond, body) {
+
+  constructor(lineno: number, colno: number, cond: NunjucksNode, body: NunjucksNodeList) {
     super(lineno, colno, cond, body);
   }
 

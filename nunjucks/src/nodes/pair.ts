@@ -5,11 +5,11 @@ import { NunjucksNode } from './nunjucksNode';
 export class Pair extends NunjucksNode {
   get typename(): string { return 'Pair'; }
 
-  public key;
-  public value;
+  public key: NunjucksNode;
+  public value: NunjucksNode;
 
 
-  constructor(lineno: number, colno: number, key: any, value: any) {
+  constructor(lineno: number, colno: number, key: NunjucksNode, value: NunjucksNode) {
     super(lineno, colno, key, value);
   }
 

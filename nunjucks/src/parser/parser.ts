@@ -126,7 +126,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  skipValue(type, val): boolean {
+  skipValue(type: TokenType, val: string): boolean {
     const tok: Token = this.parserTokenStream.nextToken();
     if (!tok || tok.type !== type || tok.value !== val) {
       this.parserTokenStream.pushToken(tok);
@@ -136,7 +136,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  skipSymbol(val): boolean {
+  skipSymbol(val: string): boolean {
     return this.skipValue(TokenType.TOKEN_SYMBOL, val);
   }
 
@@ -698,7 +698,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseRaw(tagName?): Output {
+  parseRaw(tagName?: string): Output {
     tagName = tagName || 'raw';
     const endTagName: string = 'end' + tagName;
     // Look for upcoming raw blocks (ignore all other kinds of blocks)

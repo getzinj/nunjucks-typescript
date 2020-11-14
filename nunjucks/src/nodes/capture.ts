@@ -1,14 +1,16 @@
-import { NunjucksNode } from './nunjucksNode';
+import { NunjucksNode, NunjucksNodeList } from './nunjucksNode';
 
 
 
 export class Capture extends NunjucksNode {
-  get typename(): string { return 'Capture'; }
+  get typename(): string {
+    return 'Capture';
+  }
 
-  public body;
+  public body: NunjucksNodeList;
 
 
-  constructor(lineno: number, colno: number, body) {
+  constructor(lineno: number, colno: number, body: NunjucksNodeList) {
     super(lineno, colno, body);
   }
 

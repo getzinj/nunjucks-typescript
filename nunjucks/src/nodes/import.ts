@@ -5,12 +5,12 @@ import { NunjucksNode } from './nunjucksNode';
 export class Import extends NunjucksNode {
   get typename(): string { return 'Import'; }
 
-  public template;
-  public target;
-  public withContext;
+  public template: NunjucksNode;
+  public target: NunjucksNode;
+  public withContext: boolean;
 
 
-  constructor(lineno: number, colno: number, template, target, withContext) {
+  constructor(lineno: number, colno: number, template: NunjucksNode, target: NunjucksNode, withContext: boolean) {
     super(lineno, colno, template, target, withContext);
   }
 

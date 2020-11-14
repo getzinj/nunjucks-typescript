@@ -6,13 +6,13 @@ export class Set extends NunjucksNode {
   get typename(): string { return 'Set'; }
 
 
-  public body;
   public targets;
   public value;
+  public body;
 
 
-  constructor(lineno: number, colno: number, targets?, value?) {
-    super(lineno, colno, targets, value);
+  constructor(lineno: number, colno: number, targets?, value?, body?) {
+    super(lineno, colno, targets, value, body);
   }
 
 

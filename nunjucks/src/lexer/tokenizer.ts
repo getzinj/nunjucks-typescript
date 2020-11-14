@@ -1,8 +1,4 @@
-import {
-  whitespaceChars,
-  delimChars,
-  intChars
-} from './characters';
+import { whitespaceChars, delimChars, intChars } from './characters';
 import { indexOf } from '../lib';
 import { Token } from './token';
 import { TokenType } from './tokenType';
@@ -11,6 +7,11 @@ import { Tag } from '../tag';
 
 
 export class Tokenizer {
+  /**
+   * The possible flags are according to https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/RegExp)
+   */
+  private static readonly regexFlags: string[] = ['g', 'i', 'm', 'y'];
+
   index: number;
   private readonly str: string;
   private readonly len: number;
@@ -35,7 +36,7 @@ export class Tokenizer {
 
     this.in_code = false;
 
-    opts = opts || {};
+    opts = opts ?? {};
 
     const tags = opts.tags || {};
     this.tags = {
@@ -55,7 +56,7 @@ export class Tokenizer {
   nextToken(): Token | null {
     const lineno: number = this.lineno;
     const colno: number = this.colno;
-    let tok;
+    let tok: string;
 
     if (this.in_code) {
       // Otherwise, if we are in a block parse it as code
@@ -119,8 +120,7 @@ export class Tokenizer {
         }
 
         // Check for flags.
-        // The possible flags are according to https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/RegExp)
-        const POSSIBLE_FLAGS: string[] = ['g', 'i', 'm', 'y'];
+        const POSSIBLE_FLAGS: string[] = Tokenizer.regexFlags;
         let regexFlags: string = '';
         while (!this.isFinished()) {
           const isCurrentAFlag: boolean = POSSIBLE_FLAGS.indexOf(this.current()) !== -1;
@@ -243,7 +243,7 @@ export class Tokenizer {
         return new Token(TokenType.TOKEN_VARIABLE_START, tok, lineno, colno);
       } else {
         tok = '';
-        let data;
+        let data: string;
         let inComment: boolean = false;
 
         if (this._matches(this.tags.COMMENT_START)) {
@@ -268,7 +268,7 @@ export class Tokenizer {
                 this._matches(this.tags.BLOCK_START) &&
                 this.colno > 0 &&
                 this.colno <= tok.length) {
-              const lastLine = tok.slice(-this.colno);
+              const lastLine: string = tok.slice(-this.colno);
               if (/^\s+$/.test(lastLine)) {
                 // Remove block leading whitespace from beginning of the string
                 tok = tok.slice(0, -this.colno);
@@ -340,17 +340,14 @@ export class Tokenizer {
   }
 
 
-  _matches(str): null | boolean {
-    if (this.index + str.length > this.len) {
-      return null;
-    }
-
-    const m: string = this.str.slice(this.index, this.index + str.length);
-    return m === str;
+  _matches(str: string): null | boolean {
+    return (this.index + str.length) > this.len
+        ? null
+        : (this.str.slice(this.index, this.index + str.length) === str);
   }
 
 
-  _extractString(str: string) {
+  _extractString(str: string): string | null {
     if (this._matches(str)) {
       this.forwardN(str.length);
       return str;
@@ -382,17 +379,16 @@ export class Tokenizer {
       return null;
     }
 
-    const first = charString.indexOf(this.current());
+    const first: number = charString.indexOf(this.current());
 
     // Only proceed if the first character doesn't meet our condition
-    if ((breakOnMatch && first === -1) ||
-        (!breakOnMatch && first !== -1)) {
+    if ((breakOnMatch && first === -1) || (!breakOnMatch && first !== -1)) {
       let t: string = this.current();
       this.forward();
 
       // And pull out all the chars one at a time until we hit a
       // breaking char
-      let idx = charString.indexOf(this.current());
+      let idx: number = charString.indexOf(this.current());
 
       while (((breakOnMatch && idx === -1) ||
           (!breakOnMatch && idx !== -1)) && !this.isFinished()) {
@@ -410,15 +406,15 @@ export class Tokenizer {
 
 
   _extractRegex(regex: RegExp): null | RegExpMatchArray {
-    const matches: RegExpMatchArray = this.currentStr().match(regex);
-    if (!matches) {
+    const matches: RegExpMatchArray | null = this.currentStr().match(regex);
+    if (matches) {
+      // Move forward whatever was matched
+      this.forwardN(matches[0].length);
+
+      return matches;
+    } else {
       return null;
     }
-
-    // Move forward whatever was matched
-    this.forwardN(matches[0].length);
-
-    return matches;
   }
 
 
@@ -428,7 +424,7 @@ export class Tokenizer {
 
 
   forwardN(n: number): void {
-    for (let i = 0; i < n; i++) {
+    for (let i: number = 0; i < n; i++) {
       this.forward();
     }
   }
@@ -455,7 +451,7 @@ export class Tokenizer {
 
 
   backN(n: number): void {
-    for (let i = 0; i < n; i++) {
+    for (let i: number = 0; i < n; i++) {
       this.back();
     }
   }
@@ -470,12 +466,7 @@ export class Tokenizer {
       const previousNewlineIndex: number = this.src.lastIndexOf('\n', this.index - 1);
 
       this.currentLine_ = this.str.substring(previousNewlineIndex, this.index);
-
-      if (previousNewlineIndex === -1) {
-        this.colno = this.index;
-      } else {
-        this.colno = this.index - previousNewlineIndex;
-      }
+      this.colno = (previousNewlineIndex === -1) ? this.index : this.index - previousNewlineIndex;
     } else {
       this.colno--;
     }

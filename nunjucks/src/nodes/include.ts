@@ -6,10 +6,10 @@ export class Include extends NunjucksNode {
   get typename(): string { return 'Include'; }
 
   public template;
-  public ignoreMissing;
+  public ignoreMissing: boolean | undefined;
 
 
-  constructor(lineno: number, colno: number, template?, ignoreMissing?) {
+  constructor(lineno: number, colno: number, template?, ignoreMissing?: boolean) {
     super(lineno, colno, template, ignoreMissing);
   }
 

@@ -13,11 +13,11 @@ function match(filename, patterns) {
   if (!Array.isArray(patterns)) {
     return false;
   }
-  return patterns.some((pattern) => filename.match(pattern));
+  return patterns.some((pattern): boolean => filename.match(pattern));
 }
 
 
-export function precompileString(str, opts) {
+export function precompileString(str: string, opts: { isString?: boolean; env?: Environment; wrapper?: any; name?: any; }) {
   opts = opts || {};
   opts.isString = true;
   const env = opts.env || new Environment([]);
@@ -57,10 +57,10 @@ export function precompile(input, opts) {
   const precompiled = [];
   const templates = [];
 
-  function addTemplates(dir) {
-    fs.readdirSync(dir).forEach((file) => {
-      const filepath = path.join(dir, file);
-      let subpath = filepath.substr(path.join(input, '/').length);
+  function addTemplates(dir): void {
+    fs.readdirSync(dir).forEach((file: string): void => {
+      const filepath: string = path.join(dir, file);
+      let subpath: string = filepath.substr(path.join(input, '/').length);
       const stat = fs.statSync(filepath);
 
       if (stat && stat.isDirectory()) {
@@ -83,7 +83,7 @@ export function precompile(input, opts) {
   } else if (pathStats.isDirectory()) {
     addTemplates(input);
 
-    for (let i = 0; i < templates.length; i++) {
+    for (let i: number = 0; i < templates.length; i++) {
       const name = templates[i].replace(path.join(input, '/'), '');
 
       try {
@@ -108,12 +108,12 @@ export function precompile(input, opts) {
 }
 
 
-function _precompile(str, name, env) {
+function _precompile(str: string, name: string, env: Environment): { template: string; name: string } {
   env = env || new Environment([]);
 
   const asyncFilters = env.asyncFilters;
   const extensions = env.extensionsList;
-  let template;
+  let template: string;
 
   name = name.replace(/\\/g, '/');
 

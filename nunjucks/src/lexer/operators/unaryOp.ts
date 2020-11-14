@@ -8,7 +8,7 @@ export abstract class UnaryOp extends NunjucksNode {
   public target;
 
 
-  protected constructor(lineno: number, colno: number, target) {
+  protected constructor(lineno: number, colno: number, target: NunjucksNode) {
     super(lineno, colno, target);
   }
 

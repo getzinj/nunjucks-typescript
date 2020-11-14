@@ -55,17 +55,19 @@ import { KeywordArgs } from './nodes/keywordArgs';
 import { Dict } from './nodes/dict';
 import { ArrayNode } from './nodes/arrayNode';
 
-let sym = 0;
+let sym: number = 0;
 
-function gensym() {
+
+function gensym(): string {
   return 'hole_' + sym++;
 }
 
+
 // copy-on-write version of map
-function mapCOW(arr, func) {
+function mapCOW<T, V>(arr: T[], func: (item: T) => T | V): (T | V)[] {
   let res = null;
-  for (let i = 0; i < arr.length; i++) {
-    const item = func(arr[i]);
+  for (let i: number = 0; i < arr.length; i++) {
+    const item: T | V = func(arr[i]);
 
     if (item !== arr[i]) {
       if (!res) {
@@ -76,7 +78,7 @@ function mapCOW(arr, func) {
     }
   }
 
-  return res || arr;
+  return res ?? arr;
 }
 
 
@@ -256,45 +258,46 @@ function createDynamicNode<T extends NunjucksNode>(typename: string, ...args: an
 }
 
 
-function walk(ast: NunjucksNode, func, depthFirst?) {
+function walk(ast: NunjucksNode, func: (ast: NunjucksNode) => any, depthFirst?: boolean) {
   if (!(ast instanceof NunjucksNode)) {
     return ast;
-  }
-
-  if (!depthFirst) {
-    const astT = func(ast);
-
-    if (astT && astT !== ast) {
-      return astT;
-    }
-  }
-
-  if (ast instanceof NunjucksNodeList) {
-    const children: NunjucksNode[] = mapCOW(ast.children, (node) => walk(node, func, depthFirst));
-
-    if (children !== ast.children) {
-      ast = createDynamicNode(ast.typename, ast.lineno, ast.colno, children);
-    }
-  } else if (ast instanceof CallExtension) {
-    const args: NunjucksNodeList = walk(ast.args, func, depthFirst);
-    const contentArgs: NunjucksNode[] = mapCOW(ast.contentArgs, (node) => walk(node, func, depthFirst));
-
-    if (args !== ast.args || contentArgs !== ast.contentArgs) {
-      ast = createDynamicNode(ast.typename, ast.extName, ast.prop, args, contentArgs);
-    }
   } else {
-    const props = ast.fields.map((field: string) => ast[field]);
-    const propsT = mapCOW(props, (prop) => walk(prop, func, depthFirst));
 
-    if (propsT !== props) {
-      ast = createDynamicNode(ast.typename, ast.lineno, ast.colno);
-      propsT.forEach((prop, i) => {
-        ast[ast.fields[i]] = prop;
-      });
+    if (!depthFirst) {
+      const astT = func(ast);
+
+      if (astT && astT !== ast) {
+        return astT;
+      }
     }
-  }
 
-  return depthFirst ? (func(ast) || ast) : ast;
+    if (ast instanceof NunjucksNodeList) {
+      const children: NunjucksNode[] = mapCOW(ast.children, (node: NunjucksNode) => walk(node, func, depthFirst));
+
+      if (children !== ast.children) {
+        ast = createDynamicNode(ast.typename, ast.lineno, ast.colno, children);
+      }
+    } else if (ast instanceof CallExtension) {
+      const args: NunjucksNodeList = walk(ast.args, func, depthFirst);
+      const contentArgs: NunjucksNode[] = mapCOW(ast.contentArgs, (node: NunjucksNode) => walk(node, func, depthFirst));
+
+      if (args !== ast.args || contentArgs !== ast.contentArgs) {
+        ast = createDynamicNode(ast.typename, ast.extName, ast.prop, args, contentArgs);
+      }
+    } else {
+      const props = ast.fields.map((field: string) => ast[field]);
+      const propsT = mapCOW(props, (prop) => walk(prop, func, depthFirst));
+
+      if (propsT !== props) {
+        ast = createDynamicNode(ast.typename, ast.lineno, ast.colno);
+        propsT.forEach((prop, i: number): void => {
+          ast[ast.fields[i]] = prop;
+        });
+      }
+    }
+
+    return depthFirst ? (func(ast) || ast) : ast;
+  }
 }
 
 
@@ -373,9 +376,9 @@ function liftSuper(ast: NunjucksNode): NunjucksSymbol | undefined {
     }
 
     let hasSuper: boolean = false;
-    const symbol = gensym();
+    const symbol: string = gensym();
 
-    blockNode.body = walk(blockNode.body, (node) => { // eslint-disable-line consistent-return
+    blockNode.body = walk(blockNode.body, (node: NunjucksNode) => { // eslint-disable-line consistent-return
       if (node instanceof FunCall && node.name.value === 'super') {
         hasSuper = true;
         return new NunjucksSymbol(node.lineno, node.colno, symbol);
@@ -398,7 +401,7 @@ function convertStatements(ast): NunjucksNode | undefined {
     }
 
     let async = false;
-    walk(node, (child) => {
+    walk(node, (child: NunjucksNode): FilterAsync | IfAsync | AsyncEach | AsyncAll | CallExtensionAsync | undefined => {
       if (child instanceof FilterAsync ||
         child instanceof IfAsync ||
         child instanceof AsyncEach ||
@@ -449,4 +452,3 @@ export function transform(ast, asyncFilters, name?) {
 // var src = 'hello {% foo %}{% endfoo %} end';
 // var ast = transform(parser.parse(src, [new FooExtension()]), ['bar']);
 // printNodes(ast);
-

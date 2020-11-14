@@ -1,6 +1,6 @@
 'use strict';
 
-export const whitespaceChars = ' \n\t\r\u00A0';
-export const delimChars = '()[]{}%*-+~/#,:|.<>=!';
-export const intChars = '0123456789';
+export const whitespaceChars: string = ' \n\t\r\u00A0';
+export const delimChars: string = '()[]{}%*-+~/#,:|.<>=!';
+export const intChars: string = '0123456789';
 

@@ -3,7 +3,7 @@ import { NunjucksNode } from './nunjucksNode';
 
 
 
-export abstract class Value extends NunjucksNode {
+export abstract class Value<T extends string | number> extends NunjucksNode {
   get typename(): string { return 'Value'; }
 
 
@@ -11,7 +11,7 @@ export abstract class Value extends NunjucksNode {
     return [ 'value' ];
   }
 
-  constructor(lineno, colno, public readonly value) {
+  constructor(lineno: number, colno: number, public readonly value: T) {
     super(lineno, colno, value);
   }
 }

@@ -9,7 +9,7 @@ export class BinOp extends NunjucksNode {
   public right;
 
 
-  constructor(lineno: number, colno: number, left, right) {
+  constructor(lineno: number, colno: number, left: NunjucksNode, right: NunjucksNode) {
     super(lineno, colno, left, right);
   }
 
