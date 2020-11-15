@@ -14,14 +14,11 @@ export class Frame {
   constructor(public readonly parent?: Frame | undefined, public readonly isolateWrites?: boolean) { }
 
 
-  set(name: string, val, resolveUp?: boolean): void {
+  set(name: string, val: string, resolveUp?: boolean): void {
     // Allow variables with dots by automatically creating the
     // nested structure
-    if (!name) {
-      debugger;
-    }
     const parts: string[] = name.split('.');
-    let obj = this.variables;
+    let obj: Record<string, any> = this.variables;
     let frame: Frame = this;
 
     if (resolveUp) {
@@ -31,7 +28,7 @@ export class Frame {
       }
     }
 
-    for (let i = 0; i < parts.length - 1; i++) {
+    for (let i: number = 0; i < parts.length - 1; i++) {
       const id: string = parts[i];
 
       if (!obj[id]) {
@@ -46,17 +43,14 @@ export class Frame {
 
 
   get<T>(name: string): T {
-    const val: T | undefined = this.variables[name];
-    if (val !== undefined) {
-      return val;
-    }
-    return null;
+    const val: T | undefined | null = this.variables[name];
+    return val ?? null;
   }
 
 
-  lookup(name: string) {
+  lookup<T>(name: string): T | undefined | null {
     const p: Frame = this.parent;
-    const val = this.variables[name];
+    const val: T | undefined | null = this.variables[name];
 
     return (val === undefined)
         ? p?.lookup?.(name)

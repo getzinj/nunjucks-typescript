@@ -7,9 +7,9 @@ import { SafeString } from './SafeString';
 import { TemplateError } from '../templateError';
 import { NunjucksSymbol } from '../nodes/nunjucksSymbol';
 import { Context } from '../environment/environment';
+import { IHasKeywords } from './IHasKeywords';
 
 export { Frame } from './frame';
-
 export { SafeString} from './SafeString';
 export { asyncFor, isArray, asyncIter, keys as keys_, inOperator, keys } from '../lib';
 export { TemplateError } from '../templateError';
@@ -41,7 +41,7 @@ export function makeMacro(argNames: string[], kwargNames, func): (...macroArgs) 
     } else if (argCount < argNames.length) {
       args = macroArgs.slice(0, argCount);
 
-      for (let i = argCount; i < argNames.length; i++) {
+      for (let i: number = argCount; i < argNames.length; i++) {
         const arg: string = argNames[i];
 
         // Keyword arguments that should be passed as
@@ -66,12 +66,12 @@ export function makeKeywordArgs<T, V extends T, IHasKeywords>(obj: T): V {
 }
 
 
-export function isKeywordArgs(obj): boolean {
+export function isKeywordArgs(obj): obj is IHasKeywords {
   return obj && Object.prototype.hasOwnProperty.call(obj, '__keywords');
 }
 
 
-export function getKeywordArgs<T>(args: T[]): T | { } {
+export function getKeywordArgs<T>(args: T[]): T & IHasKeywords | { } {
   const len: number = args.length;
   if (len) {
     const lastArg: T = args[len - 1];
@@ -87,13 +87,9 @@ export function numArgs<T>(args: T[]): number {
   const len: number = args.length;
   if (len === 0) {
     return 0;
-  }
-
-  const lastArg: T = args[len - 1];
-  if (isKeywordArgs(lastArg)) {
-    return len - 1;
   } else {
-    return len;
+    const lastArg: T = args[len - 1];
+    return isKeywordArgs(lastArg) ? (len - 1) : len;
   }
 }
 
@@ -148,11 +144,11 @@ export function ensureDefined<T>(val: T | undefined, lineno: number, colno: numb
 }
 
 
-export var memberLookup: <O, I extends keyof O>(obj: O, val: I, autoescape?: boolean) => any  = function memberLookup<O, I extends keyof O>(obj: O, val: I) {
+export var memberLookup: <O, K extends keyof O>(obj: O, val: K, autoescape?: boolean) => any  = <O, K extends keyof O>(obj: O, val: K) => {
   if (obj === undefined || obj === null) {
     return undefined;
   } else {
-    const element: O[I] = obj[val];
+    const element: O[K] = obj[val];
     if (typeof element === 'function') {
         return (...args: any[]) => element.apply(obj, args);
       } else {

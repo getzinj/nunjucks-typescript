@@ -38,6 +38,13 @@ import { NunjucksNodeList, CallExtension, NunjucksNode } from '../nodes/nunjucks
 import { ArrayNode } from '../nodes/arrayNode';
 import { repeat } from '../lib';
 import { FilterAsync } from '../nodes/filterAsync';
+import { Super } from '../nodes/super';
+import { Extends } from '../nodes/extends';
+import { Include } from '../nodes/include';
+import { Output } from '../nodes/output';
+import { IExtension } from '../parser/IExtension';
+import { IPreprocessor } from './IPreprocessor';
+import { ICompilerOptions } from './ICompilerOptions';
 
 
 
@@ -130,9 +137,11 @@ export class Compiler extends Obj {
     this._closeScopeLevels();
     this.currentIndentLevel--;
     this._emitLine('} catch (e) {');
-    this.currentIndentLevel++;
-    this._emitLine('cb(runtime.handleError(e, lineno, colno));');
-    this.currentIndentLevel--;
+    {
+      this.currentIndentLevel++;
+      this._emitLine('cb(runtime.handleError(e, lineno, colno));');
+      this.currentIndentLevel--;
+    }
     this._emitLine('}');
     this.currentIndentLevel--;
     this._emitLine('}');
@@ -208,8 +217,7 @@ export class Compiler extends Obj {
 
 
   _compileExpression(node, frame: Frame): void {
-    // TODO: I'm not really sure if this type check is worth it or
-    // not.
+    // TODO: I'm not really sure if this type check is worth it or  not.
     this.assertType(
         node,
         Literal,
@@ -357,7 +365,7 @@ export class Compiler extends Obj {
 
   compileSymbol(node, frame: Frame): void {
     const name = node.value;
-    const v = frame.lookup(name);
+    const v: string = frame.lookup(name);
 
     if (v) {
       this._emit(v);
@@ -581,6 +589,7 @@ export class Compiler extends Obj {
     this.assertType(name, NunjucksSymbol);
 
     // Handle special case of "default" filter, which is an invalid export.
+    // @ts-ignore
     const filterName: string = (name.value === 'default') ? 'default_' : name.value;
 
     this._emit('env.getFilter("' + filterName + '").call(context, ');
@@ -597,7 +606,8 @@ export class Compiler extends Obj {
 
     frame.set(symbol, symbol);
 
-    this._emit('env.getFilter("' + name.value + '").call(context, ');
+    // @ts-ignore
+    this._emit(`env.getFilter("${ name.value }").call(context, `);
     this._compileAggregate(node.args, frame);
     this._emitLine(', ' + this._makeCallback(symbol));
 
@@ -1083,12 +1093,14 @@ export class Compiler extends Obj {
     this._addScopeLevel();
 
     node.names.children.forEach((nameNode): void => {
-      let name;
-      let alias;
+      let name: string;
+      let alias: string;
       const id: string = this._tmpid();
 
       if (nameNode instanceof Pair) {
+        // @ts-ignore
         name = nameNode.key.value;
+        // @ts-ignore
         alias = nameNode.value.value;
       } else {
         name = nameNode.value;
@@ -1112,6 +1124,7 @@ export class Compiler extends Obj {
       }
     });
   }
+
 
   compileBlock(node): void {
     const id: string = this._tmpid();
@@ -1138,7 +1151,9 @@ export class Compiler extends Obj {
     this._addScopeLevel();
   }
 
-  compileSuper(node, frame: Frame): void {
+
+  compileSuper(node: Super, frame: Frame): void {
+    // @ts-ignore
     const name = node.blockName.value;
     const id = node.symbol.value;
 
@@ -1149,7 +1164,8 @@ export class Compiler extends Obj {
     frame.set(id, id);
   }
 
-  compileExtends(node, frame: Frame): void {
+
+  compileExtends(node: Extends, frame: Frame): void {
     const k: string = this._tmpid();
 
     const parentTemplateId: string = this._compileGetTemplate(node, frame, true, false);
@@ -1169,28 +1185,36 @@ export class Compiler extends Obj {
   }
 
 
-  compileInclude(node, frame: Frame): void {
+  compileInclude(node: Include, frame: Frame): void {
     this._emitLine('var tasks = [];');
     this._emitLine('tasks.push(');
     this._emitLine('function(callback) {');
-    this.currentIndentLevel++;
-    const id: string = this._compileGetTemplate(node, frame, false, node.ignoreMissing);
-    this._emitLine(`callback(null,${id});});`);
+    {
+      this.currentIndentLevel++;
+      const id: string = this._compileGetTemplate(node, frame, false, node.ignoreMissing);
+      this._emitLine(`callback(null,${id});});`);
+      this.currentIndentLevel--;
+    }
     this._emitLine('});');
 
     const id2: string = this._tmpid();
     this._emitLine('tasks.push(');
     this._emitLine('function(template, callback){');
-    this.currentIndentLevel++;
-    this._emitLine('template.render(context.getVariables(), frame, ' + this._makeCallback(id2));
-    this._emitLine('callback(null,' + id2 + ');});');
+    {
+      this.currentIndentLevel++;
+      this._emitLine('template.render(context.getVariables(), frame, ' + this._makeCallback(id2));
+      this._emitLine('callback(null,' + id2 + ');});');
+      this.currentIndentLevel--;
+    }
     this._emitLine('});');
 
     this._emitLine('tasks.push(');
     this._emitLine('function(result, callback){');
-    this.currentIndentLevel++;
-    this._emitLine(`${this.buffer} += result;`);
-    this._emitLine('callback(null);');
+    {
+      this.currentIndentLevel++;
+      this._emitLine(`${this.buffer} += result;`);
+      this._emitLine('callback(null);');
+    }
     this._emitLine('});');
     this._emitLine('env.waterfall(tasks, function(){');
     this.currentIndentLevel++;
@@ -1209,20 +1233,24 @@ export class Compiler extends Obj {
     const buffer: string = this.buffer;
     this.buffer = 'output';
     this._emitLine('(function() {');
-    this.currentIndentLevel++;
-    this._emitLine('var output = "";');
-    this._withScopedSyntax((): void => {
-      this.compile(node.body, frame);
-    });
-    this._emitLine('return output;');
+    {
+      this.currentIndentLevel++;
+      this._emitLine('var output = "";');
+      this._withScopedSyntax((): void => {
+        this.compile(node.body, frame);
+      });
+      this._emitLine('return output;');
+      this.currentIndentLevel--;
+    }
     this._emitLine('})()');
     // and of course, revert back to the old buffer id
     this.buffer = buffer;
   }
 
-  compileOutput(node, frame: Frame): void {
+
+  compileOutput(node: Output, frame: Frame): void {
     const children = node.children;
-    children.forEach((child): void => {
+    children.forEach((child: NunjucksNode): void => {
       // TemplateData is a special case because it is never
       // autoescaped, so simply output it for optimization
       if (child instanceof TemplateData) {
@@ -1257,23 +1285,28 @@ export class Compiler extends Obj {
     this._emitLine('var parentTemplate = null;');
     this._compileChildren(node, frame);
     this._emitLine('if(parentTemplate) {');
-    this.currentIndentLevel++;
-    this._emitLine('parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);');
+    {
+      this.currentIndentLevel++;
+      this._emitLine('parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);');
+      this.currentIndentLevel--;
+    }
     this._emitLine('} else {');
-    this.currentIndentLevel++;
-    this._emitLine(`cb(null, ${this.buffer});`);
-    this.currentIndentLevel--;
+    {
+      this.currentIndentLevel++;
+      this._emitLine(`cb(null, ${this.buffer});`);
+      this.currentIndentLevel--;
+    }
     this._emitLine('}');
     this._emitFuncEnd(true);
 
     this.inBlock = true;
 
-    const blockNames = [];
+    const blockNames: string[] = [];
 
     const blocks = node.findAll(Block);
 
     blocks.forEach((block, i): void => {
-      const name = block.name.value;
+      const name: string = block.name.value;
 
       if (blockNames.indexOf(name) !== -1) {
         throw new Error(`Block "${name}" defined more than once.`);
@@ -1289,19 +1322,22 @@ export class Compiler extends Obj {
     });
 
     this._emitLine('return {');
-    this.currentIndentLevel++;
+    {
+      this.currentIndentLevel++;
 
-    blocks.forEach((block, i): void => {
-      const blockName: string = `b_${block.name.value}`;
-      this._emitLine(`${blockName}: ${blockName},`);
-    });
+      blocks.forEach((block, i): void => {
+        const blockName: string = `b_${block.name.value}`;
+        this._emitLine(`${blockName}: ${blockName},`);
+      });
 
-    this._emitLine('root: root\n};');
+      this._emitLine('root: root\n};');
+      this.currentIndentLevel--;
+    }
   }
 
 
-  compile(node, frame?): void {
-    const _compile: (node, frame) => void = this['compile' + node.typename];
+  compile(node, frame?: Frame): void {
+    const _compile: (node, frame: Frame) => void = this['compile' + node.typename];
     if (_compile) {
       _compile.call(this, node, frame);
     } else {
@@ -1317,19 +1353,19 @@ export class Compiler extends Obj {
 
 
 export function compile(
-    src,
+    src: string,
     asyncFilters,
-    extensions,
+    extensions: IExtension[],
     name: string,
     opts: ICompilerOptions = { throwOnUndefined: undefined }): string {
   const compiler: Compiler = new Compiler(name, opts.throwOnUndefined);
 
   // Run the extension preprocessors against the source.
-  const preprocessors = (extensions || [])
-      .map( (ext) => ext.preprocess )
-      .filter( (f): boolean => !!f );
+  const preprocessors: IPreprocessor[] = (extensions ?? [])
+      .map( (ext: IExtension) => ext.preprocess )
+      .filter( (f: IPreprocessor | null | undefined): boolean => !!f );
 
-  const processedSrc = preprocessors.reduce((s, processor) => processor(s), src);
+  const processedSrc: IPreprocessor = preprocessors.reduce((s: IPreprocessor, processor: IPreprocessor) => processor(s), src);
 
   compiler.compile(transform(
       parse(processedSrc, extensions, opts),
@@ -1338,9 +1374,4 @@ export function compile(
   ));
 
   return compiler.getCode();
-}
-
-
-export interface ICompilerOptions {
-  throwOnUndefined?: boolean
 }

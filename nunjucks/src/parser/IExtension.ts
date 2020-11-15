@@ -1,9 +1,11 @@
 import { IParser } from './IParser';
 import { CallExtension } from '../nodes/nunjucksNode';
+import { IPreprocessor } from '../compiler/IPreprocessor';
 
 
 
 export interface IExtension {
+  preprocess?: IPreprocessor;
   readonly tags: string[];
   __name?: new () => IExtension;
 

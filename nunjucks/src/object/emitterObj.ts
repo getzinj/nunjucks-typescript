@@ -13,9 +13,11 @@ export class EmitterObj extends EventEmitter {
   init(...args) {
   }
 
-  get typename() {
+
+  get typename(): string {
     return this.constructor.name;
   }
+
 
   static extend(name, props) {
     if (typeof name === 'object') {

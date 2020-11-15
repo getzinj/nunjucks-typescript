@@ -236,3 +236,7 @@ nunjucks/src/parser/IParser.js.map
 tests/setup.spec.js
 tests/setup.spec.js.map
 .npmrc
+nunjucks/src/compiler/ICompilerOptions.js
+nunjucks/src/compiler/ICompilerOptions.js.map
+nunjucks/src/compiler/IPreprocessor.js
+nunjucks/src/compiler/IPreprocessor.js.map
