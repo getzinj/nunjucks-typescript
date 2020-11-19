@@ -3,9 +3,9 @@ import { NunjucksSymbol } from './nunjucksSymbol';
 
 
 
-export class Super extends NunjucksNode {
+export class Self extends NunjucksNode {
   get typename(): string {
-    return 'Super';
+    return 'Self';
   }
 
 

@@ -54,6 +54,7 @@ import { BinOp } from './lexer/operators/binOp';
 import { KeywordArgs } from './nodes/keywordArgs';
 import { Dict } from './nodes/dict';
 import { ArrayNode } from './nodes/arrayNode';
+import { Self } from './nodes/self';
 
 let sym: number = 0;
 
@@ -65,7 +66,7 @@ function gensym(): string {
 
 // copy-on-write version of map
 function mapCOW<T, V>(arr: T[], func: (item: T) => T | V): (T | V)[] {
-  let res = null;
+  let res: (T | V)[] = null;
   for (let i: number = 0; i < arr.length; i++) {
     const item: T | V = func(arr[i]);
 
@@ -171,6 +172,9 @@ function createDynamicNode<T extends NunjucksNode>(typename: string, ...args: an
     case 'Block':
       // @ts-ignore
       return new Block(...args);
+    case 'Self':
+      // @ts-ignore
+      return new Self(...args);
     case 'Super':
       // @ts-ignore
       return new Super(...args);
@@ -301,15 +305,15 @@ function walk(ast: NunjucksNode, func: (ast: NunjucksNode) => any, depthFirst?: 
 }
 
 
-function depthWalk(ast, func) {
+function depthWalk(ast: any, func) {
   return walk(ast, func, true);
 }
 
 
-function _liftFilters(node, asyncFilters, prop?) {
+function _liftFilters(node: CallExtension | Output | Set | For | If, asyncFilters: string[], prop?: string): CallExtension | Output | Set | For | If | NunjucksNodeList {
   const children = [];
 
-  const walked = depthWalk(prop ? node[prop] : node, (descNode) => {
+  const walked = depthWalk(prop ? node[prop] : node, (descNode: Block | NunjucksSymbol | Filter): Block | NunjucksSymbol => {
     let symbol: NunjucksSymbol;
     if (descNode instanceof Block) {
       return descNode;
@@ -350,8 +354,8 @@ function _liftFilters(node, asyncFilters, prop?) {
 }
 
 
-function liftFilters(ast, asyncFilters) {
-  return depthWalk(ast, (node) => {
+function liftFilters(ast: Root, asyncFilters: string[]) {
+  return depthWalk(ast, (node: CallExtension | Output | Set | For | If): NunjucksNodeList | CallExtension | Set | For | If | undefined => {
     if (node instanceof Output) {
       return _liftFilters(node, asyncFilters);
     } else if (node instanceof Set) {
@@ -370,7 +374,7 @@ function liftFilters(ast, asyncFilters) {
 
 
 function liftSuper(ast: NunjucksNode): NunjucksSymbol | undefined {
-  return walk(ast, (blockNode: NunjucksNode) => {
+  return walk(ast, (blockNode: NunjucksNode): void => {
     if (!(blockNode instanceof Block)) {
       return;
     }
@@ -378,7 +382,7 @@ function liftSuper(ast: NunjucksNode): NunjucksSymbol | undefined {
     let hasSuper: boolean = false;
     const symbol: string = gensym();
 
-    blockNode.body = walk(blockNode.body, (node: NunjucksNode) => { // eslint-disable-line consistent-return
+    blockNode.body = walk(blockNode.body, (node: NunjucksNode): NunjucksSymbol => { // eslint-disable-line consistent-return
       if (node instanceof FunCall && node.name.value === 'super') {
         hasSuper = true;
         return new NunjucksSymbol(node.lineno, node.colno, symbol);
@@ -394,13 +398,38 @@ function liftSuper(ast: NunjucksNode): NunjucksSymbol | undefined {
 }
 
 
+function liftSelf(ast: NunjucksNode): Self | undefined {
+  return walk(ast, (blockNode: NunjucksNode): void => {
+    if (!(blockNode instanceof Block)) {
+      return;
+    }
+
+    let hasSelf: boolean = false;
+    const symbol: string = gensym();
+    let blockName: NunjucksSymbol;
+
+    blockNode.body = walk(blockNode.body, (node: NunjucksNode): NunjucksSymbol => { // eslint-disable-line consistent-return
+      if (node instanceof FunCall && node.name.value === 'self') {
+        hasSelf = true;
+        blockName = node.args.children[0] as NunjucksSymbol;
+        return new NunjucksSymbol(node.lineno, node.colno, symbol);
+      }
+    });
+
+    if (hasSelf) {
+      blockNode.body.children.unshift(new Self(0, 0, blockName, new NunjucksSymbol(0, 0, symbol)));
+    }
+  });
+}
+
+
 function convertStatements(ast): NunjucksNode | undefined {
-  return depthWalk(ast, (node) => {
+  return depthWalk(ast, (node: NunjucksNode): AsyncEach | undefined | IfAsync => {
     if (!(node instanceof If) && !(node instanceof For)) {
       return undefined;
     }
 
-    let async = false;
+    let async: boolean = false;
     walk(node, (child: NunjucksNode): FilterAsync | IfAsync | AsyncEach | AsyncAll | CallExtensionAsync | undefined => {
       if (child instanceof FilterAsync ||
         child instanceof IfAsync ||
@@ -439,12 +468,12 @@ function convertStatements(ast): NunjucksNode | undefined {
 }
 
 
-function cps(ast, asyncFilters) {
-  return convertStatements(liftSuper(liftFilters(ast, asyncFilters)));
+function cps(ast: Root, asyncFilters: string[]): NunjucksNode {
+  return convertStatements(liftSelf(liftSuper(liftFilters(ast, asyncFilters))));
 }
 
 
-export function transform(ast, asyncFilters, name?) {
+export function transform(ast: Root, asyncFilters, name?: string): NunjucksNode {
   return cps(ast, asyncFilters || []);
 }
 

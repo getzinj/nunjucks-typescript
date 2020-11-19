@@ -45,6 +45,8 @@ import { Output } from '../nodes/output';
 import { IExtension } from '../parser/IExtension';
 import { IPreprocessor } from './IPreprocessor';
 import { ICompilerOptions } from './ICompilerOptions';
+import { Self } from '../nodes/self';
+import { BinOp } from '../lexer/operators/binOp';
 
 
 
@@ -190,8 +192,8 @@ export class Compiler extends Obj {
   }
 
 
-  _compileChildren(node, frame: Frame): void {
-    node.children.forEach((child): void => {
+  _compileChildren(node: NunjucksNode, frame: Frame): void {
+    node?.children?.forEach?.((child: NunjucksNode): void => {
       this.compile(child, frame);
     });
   }
@@ -364,14 +366,13 @@ export class Compiler extends Obj {
 
 
   compileSymbol(node, frame: Frame): void {
-    const name = node.value;
+    const name: string = node.value;
     const v: string = frame.lookup(name);
 
     if (v) {
       this._emit(v);
     } else {
-      this._emit('runtime.contextOrFrameLookup(' +
-          'context, frame, "' + name + '")');
+      this._emit(`runtime.contextOrFrameLookup(context, frame, "${ name }")`);
     }
   }
 
@@ -456,7 +457,7 @@ export class Compiler extends Obj {
   }
 
 
-  _binOpEmitter(node, frame, str): void {
+  _binOpEmitter(node: BinOp, frame: Frame, str: string): void {
     this.compile(node.left, frame);
     this._emit(str);
     this.compile(node.right, frame);
@@ -498,10 +499,12 @@ export class Compiler extends Obj {
     return this._binOpEmitter(node, frame, ' % ');
   }
 
+
   compileNot(node, frame: Frame): void {
     this._emit('!');
     this.compile(node.target, frame);
   }
+
 
   compileFloorDiv(node, frame: Frame): void {
     this._emit('Math.floor(');
@@ -546,7 +549,8 @@ export class Compiler extends Obj {
     this._emit(')');
   }
 
-  _getNodeName(node) {
+
+  _getNodeName(node): string {
     switch (node.typename) {
       case 'Symbol':
       case 'NunjucksSymbol':
@@ -563,7 +567,8 @@ export class Compiler extends Obj {
     }
   }
 
-  compileFunCall(node, frame: Frame): void {
+
+  compileFunCall(node: FunCall, frame: Frame): void {
     // Keep track of line/col info at runtime by settings
     // variables within an expression. An expression in javascript
     // like (x, y, z) returns the last value, and x and y can be
@@ -1047,7 +1052,6 @@ export class Compiler extends Obj {
   compileCaller(node, frame: Frame): void {
     // basically an anonymous "macro expression"
     this._emit('(function (){');
-    this.currentIndentLevel++;
     const funcId: string = this._compileMacro(node, frame);
     this._emit(`return ${funcId};})()`);
   }
@@ -1108,7 +1112,9 @@ export class Compiler extends Obj {
       }
 
       this._emitLine(`if(Object.prototype.hasOwnProperty.call(${importedId}, "${name}")) {`);
+      this.currentIndentLevel++;
       this._emitLine(`var ${id} = ${importedId}.${name};`);
+      this.currentIndentLevel--;
       this._emitLine('} else {');
       this.currentIndentLevel++;
       this._emitLine(`cb(new Error("cannot import '${name}'")); return;`);
@@ -1126,7 +1132,7 @@ export class Compiler extends Obj {
   }
 
 
-  compileBlock(node): void {
+  compileBlock(node: Block): void {
     const id: string = this._tmpid();
 
     // If we are executing outside a block (creating a top-level
@@ -1154,12 +1160,23 @@ export class Compiler extends Obj {
 
   compileSuper(node: Super, frame: Frame): void {
     // @ts-ignore
-    const name = node.blockName.value;
-    const id = node.symbol.value;
+    const name: string = node.blockName.value;
+    const id: string = node.symbol.value;
 
     const cb: string = this._makeCallback(id);
     this._emitLine(`context.getSuper(env, "${name}", b_${name}, frame, runtime, ${cb}`);
     this._emitLine(`${id} = runtime.markSafe(${id});`);
+    this._addScopeLevel();
+    frame.set(id, id);
+  }
+
+
+  compileSelf(node: Self, frame: Frame): void {
+    const name: string = node.blockName.value;
+    const id: string = node.symbol.value;
+
+    const cb: string = this._makeCallback(id);
+    this._emitLine(`context.getSelf(env, "${name}", b_${name}, frame, runtime, ${cb}`);
     this._addScopeLevel();
     frame.set(id, id);
   }
@@ -1176,9 +1193,11 @@ export class Compiler extends Obj {
     this._emitLine(`parentTemplate = ${parentTemplateId}`);
 
     this._emitLine(`for(var ${k} in parentTemplate.blocks) {`);
-    this.currentIndentLevel++;
-    this._emitLine(`context.addBlock(${k}, parentTemplate.blocks[${k}]);`);
-    this.currentIndentLevel--;
+    {
+      this.currentIndentLevel++;
+      this._emitLine(`context.addBlock(${k}, parentTemplate.blocks[${k}]);`);
+      this.currentIndentLevel--;
+    }
     this._emitLine('}');
 
     this._addScopeLevel();
@@ -1324,14 +1343,15 @@ export class Compiler extends Obj {
     this._emitLine('return {');
     {
       this.currentIndentLevel++;
-
-      blocks.forEach((block, i): void => {
-        const blockName: string = `b_${block.name.value}`;
-        this._emitLine(`${blockName}: ${blockName},`);
-      });
-
-      this._emitLine('root: root\n};');
-      this.currentIndentLevel--;
+      {
+        blocks.forEach((block, i): void => {
+          const blockName: string = `b_${block.name.value}`;
+          this._emitLine(`${blockName}: ${blockName},`);
+        });
+        this._emit('root: root\n');
+        this.currentIndentLevel--;
+      }
+      this._emitLine('};');
     }
   }
 
@@ -1365,7 +1385,7 @@ export function compile(
       .map( (ext: IExtension) => ext.preprocess )
       .filter( (f: IPreprocessor | null | undefined): boolean => !!f );
 
-  const processedSrc: IPreprocessor = preprocessors.reduce((s: IPreprocessor, processor: IPreprocessor) => processor(s), src);
+  const processedSrc: string = preprocessors.reduce((s: IPreprocessor, processor: IPreprocessor) => processor(s), src);
 
   compiler.compile(transform(
       parse(processedSrc, extensions, opts),

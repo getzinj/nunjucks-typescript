@@ -19,18 +19,28 @@ import { Obj } from '../object/obj';
 import { Frame } from '../runtime/frame';
 import * as globalRuntime from '../runtime/runtime';
 import { IExtension } from '../parser/IExtension';
+import { IEnvironmentOptions } from './IEnvironmentOptions';
+
+
+export interface IBlocks {
+  [index: string]: IBlockFunction[];
+}
+
+export interface IInitialBlocks {
+  [index: string]: IBlockFunction;
+}
 
 
 export class Context extends Obj {
   private env: Environment | undefined;
-  private exported;
+  private exported: string[];
   private ctx: Record<string, any>;
-  private blocks: Record<string, any>;
+  private blocks: IBlocks;
 
 
-  init(ctx, blocks, env): void {
+  init(ctx: Context, blocks: IInitialBlocks, env: Environment): void {
     // Has to be tied to an environment so we can tap into its globals.
-    this.env = env || new Environment();
+    this.env = env ?? new Environment();
 
     // Make a duplicate of ctx
     this.ctx = extend({ }, ctx);
@@ -65,14 +75,14 @@ export class Context extends Obj {
   }
 
 
-  addBlock(name: string | number, block): this {
-    this.blocks[name] = this.blocks[name] || [ ];
+  addBlock(name: string, block: IBlockFunction): this {
+    this.blocks[name] = this.blocks[name] ?? [ ];
     this.blocks[name].push(block);
     return this;
   }
 
 
-  getBlock(name: string) {
+  getBlock(name: string): IBlockFunction {
     if (!this.blocks[name]) {
       throw new Error('unknown block "' + name + '"');
     }
@@ -81,13 +91,27 @@ export class Context extends Obj {
   }
 
 
-  getSuper(env, name: string, block, frame: Frame, runtime, cb): void {
-    const idx: number = indexOf(this.blocks[name] || [ ], block);
-    const blk = this.blocks[name][idx + 1];
-    const context: this = this;
+  getSuper(env: Environment, name: string, block: IBlockFunction, frame: Frame, runtime, cb): void {
+    const idx: number = indexOf(this.blocks[name] ?? [ ], block);
+    const blk: IBlockFunction = this.blocks[name][idx + 1];
+    const context: Context = this;
 
     if (idx === -1 || !blk) {
       throw new Error('no super block available for "' + name + '"');
+    }
+
+    blk(env, context, frame, runtime, cb);
+  }
+
+
+  getSelf(env: Environment, name: string, block: IBlockFunction, frame: Frame, runtime, cb): void {
+    debugger;
+    const idx: number = indexOf(this.blocks[name] ?? [ ], block);
+    const blk: IBlockFunction = this.blocks[name][idx];
+    const context: Context = this;
+
+    if (!blk) {
+      throw new Error('no self block available for "' + name + '"');
     }
 
     blk(env, context, frame, runtime, cb);
@@ -108,6 +132,10 @@ export class Context extends Obj {
   }
 }
 
+export interface IBlockFunction {
+  (env, context, frame, runtime, cb): void;
+}
+
 
 
 export class Template extends Obj {
@@ -116,7 +144,7 @@ export class Template extends Obj {
   private readonly env: Environment;
   private readonly tmplProps;
   private readonly tmplStr: string;
-  private blocks: Record<string, any>;
+  private blocks: Record<string, IBlockFunction[]>;
   private rootRenderFunc: (env: Environment,
                            context: Context,
                            frame: Frame,
@@ -162,10 +190,12 @@ export class Template extends Obj {
   }
 
 
-  render(ctx, parentFrame, cb?) {
+  render(ctx: Context, cb?);
+  render(ctx: Context, parentFrame: undefined, cb?);
+  render(ctx: Context, parentFrame?: Frame, cb?) {
     if (typeof ctx === 'function') {
       cb = ctx;
-      ctx = { };
+      ctx = { } as Context;
     } else if (typeof parentFrame === 'function') {
       cb = parentFrame;
       parentFrame = null;
@@ -284,8 +314,13 @@ export class Template extends Obj {
           this.path,
           this.env.opts);
 
-      const func: Function = new Function(source); // eslint-disable-line no-new-func
-      props = func();
+      try {
+        const func: Function = new Function(source); // eslint-disable-line no-new-func
+        props = func();
+      } catch (e) {
+        console.error(`Error compiling source: \n${ source }\n`, e);
+        throw e;
+      }
     }
 
     this.blocks = this._getBlocks(props);
@@ -294,8 +329,8 @@ export class Template extends Obj {
   }
 
 
-  _getBlocks(props: { [x: string]: any; }): Record<string, any> {
-    const blocks: Record<string, any> = { };
+  _getBlocks(props: { [x: string]: IBlockFunction[]; }): Record<string, IBlockFunction[]> {
+    const blocks: Record<string, IBlockFunction[]> = { };
 
     lib.keys(props).forEach((k: string): void => {
       if (k.slice(0, 2) === 'b_') {
@@ -308,19 +343,18 @@ export class Template extends Obj {
 }
 
 
-
 export class Environment extends EmitterObj {
-  opts: any;
+  opts: IEnvironmentOptions;
   loaders: Loader[ ];
   private extensions;
-  extensionsList: any[ ];
-  asyncFilters: any[ ];
+  extensionsList;
+  asyncFilters;
   private tests: Record<string, any>;
   private filters: Record<string, any>;
-  globals: any;
+  globals;
 
 
-  init(loaders: Loader | Loader[], opts): void {
+  init(loaders: Loader | Loader[], opts: IEnvironmentOptions): void {
     // The dev flag determines the trace that'll be shown on errors.
     // If set to true, returns the full trace from the error point,
     // otherwise will return trace starting from Template.render
@@ -373,8 +407,8 @@ export class Environment extends EmitterObj {
     this.extensions = { };
     this.extensionsList = [ ];
 
-    lib._entries(filters).forEach(([name, filter]) => this.addFilter(name, filter));
-    lib._entries(tests).forEach(([name, test]) => this.addTest(name, test));
+    lib._entries(filters).forEach(([name, filter]): Environment => this.addFilter(name, filter));
+    lib._entries(tests).forEach(([name, test]): Environment => this.addTest(name, test));
   }
 
 

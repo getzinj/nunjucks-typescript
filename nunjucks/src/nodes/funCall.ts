@@ -1,11 +1,12 @@
 import { NunjucksNode, NunjucksNodeList } from './nunjucksNode';
+import { NunjucksSymbol } from './nunjucksSymbol';
 
 
 
 export class FunCall extends NunjucksNode {
   get typename(): string { return 'FunCall'; }
 
-  public name: NunjucksNode;
+  public name: NunjucksSymbol;
   public args: NunjucksNodeList;
 
 

@@ -80,7 +80,7 @@
     "build": "npm run build:transpile && npm run build:bundle",
     "codecov": "codecov",
     "mocha": "cross-env NODE_ENV=test NODE_PATH=tests/test-node-pkgs mocha -R spec tests",
-    "lint": "eslint nunjucks scripts tests",
+    "lint": "eslint --ext .ts nunjucks scripts tests",
     "prepare": "npm run build",
     "test:instrument": "cross-env NODE_ENV=test scripts/bundle.js",
     "test:runner": "cross-env NODE_ENV=test NODE_PATH=tests/test-node-pkgs scripts/testrunner.js",

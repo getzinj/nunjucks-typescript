@@ -1,6 +1,6 @@
 import { Loader } from 'nunjucks/src/loader';
-import { Environment, Template } from '../nunjucks';
 import { IExtension } from '../nunjucks/src/parser/IExtension';
+import { Context, Template, Environment } from '../nunjucks/src/environment/environment';
 
 
 
@@ -215,7 +215,7 @@ export interface IExtensionOption {
   }
 
 
-  function doRender(cb, t, ctx, opts) {
+  function doRender(cb, t: Template, ctx: Context, opts): string | undefined {
     if (cb) {
       numAsyncs++;
       t.render(ctx, function(err, res): void {
@@ -248,7 +248,7 @@ export interface IExtensionOption {
 
 
 // eslint-disable-next-line consistent-return
-  function render(str, ctx, opts, env, cb?) {
+  function render(str: string, ctx: Context, opts, env, cb?) {
     const environmentConfig: { ctx; cb; opts; loader: Loader; e: Environment } = configureEnvironment(ctx, cb, opts, env);
     ctx = environmentConfig.ctx;
 
@@ -256,7 +256,7 @@ export interface IExtensionOption {
     loadAsyncFilters(environmentConfig.opts, environmentConfig.e);
     loadExtensions(environmentConfig.opts, environmentConfig.e);
 
-    const __ret: { t: Template; ctx: Record<string, any> } = loadTemplate(str, environmentConfig.e, ctx, environmentConfig.loader);
+    const __ret: { t: Template; ctx: Context } = loadTemplate(str, environmentConfig.e, ctx, environmentConfig.loader);
     ctx = __ret.ctx;
 
     return doRender(environmentConfig.cb, __ret.t, ctx, environmentConfig.opts);

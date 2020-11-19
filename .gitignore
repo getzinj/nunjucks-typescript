@@ -240,3 +240,5 @@ nunjucks/src/compiler/ICompilerOptions.js
 nunjucks/src/compiler/ICompilerOptions.js.map
 nunjucks/src/compiler/IPreprocessor.js
 nunjucks/src/compiler/IPreprocessor.js.map
+nunjucks/src/nodes/self.js
+nunjucks/src/nodes/self.js.map

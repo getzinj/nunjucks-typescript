@@ -430,7 +430,7 @@ export class Parser extends Obj implements IParser {
 
     const node: Block = new Block(tag.lineno, tag.colno);
 
-    node.name = this.parsePrimary();
+    node.name = this.parsePrimary() as NunjucksSymbol;
     if (!(node.name instanceof NunjucksSymbol)) {
       this.fail('parseBlock: variable name expected',
         tag.lineno,
@@ -1108,7 +1108,11 @@ export class Parser extends Obj implements IParser {
     if (val !== undefined) {
       node = new Literal(tok.lineno, tok.lineno, val);
     } else if (tok.type === TokenType.TOKEN_SYMBOL) {
-      node = new NunjucksSymbol(tok.lineno, tok.colno, tok.value);
+      if (tok.value === 'self') {
+        return this.parseSelf(tok);
+      } else {
+        node = new NunjucksSymbol(tok.lineno, tok.colno, tok.value);
+      }
     } else {
       // See if it's an aggregate type, we need to push the
       // current delimiter token back on
@@ -1124,6 +1128,32 @@ export class Parser extends Obj implements IParser {
       return node;
     } else {
       throw this.error(`unexpected token: ${tok.value}`, tok.lineno, tok.colno);
+    }
+  }
+
+
+  parseSelf(tok): FunCall {
+    if (this.skipValue(TokenType.TOKEN_OPERATOR, '.')) {
+      const nextToken: Token = this.parserTokenStream.nextToken();
+      if (nextToken.type === TokenType.TOKEN_SYMBOL) {
+        if (this.skip(TokenType.TOKEN_LEFT_PAREN)) {
+          if (this.skip(TokenType.TOKEN_RIGHT_PAREN)) {
+            return new FunCall(
+                tok.lineno,
+                tok.colno,
+                new NunjucksSymbol(tok.lineno, tok.colno, tok.value),
+                new NunjucksNodeList(tok.lineno, tok.colno, [ new NunjucksSymbol(tok.lineno, tok.colno, nextToken.value) ]));
+          } else {
+            this.fail('parsePrimary: expected right paren after left paren', tok.lineno, tok.colno);
+          }
+        } else {
+          this.fail('parsePrimary: expected left paren after block name', tok.lineno, tok.colno);
+        }
+      } else {
+        this.fail('parsePrimary: expected block name after dot operator', tok.lineno, tok.colno);
+      }
+    } else {
+      this.fail('parsePrimary: expected dot operator after self keyword', tok.lineno, tok.colno);
     }
   }
 
@@ -1423,7 +1453,7 @@ export class Parser extends Obj implements IParser {
 // var n = p.parseAsRoot();
 // nodes.printNodes(n);
 
-export function parse(src, extensions, opts): Root {
+export function parse(src: string, extensions: IExtension[], opts): Root {
   const p: Parser = new Parser(new Tokenizer(src, opts));
   if (extensions !== undefined) {
     p.extensions = extensions;

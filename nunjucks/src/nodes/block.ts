@@ -1,11 +1,12 @@
 import { NunjucksNode } from './nunjucksNode';
+import { NunjucksSymbol } from './nunjucksSymbol';
 
 
 
 export class Block extends NunjucksNode {
   get typename(): string { return 'Block'; }
 
-  public name: NunjucksNode;
+  public name: NunjucksSymbol;
   public body;
 
 

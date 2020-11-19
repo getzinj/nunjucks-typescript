@@ -1,4 +1,4 @@
-import { Environment } from '../nunjucks';
+import { Environment } from '../nunjucks/src/environment/environment';
 
 declare var nunjucks;
 

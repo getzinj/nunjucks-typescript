@@ -2,7 +2,7 @@ import { Done } from 'mocha';
 
 declare var nunjucks;
 
-(function() {
+((() => {
   'use strict';
 
   let expect;
@@ -30,16 +30,16 @@ declare var nunjucks;
   finish = util.finish;
 
 
-  describe('filter', function() {
+  describe('filter', () => {
 
-    it('abs', function(done) {
+    it('abs', (done: Done) => {
       equal('{{ -3|abs }}', '3');
       equal('{{ -3.456|abs }}', '3.456');
       finish(done);
     });
 
 
-    it('batch', function(done) {
+    it('batch', (done: Done) => {
       equal(
         [
           '{% for a in [1,2,3,4,5,6]|batch(2) %}',
@@ -53,7 +53,7 @@ declare var nunjucks;
     });
 
 
-    it('capitalize', function(done) {
+    it('capitalize', (done: Done) => {
       equal('{{ "foo" | capitalize }}', 'Foo');
       equal('{{ str | capitalize }}', {
         str: r.markSafe('foo')
@@ -65,7 +65,7 @@ declare var nunjucks;
     });
 
 
-    it('center', function(done) {
+    it('center', (done: Done) => {
       equal('{{ "fooo" | center }}',
         lib.repeat(' ', 38) + 'fooo' +
         lib.repeat(' ', 38));
@@ -93,7 +93,7 @@ declare var nunjucks;
     });
 
 
-    it('default', function(done) {
+    it('default', (done: Done) => {
       equal('{{ undefined | default("foo") }}', 'foo');
       equal('{{ bar | default("foo") }}', {
         bar: null
@@ -106,7 +106,7 @@ declare var nunjucks;
     });
 
 
-    it('dump', function() {
+    it('dump', () => {
       equal('{{ [\'a\', 1, {b: true}] | dump  }}',
         '[&quot;a&quot;,1,{&quot;b&quot;:true}]');
       equal('{{ [\'a\', 1, {b: true}] | dump(2) }}',
@@ -118,7 +118,7 @@ declare var nunjucks;
     });
 
 
-    it('escape', function() {
+    it('escape', () => {
       equal(
         '{{ "<html>" | escape }}', {},
         { autoescape: false },
@@ -126,28 +126,28 @@ declare var nunjucks;
     });
 
 
-    it('escape skip safe', function() {
+    it('escape skip safe', () => {
       equal('{{ "<html>" | safe | escape }}', {},
         { autoescape: false },
         '<html>');
     });
 
 
-    it('should not double escape strings', function() {
+    it('should not double escape strings', () => {
       equal('{{ "<html>" | escape | escape }}', {},
         { autoescape: false },
         '&lt;html&gt;');
     });
 
 
-    it('should not double escape with autoescape on', function() {
+    it('should not double escape with autoescape on', () => {
       equal('{% set val = "<html>" | escape %}{{ val }}', {},
         { autoescape: true },
         '&lt;html&gt;');
     });
 
 
-    it('should work with non-string values', function() {
+    it('should work with non-string values', () => {
       equal(
         '{{ foo | escape }}',
         { foo: ['<html>'] },
@@ -156,7 +156,7 @@ declare var nunjucks;
 
       equal(
         '{{ foo | escape }}',
-        { foo: { toString: function() { return '<html>'; } } },
+        { foo: { toString: () => '<html>'} },
         { autoescape: false },
         '&lt;html&gt;');
 
@@ -167,7 +167,7 @@ declare var nunjucks;
     });
 
 
-    it('should not escape safe strings with autoescape on', function() {
+    it('should not escape safe strings with autoescape on', () => {
       equal(
         '{{ "<html>" | safe | escape }}', {},
         { autoescape: true },
@@ -180,7 +180,7 @@ declare var nunjucks;
     });
 
 
-    it('should keep strings escaped after they have been escaped', function() {
+    it('should keep strings escaped after they have been escaped', () => {
       equal(
         '{% set val = "<html>" | e | safe %}{{ val }}', {},
         { autoescape: false },
@@ -188,7 +188,7 @@ declare var nunjucks;
     });
 
 
-    it('dictsort', function(done) {
+    it('dictsort', (done: Done) => {
       // no real foolproof way to test that a js obj has been transformed
       // from unsorted -> sorted, as its enumeration ordering is undefined
       // and might fluke being sorted originally .. lets just init with some jumbled
@@ -238,26 +238,26 @@ declare var nunjucks;
     });
 
 
-    it('first', function(done) {
+    it('first', (done: Done) => {
       equal('{{ [1,2,3] | first }}', '1');
       finish(done);
     });
 
 
-    it('float', function() {
+    it('float', () => {
       equal('{{ "3.5" | float }}', '3.5');
       equal('{{ "0" | float }}', '0');
     });
 
 
-    it('forceescape', function(done) {
+    it('forceescape', (done: Done) => {
       equal('{{ str | forceescape }}', { str: r.markSafe('<html>')}, '&lt;html&gt;');
       equal('{{ "<html>" | safe | forceescape }}', '&lt;html&gt;');
       finish(done);
     });
 
 
-    it('int', function() {
+    it('int', () => {
       equal('{{ "3.5" | int }}', '3');
       equal('{{ "0" | int }}', '0');
       equal('{{ "foobar" | int("42") }}', '42');
@@ -266,17 +266,17 @@ declare var nunjucks;
     });
 
 
-    it('int (default value)', function() {
+    it('int (default value)', () => {
       equal('{{ "bob" | int("cat") }}', 'cat');
     });
 
 
-    it('float (default value)', function() {
+    it('float (default value)', () => {
       equal('{{ "bob" | float("cat") }}', 'cat');
     });
 
 
-    it('groupby', function(done) {
+    it('groupby', (done: Done) => {
       const namesContext = {
         items: [{
           name: 'james',
@@ -419,7 +419,7 @@ declare var nunjucks;
         ':undefined:jamesjohnjimjessie'
       );
 
-      expect(function() {
+      expect(() => {
         render(
           undefinedTemplate,
           namesContext,
@@ -433,7 +433,7 @@ declare var nunjucks;
     });
 
 
-    it('indent', function(done) {
+    it('indent', (done: Done) => {
       equal('{{ "one\ntwo\nthree" | indent }}',
         'one\n    two\n    three');
       equal('{{ "one\ntwo\nthree" | indent(2) }}',
@@ -461,7 +461,7 @@ declare var nunjucks;
     });
 
 
-    it('join', function(done) {
+    it('join', (done: Done) => {
       equal('{{ items | join }}',
         {
           items: [1, 2, 3]
@@ -491,54 +491,54 @@ declare var nunjucks;
     });
 
 
-    it('last', function(done) {
+    it('last', (done: Done) => {
       equal('{{ [1,2,3] | last }}', '3');
       finish(done);
     });
 
 
-    describe('the length filter', function suite() {
-      it('should return length of a list literal', function test() {
+    describe('the length filter', () => {
+      it('should return length of a list literal', () => {
         equal('{{ [1,2,3] | length }}', '3');
       });
 
-      it('should output 0 for a missing context variable', function test() {
+      it('should output 0 for a missing context variable', () => {
         equal('{{ blah|length }}', '0');
       });
 
-      it('should output string length for string variables', function test() {
+      it('should output string length for string variables', () => {
         equal('{{ str | length }}', {
           str: 'blah'
         }, '4');
       });
 
-      it('should output string length for a SafeString variable', function test() {
+      it('should output string length for a SafeString variable', () => {
         equal('{{ str | length }}', {
           str: r.markSafe('<blah>')
         }, '6');
       });
 
-      it('should output the correct length of a string created with new String()', function test() {
+      it('should output the correct length of a string created with new String()', () => {
         equal('{{ str | length }}', {
           str: new String('blah') // eslint-disable-line no-new-wrappers
         }, '4');
       });
 
-      it('should output 0 for a literal "undefined"', function test() {
+      it('should output 0 for a literal "undefined"', () => {
         equal('{{ undefined | length }}', '0');
       });
 
-      it('should output 0 for a literal "null"', function test() {
+      it('should output 0 for a literal "null"', () => {
         equal('{{ null | length }}', '0');
       });
 
-      it('should output 0 for an Object with no properties', function test() {
+      it('should output 0 for an Object with no properties', () => {
         equal('{{ obj | length }}', {
           obj: {}
         }, '0');
       });
 
-      it('should output 1 for an Object with 1 property', function test() {
+      it('should output 1 for an Object with 1 property', () => {
         equal('{{ obj | length }}', {
           obj: {
             key: 'value'
@@ -546,7 +546,7 @@ declare var nunjucks;
         }, '1');
       });
 
-      it('should output the number of properties for a plain Object, not the value of its length property', function test() {
+      it('should output the number of properties for a plain Object, not the value of its length property', () => {
         equal('{{ obj | length }}', {
           obj: {
             key: 'value',
@@ -555,25 +555,25 @@ declare var nunjucks;
         }, '2');
       });
 
-      it('should output the length of an array', function test() {
+      it('should output the length of an array', () => {
         equal('{{ arr | length }}', {
           arr: [0, 1]
         }, '2');
       });
 
-      it('should output the full length of a sparse array', function test() {
+      it('should output the full length of a sparse array', () => {
         equal('{{ arr | length }}', {
           arr: [0,, 2]  // eslint-disable-line
         }, '3');
       });
 
-      it('should output the length of an array created with "new Array"', function test() {
+      it('should output the length of an array created with "new Array"', () => {
         equal('{{ arr | length }}', {
           arr: new Array(0, 1) // eslint-disable-line no-array-constructor
         }, '2');
       });
 
-      it('should output the length of an array created with "new Array" with user-defined properties', function test() {
+      it('should output the length of an array created with "new Array" with user-defined properties', () => {
         const arr = new Array(0, 1); // eslint-disable-line no-array-constructor
         // @ts-ignore
         arr.key = 'value'; // TODO: Is this right??
@@ -610,7 +610,7 @@ declare var nunjucks;
     });
 
 
-    it('list', function(done) {
+    it('list', (done: Done) => {
       const person = {
         name: 'Joe',
         age: 83
@@ -626,7 +626,7 @@ declare var nunjucks;
     });
 
 
-    it('lower', function(done) {
+    it('lower', (done: Done) => {
       equal('{{ "fOObAr" | lower }}', 'foobar');
       equal('{{ str | lower }}', {
         str: r.markSafe('fOObAr')
@@ -638,7 +638,7 @@ declare var nunjucks;
     });
 
 
-    it('nl2br', function(done) {
+    it('nl2br', (done: Done) => {
       equal('{{ null | nl2br }}', '');
       equal('{{ undefined | nl2br }}', '');
       equal('{{ nothing | nl2br }}', '');
@@ -656,10 +656,10 @@ declare var nunjucks;
     });
 
 
-    it('random', function(done) {
+    it('random', (done: Done) => {
       let i;
       for (i = 0; i < 100; i++) {
-        render('{{ [1,2,3,4,5,6,7,8,9] | random }}', function(err, res) {
+        render('{{ [1,2,3,4,5,6,7,8,9] | random }}', (err, res) => {
           const val = parseInt(res, 10);
           expect(val).to.be.within(1, 9);
         });
@@ -669,7 +669,7 @@ declare var nunjucks;
     });
 
 
-    it('reject', function(done) {
+    it('reject', (done: Done) => {
       const context = {
         numbers: [0, 1, 2, 3, 4, 5]
       };
@@ -686,7 +686,7 @@ declare var nunjucks;
     });
 
 
-    it('rejectattr', function(done) {
+    it('rejectattr', (done: Done) => {
       const foods = [{
         tasty: true
       }, {
@@ -701,7 +701,7 @@ declare var nunjucks;
     });
 
 
-    it('select', function(done) {
+    it('select', (done: Done) => {
       const context = {
         numbers: [0, 1, 2, 3, 4, 5]
       };
@@ -718,7 +718,7 @@ declare var nunjucks;
     });
 
 
-    it('selectattr', function(done) {
+    it('selectattr', (done: Done) => {
       const foods = [{
         tasty: true
       }, {
@@ -733,7 +733,7 @@ declare var nunjucks;
     });
 
 
-    it('replace', function(done) {
+    it('replace', (done: Done) => {
       equal('{{ 123456 | replace("4", ".") }}', '123.56');
       equal('{{ 123456 | replace("4", ".") }}', '123.56');
       equal('{{ 12345.6 | replace("4", ".") }}', '123.5.6');
@@ -786,14 +786,14 @@ declare var nunjucks;
     });
 
 
-    it('reverse', function(done) {
+    it('reverse', (done: Done) => {
       equal('{{ "abcdef" | reverse }}', 'fedcba');
       equal('{% for i in [1, 2, 3, 4] | reverse %}{{ i }}{% endfor %}', '4321');
       finish(done);
     });
 
 
-    it('round', function(done) {
+    it('round', (done: Done) => {
       equal('{{ 4.5 | round }}', '5');
       equal('{{ 4.5 | round(0, "floor") }}', '4');
       equal('{{ 4.12345 | round(4) }}', '4.1235');
@@ -802,7 +802,7 @@ declare var nunjucks;
     });
 
 
-    it('slice', function(done) {
+    it('slice', (done: Done) => {
       const tmpl = '{% for items in arr | slice(3) %}' +
           '--' +
           '{% for item in items %}' +
@@ -827,7 +827,7 @@ declare var nunjucks;
     });
 
 
-    it('sum', function(done) {
+    it('sum', (done: Done) => {
       equal('{{ items | sum }}',
         {
           items: [1, 2, 3]
@@ -862,7 +862,7 @@ declare var nunjucks;
     });
 
 
-    it('sort', function(done) {
+    it('sort', (done: Done) => {
       equal('{% for i in [3,5,2,1,4,6] | sort %}{{ i }}{% endfor %}',
         '123456');
 
@@ -901,7 +901,7 @@ declare var nunjucks;
         'fredjohnjames'
       );
 
-      expect(function() {
+      expect(() => {
         render(
           nestedAttributeSortTemplate,
           {
@@ -921,14 +921,14 @@ declare var nunjucks;
     });
 
 
-    it('string', function(done) {
+    it('string', (done: Done) => {
       equal('{% for i in 1234 | string | list %}{{ i }},{% endfor %}',
         '1,2,3,4,');
       finish(done);
     });
 
 
-    it('striptags', function(done) {
+    it('striptags', (done: Done) => {
       equal('{{ html | striptags }}', {
         html: '<foo>bar'
       }, 'bar');
@@ -951,7 +951,7 @@ declare var nunjucks;
     });
 
 
-    it('title', function(done) {
+    it('title', (done: Done) => {
       equal('{{ "foo bar baz" | title }}', 'Foo Bar Baz');
       equal('{{ str | title }}', {
         str: r.markSafe('foo bar baz')
@@ -963,7 +963,7 @@ declare var nunjucks;
     });
 
 
-    it('trim', function(done) {
+    it('trim', (done: Done) => {
       equal('{{ "  foo " | trim }}', 'foo');
       equal('{{ str | trim }}', {
         str: r.markSafe('  foo ')
@@ -972,7 +972,7 @@ declare var nunjucks;
     });
 
 
-    it('truncate', function(done) {
+    it('truncate', (done: Done) => {
       equal('{{ "foo bar" | truncate(3) }}', 'foo...');
       equal('{{ "foo bar baz" | truncate(6) }}', 'foo...');
       equal('{{ "foo bar baz" | truncate(7) }}', 'foo bar...');
@@ -1004,7 +1004,7 @@ declare var nunjucks;
     });
 
 
-    it('upper', function(done) {
+    it('upper', (done: Done) => {
       equal('{{ "foo" | upper }}', 'FOO');
       equal('{{ str | upper }}', {
         str: r.markSafe('foo')
@@ -1084,7 +1084,7 @@ declare var nunjucks;
     });
 
 
-    it('urlize', function(done) {
+    it('urlize', (done: Done) => {
       // from jinja test suite:
       // https://github.com/mitsuhiko/jinja2/blob/8db47916de0e888dd8664b2511e220ab5ecf5c15/jinja2/testsuite/filters.py#L236-L239
       equal('{{ "foo http://www.example.com/ bar" | urlize | safe }}',
@@ -1168,7 +1168,7 @@ declare var nunjucks;
     });
 
 
-    it('wordcount', function(done) {
+    it('wordcount', (done: Done) => {
       equal('{{ "foo bar baz" | wordcount }}', '3');
       equal(
         '{{ str | wordcount }}',
@@ -1180,4 +1180,4 @@ declare var nunjucks;
       finish(done);
     });
   });
-}());
+})());

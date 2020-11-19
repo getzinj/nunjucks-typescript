@@ -9,6 +9,7 @@ import { precompile, precompileString } from './src/precompile';
 import { Parser } from './src/parser/parser';
 import { isObject } from './src/lib';
 import { installCompat } from './src/jinja-compat';
+import { Context } from './src/environment/environment';
 
 // const lib = require('./src/lib');
 const {Environment, Template} = require('./src/environment/environment');
@@ -57,6 +58,7 @@ function configure(templatesPath?, opts?: INunjucksOptions) {
 
 
 module.exports = {
+  Context: Context,
   Environment: Environment,
   Template: Template,
   Loader: Loader,

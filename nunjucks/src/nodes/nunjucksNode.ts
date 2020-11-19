@@ -45,7 +45,7 @@ export class NunjucksNodeList extends NunjucksNode {
   }
 
 
-  constructor(lineno: number, colno: number, nodes?) {
+  constructor(lineno: number, colno: number, nodes?: NunjucksNode[]) {
     super(lineno, colno, nodes ?? []);
   }
 
