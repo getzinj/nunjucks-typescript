@@ -11,8 +11,8 @@ declare var nunjucks;
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
     lib = require('../nunjucks/src/lib');
-    Tokenizer = require('../nunjucks/src/lexer/tokenizer').Tokenizer;
-    tokenType = require('../nunjucks/src/lexer/tokenType');
+    Tokenizer = require('../nunjucks/src/compiler/lexer/tokenizer').Tokenizer;
+    tokenType = require('../nunjucks/src/compiler/lexer/tokenType');
   } else {
     expect = window['expect'];
     lib = nunjucks.lib;

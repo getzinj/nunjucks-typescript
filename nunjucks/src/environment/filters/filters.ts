@@ -1,11 +1,11 @@
 'use strict';
 
 import * as he from 'he';
-import * as lib from './lib';
-import * as r from './runtime/runtime';
-import { isArray, _entries } from './lib';
-import { SafeString } from './runtime/SafeString';
-import { TemplateError, TemplateError as TemplateError1 } from './templateError';
+import * as lib from '../../lib';
+import * as r from '../../runtime/runtime';
+import { isArray, _entries } from '../../lib';
+import { SafeString } from '../../runtime/SafeString';
+import { TemplateError, TemplateError as TemplateError1 } from '../../templateError';
 
 
 export function normalize<T, V>(value: T | null | undefined | false, defaultValue: V): T | V {

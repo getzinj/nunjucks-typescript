@@ -1,8 +1,10 @@
 import { repeat } from './lib';
 
+
+
 export class TemplateError extends Error {
-  private firstUpdate = true;
-  public cause;
+  private firstUpdate: boolean = true;
+  public cause: Error;
 
 
   get getStack(): () => string {
@@ -22,7 +24,8 @@ export class TemplateError extends Error {
     return returnValue;
   }
 
-  get stack() { return this.getStack.call(this); }
+
+  get stack(): string { return this.getStack.call(this); }
 
 
   constructor(message, public readonly lineno?: number, public readonly colno?: number, public readonly line?: string) {

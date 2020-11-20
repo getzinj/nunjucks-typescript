@@ -1,5 +1,5 @@
 import { Loader } from 'nunjucks/src/loaders/loader';
-import { IExtension } from '../nunjucks/src/parser/IExtension';
+import { IExtension } from '../nunjucks/src/compiler/parser/IExtension';
 import { Context, Template, Environment } from '../nunjucks/src/environment/environment';
 
 

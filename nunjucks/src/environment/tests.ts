@@ -1,12 +1,12 @@
 'use strict';
 
-import { SafeString } from './runtime/SafeString';
+import { SafeString } from '../runtime/SafeString';
 
 
 /**
  * Returns `true` if the object is a function, otherwise `false`.
  */
-export function callable(value: any): boolean {
+export function callable(value: any): value is Function {
   return typeof value === 'function';
 }
 
@@ -14,7 +14,7 @@ export function callable(value: any): boolean {
 /**
  * Returns `true` if the object is strictly not `undefined`.
  */
-export function defined(value: any): boolean {
+export function defined<T>(value: T): boolean {
   return value !== undefined;
 }
 
@@ -31,7 +31,7 @@ export function divisibleby(one: number, two: number): boolean {
 /**
  * Returns true if the string has been escaped (i.e., is a SafeString).
  */
-export function escaped(value: any): boolean {
+export function escaped(value: string | SafeString): boolean {
   return value instanceof SafeString;
 }
 
@@ -39,14 +39,14 @@ export function escaped(value: any): boolean {
 /**
  * Returns `true` if the arguments are strictly equal.
  */
-export function equalto(one: any, two: any) {
+export function equalto<T>(one: T, two: T): boolean {
   return one === two;
 }
 
 
 // Aliases
-export const eq: (one: any, two: any) => boolean = equalto;
-export const sameas: (one: any, two: any) => boolean = equalto;
+export const eq: <T>(one: T, two: T) => boolean = equalto;
+export const sameas: <T>(one: T, two: T) => boolean = equalto;
 
 /**
  * Returns `true` if the value is evenly divisible by 2.
@@ -62,7 +62,7 @@ export function even(value: number): boolean {
  * behavior or attempt to replicate what Python believes should be falsy (i.e.,
  * empty arrays, empty dicts, not 0...).
  */
-export function falsy(value: any): boolean {
+export function falsy<T>(value: T): boolean {
   return !value;
 }
 
@@ -128,7 +128,7 @@ export function ne(one: number, two: number): boolean {
 /**
  * Returns true if the value is strictly equal to `null`.
  */
-export function nullTest(value: any): boolean {
+export function nullTest<T>(value: T): boolean {
   return value === null;
 }
 
@@ -136,7 +136,7 @@ export function nullTest(value: any): boolean {
 /**
  * Returns true if value is a number.
  */
-export function number(value: any): boolean {
+export function number(value: any): value is number {
   return typeof value === 'number';
 }
 
@@ -151,7 +151,7 @@ export function odd(value: number): boolean {
 /**
  * Returns `true` if the value is a string, `false` if not.
  */
-export function string(value: any): boolean {
+export function string(value: any): value is string {
   return typeof value === 'string';
 }
 
@@ -160,7 +160,7 @@ export function string(value: any): boolean {
  * Returns `true` if the value is not in the list of things considered falsy:
  * '', null, undefined, 0, NaN and false.
  */
-export function truthy(value: any): boolean {
+export function truthy<T>(value: T): boolean {
   return !!value;
 }
 
@@ -168,7 +168,7 @@ export function truthy(value: any): boolean {
 /**
  * Returns `true` if the value is undefined.
  */
-export function undefinedTest(value: any): boolean {
+export function undefinedTest<T>(value: T): boolean {
   return value === undefined;
 }
 
@@ -188,7 +188,7 @@ export function upper(value: string): boolean {
  * Could potentially cause issues if a browser exists that has Set and Map but
  * not Symbol.
  */
-export function iterable(value: any): boolean {
+export function iterable<T>(value: T): boolean {
   if (typeof Symbol !== 'undefined') {
     return !!value[Symbol.iterator];
   } else {
@@ -201,11 +201,11 @@ export function iterable(value: any): boolean {
  * If ES6 features are available, returns `true` if the value is an object hash
  * or an ES6 Map. Otherwise just return if it's an object hash.
  */
-export function mapping(value: any): boolean {
+export function mapping<T>(value: T): boolean {
   // only maps and object hashes
-  const bool = value !== null
-      && value !== undefined
-      && typeof value === 'object'
+  const bool: boolean = (value !== null)
+      && (value !== undefined)
+      && (typeof value === 'object')
       && !Array.isArray(value);
   if (Set) {
     return bool && !(value instanceof Set);

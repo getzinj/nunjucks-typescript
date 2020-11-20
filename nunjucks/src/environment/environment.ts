@@ -2,9 +2,9 @@
 
 
 import * as compiler from '../compiler/compiler';
-import * as expressApp from '../express-app';
-import * as tests from '../tests';
-import * as filters from '../filters';
+import * as expressApp from './express-app';
+import * as tests from './tests';
+import * as filters from './filters/filters';
 import * as lib from '../lib';
 import { extend, keys, indexOf } from '../lib';
 import waterfall from 'a-sync-waterfall';
@@ -18,7 +18,7 @@ import { FileSystemLoader } from '../loaders/file-system-loader';
 import { Obj } from '../object/obj';
 import { Frame } from '../runtime/frame';
 import * as globalRuntime from '../runtime/runtime';
-import { IExtension } from '../parser/IExtension';
+import { IExtension } from '../compiler/parser/IExtension';
 import { IEnvironmentOptions } from './IEnvironmentOptions';
 import { IBlockFunction } from './IBlockFunction';
 

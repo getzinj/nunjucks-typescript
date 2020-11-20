@@ -1,7 +1,7 @@
 'use strict';
 
 
-import { Template } from './environment/environment';
+import { Template } from '../../environment/environment';
 
 export function precompileGlobal(templates, opts) {
   let out: string = '';

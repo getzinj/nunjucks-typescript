@@ -1,7 +1,7 @@
-import { Parser } from '../nunjucks/src/parser/parser';
+import { Parser } from '../nunjucks/src/compiler/parser/parser';
 import { CallExtension } from '../nunjucks/src/nodes/nunjucksNode';
-import { TokenType } from '../nunjucks/src/lexer/tokenType';
-import { IExtension } from '../nunjucks/src/parser/IExtension';
+import { TokenType } from '../nunjucks/src/compiler/lexer/tokenType';
+import { IExtension } from '../nunjucks/src/compiler/parser/IExtension';
 import { Environment } from '../nunjucks/src/environment/environment';
 import { Done } from 'mocha';
 

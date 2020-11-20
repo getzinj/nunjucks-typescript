@@ -2,11 +2,11 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { _prettifyError } from './lib';
+import { _prettifyError } from '../../lib';
 
-import { Environment } from './environment/environment';
+import { Environment } from '../../environment/environment';
 import { precompileGlobal } from './precompile-global';
-import { compile } from './compiler/compiler';
+import { compile } from '../compiler';
 
 
 function match(filename, patterns) {

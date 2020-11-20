@@ -1,4 +1,4 @@
-import { Parser } from './parser/parser';
+import { Parser } from './compiler/parser/parser';
 import { Compiler } from './compiler/compiler';
 import { _assign, _values, _entries, isObject } from './lib';
 import { keys, isArray, Frame, contextOrFrameLookup, memberLookup } from './runtime/runtime';
@@ -7,9 +7,10 @@ import { Slice } from './nodes/jinja/slice';
 import { ArrayNode } from './nodes/arrayNode';
 import { Dict } from './nodes/dict';
 import { Group } from './nodes/group';
-import { TokenType } from './lexer/tokenType';
-import { Token } from './lexer/token';
-import { Tokenizer } from './lexer/tokenizer';
+import { TokenType } from './compiler/lexer/tokenType';
+import { Token } from './compiler/lexer/token';
+import { Tokenizer } from './compiler/lexer/tokenizer';
+import { ISavedTokensState } from './compiler/lexer/ISavedTokensState';
 
 
 function addCompileSliceToCompiler(): void {
@@ -340,8 +341,3 @@ export function installCompat() {
 }
 
 
-interface ISavedTokensState { lineno: number; colno: number; index: number;
-  currentLine_: string;
-}
-
-interface IParserTokenStreamState { peeked: Token | null, tokens: Tokenizer }

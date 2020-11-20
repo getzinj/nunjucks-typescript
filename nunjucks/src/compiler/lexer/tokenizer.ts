@@ -1,5 +1,5 @@
 import { whitespaceChars, delimChars, intChars } from './characters';
-import { indexOf } from '../lib';
+import { indexOf } from '../../lib';
 import { Token } from './token';
 import { TokenType } from './tokenType';
 import { ITokenizerOptions } from './ITokenizerOptions';

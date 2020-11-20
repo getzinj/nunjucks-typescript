@@ -1,6 +1,6 @@
 import { IParser } from './IParser';
-import { CallExtension } from '../nodes/nunjucksNode';
-import { IPreprocessor } from '../compiler/IPreprocessor';
+import { CallExtension } from '../../nodes/nunjucksNode';
+import { IPreprocessor } from '../IPreprocessor';
 
 
 
