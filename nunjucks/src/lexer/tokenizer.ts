@@ -3,7 +3,7 @@ import { indexOf } from '../lib';
 import { Token } from './token';
 import { TokenType } from './tokenType';
 import { ITokenizerOptions } from './ITokenizerOptions';
-import { Tag } from '../tag';
+import { Tag } from './tag';
 
 
 export class Tokenizer {

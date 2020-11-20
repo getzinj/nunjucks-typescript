@@ -221,8 +221,8 @@ nunjucks/src/environment/globals.js.map
 nunjucks/src/loaders/precompiled-loader.js
 nunjucks/src/precompile-global.js
 nunjucks/src/precompile-global.js.map
-nunjucks/src/tag.js
-nunjucks/src/tag.js.map
+nunjucks/src/lexer/tag.js
+nunjucks/src/lexer/tag.js.map
 nunjucks/src/lexer/characters.js
 nunjucks/src/lexer/characters.js.map
 nunjucks/src/lexer/ITokenizerOptions.js
