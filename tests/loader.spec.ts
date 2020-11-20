@@ -1,5 +1,5 @@
 import { Done } from 'mocha';
-import { Loader } from '../nunjucks/src/loader';
+import { Loader } from '../nunjucks/src/loaders/loader';
 
 declare var nunjucks;
 
@@ -16,9 +16,9 @@ declare var nunjucks;
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
     Environment = require('../nunjucks/src/environment/environment').Environment;
-    WebLoader = require('../nunjucks/src/web-loaders').WebLoader;
-    FileSystemLoader = require('../nunjucks/src/file-system-loader').FileSystemLoader;
-    NodeResolveLoader = require('../nunjucks/src/node-resolve-loader').NodeResolveLoader;
+    WebLoader = require('../nunjucks/src/loaders/web-loaders').WebLoader;
+    FileSystemLoader = require('../nunjucks/src/loaders/file-system-loader').FileSystemLoader;
+    NodeResolveLoader = require('../nunjucks/src/loaders/node-resolve-loader').NodeResolveLoader;
     templatesPath = 'tests/templates';
   } else {
     expect = window['expect'];
@@ -35,7 +35,7 @@ declare var nunjucks;
       // We should be able to create a loader that only exposes getSource
       let env, parent;
 
-      function MyLoader(): void {
+      function MyLoader(arg?): void {
         // configuration
       }
 
@@ -55,7 +55,7 @@ declare var nunjucks;
       // We should be able to create a loader that only exposes getSource
       let env;
 
-      function MyLoader(): void {
+      function MyLoader(arg?): void {
         // configuration
         this.async = true;
       }

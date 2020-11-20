@@ -3,15 +3,7 @@ import { extendClass } from './object';
 
 
 export class Obj {
-  constructor(...args) {
-    // Unfortunately necessary for backwards compatibility
-    this.init(...args);
-  }
-
-  init(...args) {
-  }
-
-  get typename() {
+  get typename(): string {
     return this.constructor.name;
   }
 

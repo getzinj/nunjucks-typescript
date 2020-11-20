@@ -1,9 +1,9 @@
 'use strict';
 
-import { WebLoader, PrecompiledLoader } from './src/web-loaders';
-import { NodeResolveLoader } from './src/node-resolve-loader';
-import { FileSystemLoader } from './src/file-system-loader';
-import { Loader } from './src/loader';
+import { WebLoader, PrecompiledLoader } from './src/loaders/web-loaders';
+import { NodeResolveLoader } from './src/loaders/node-resolve-loader';
+import { FileSystemLoader } from './src/loaders/file-system-loader';
+import { Loader } from './src/loaders/loader';
 import { Compiler } from './src/compiler/compiler';
 import { precompile, precompileString } from './src/precompile';
 import { Parser } from './src/parser/parser';

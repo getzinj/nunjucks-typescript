@@ -6,11 +6,6 @@ import { extendClass } from './object';
 export class EmitterObj extends EventEmitter {
   constructor(...args) {
     super();
-    // Unfortunately necessary for backwards compatibility
-    this.init(...args);
-  }
-
-  init(...args) {
   }
 
 

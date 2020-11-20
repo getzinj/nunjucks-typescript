@@ -1,8 +1,8 @@
 'use strict';
 
 import * as path from 'path';
-import { EmitterObj } from './object/emitterObj';
-import { Template } from './environment/environment';
+import { EmitterObj } from '../object/emitterObj';
+import { Template } from '../environment/environment';
 
 
 

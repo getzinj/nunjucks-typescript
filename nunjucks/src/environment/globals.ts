@@ -1,13 +1,9 @@
 'use strict';
 
-interface CyclerObj<T> {
-  current: T | null;
-  reset(): void;
-  next(): T;
-}
+import { ICyclerObj } from './ICyclerObj';
 
 
-export function cycler<T>(items: T[]): CyclerObj<T> {
+export function cycler<T>(items: T[]): ICyclerObj<T> {
   let index: number = -1;
 
   return {
@@ -71,7 +67,7 @@ export function globals() {
     },
 
 
-    cycler() {
+    cycler<T>(): ICyclerObj<T> {
       return cycler(Array.prototype.slice.call(arguments));
     },
 

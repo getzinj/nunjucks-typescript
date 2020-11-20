@@ -1,9 +1,8 @@
 import * as fs from 'fs';
 
 import { Loader } from './loader';
-import { globalchokidar } from './globals';
+import { globalchokidar } from '../environment/globals';
 import { URL } from 'url';
-import path from 'path';
 
 
 

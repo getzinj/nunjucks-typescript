@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { globalchokidar } from './globals';
+import { globalchokidar } from '../environment/globals';
 import { Loader } from './loader';
 
 

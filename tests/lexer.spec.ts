@@ -1,24 +1,21 @@
 declare var nunjucks;
 
-(function() {
+((() => {
   'use strict';
 
   let expect;
   let lib;
-//  var lexer;
   let Tokenizer;
   let tokenType;
 
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
     lib = require('../nunjucks/src/lib');
-//    lexer = require('../nunjucks/src/lexer');
     Tokenizer = require('../nunjucks/src/lexer/tokenizer').Tokenizer;
     tokenType = require('../nunjucks/src/lexer/tokenType');
   } else {
     expect = window['expect'];
     lib = nunjucks.lib;
-//    lexer = nunjucks.lexer;
     tokenType = nunjucks.tokenType;
   }
 
@@ -61,22 +58,23 @@ declare var nunjucks;
     }
   }
 
-  function hasTokens(tokens /* , types */) {
+  function hasTokens(tokens, ...types) {
     return _hasTokens(false, tokens, lib.toArray(arguments).slice(1));
   }
 
-  function hasTokensWithWS(tokens /* , types */) {
+
+  function hasTokensWithWS(tokens, ...types) {
     return _hasTokens(true, tokens, lib.toArray(arguments).slice(1));
   }
 
 
-  describe('lexer', function() {
+  describe('lexer', () => {
     let tok;
     let tmpl;
     let tokens;
 
 
-    it('should parse template data', function() {
+    it('should parse template data', () => {
       tok = lex('3').nextToken();
       expect(tok.type).to.be(tokenType.TokenType.TOKEN_DATA);
       expect(tok.value).to.be('3');
@@ -88,7 +86,7 @@ declare var nunjucks;
     });
 
 
-    it('should keep track of whitespace', function() {
+    it('should keep track of whitespace', () => {
       tokens = lex('data {% 1 2\n   3  %} data');
       hasTokensWithWS(tokens,
         tokenType.TokenType.TOKEN_DATA,
@@ -105,7 +103,7 @@ declare var nunjucks;
     });
 
 
-    it('should trim blocks', function() {
+    it('should trim blocks', () => {
       tokens = lex('  {% if true %}\n    foo\n  {% endif %}\n', {
         trimBlocks: true
       });
@@ -122,7 +120,7 @@ declare var nunjucks;
     });
 
 
-    it('should trim windows-style CRLF line endings after blocks', function() {
+    it('should trim windows-style CRLF line endings after blocks', () => {
       tokens = lex('  {% if true %}\r\n    foo\r\n  {% endif %}\r\n', {
         trimBlocks: true
       });
@@ -139,7 +137,7 @@ declare var nunjucks;
     });
 
 
-    it('should not trim CR after blocks', function() {
+    it('should not trim CR after blocks', () => {
       tokens = lex('  {% if true %}\r    foo\r\n  {% endif %}\r', {
         trimBlocks: true
       });
@@ -157,7 +155,7 @@ declare var nunjucks;
     });
 
 
-    it('should lstrip and trim blocks', function() {
+    it('should lstrip and trim blocks', () => {
       tokens = lex('test\n {% if true %}\n  foo\n {% endif %}\n</div>', {
         lstripBlocks: true,
         trimBlocks: true
@@ -176,7 +174,7 @@ declare var nunjucks;
     });
 
 
-    it('should lstrip and not collapse whitespace between blocks', function() {
+    it('should lstrip and not collapse whitespace between blocks', () => {
       tokens = lex('   {% t %} {% t %}', {
         lstripBlocks: true
       });
@@ -192,7 +190,7 @@ declare var nunjucks;
 
 
 
-    it('should parse variable start and end', function() {
+    it('should parse variable start and end', () => {
       tokens = lex('data {{ foo }} bar bizzle');
       hasTokens(tokens,
         tokenType.TokenType.TOKEN_DATA,
@@ -203,7 +201,7 @@ declare var nunjucks;
     });
 
 
-    it('should treat the non-breaking space as valid whitespace', function() {
+    it('should treat the non-breaking space as valid whitespace', () => {
       tokens = lex('{{\u00A0foo }}');
       tok = tokens.nextToken();
       tok = tokens.nextToken();
@@ -213,7 +211,7 @@ declare var nunjucks;
     });
 
 
-    it('should parse block start and end', function() {
+    it('should parse block start and end', () => {
       tokens = lex('data {% foo %} bar bizzle');
       hasTokens(tokens,
         tokenType.TokenType.TOKEN_DATA,
@@ -224,7 +222,7 @@ declare var nunjucks;
     });
 
 
-    it('should parse basic types', function() {
+    it('should parse basic types', () => {
       tokens = lex('{{ 3 4.5 true false none foo "hello" \'boo\' r/regex/ }}');
       hasTokens(tokens,
         tokenType.TokenType.TOKEN_VARIABLE_START,
@@ -241,7 +239,7 @@ declare var nunjucks;
     });
 
 
-    it('should parse function calls', function() {
+    it('should parse function calls', () => {
       tokens = lex('{{ foo(bar) }}');
       hasTokens(tokens,
         tokenType.TokenType.TOKEN_VARIABLE_START,
@@ -253,7 +251,7 @@ declare var nunjucks;
     });
 
 
-    it('should parse groups', function() {
+    it('should parse groups', () => {
       tokens = lex('{{ (1, 2, 3) }}');
       hasTokens(tokens,
         tokenType.TokenType.TOKEN_VARIABLE_START,
@@ -268,7 +266,7 @@ declare var nunjucks;
     });
 
 
-    it('should parse arrays', function() {
+    it('should parse arrays', () => {
       tokens = lex('{{ [1, 2, 3] }}');
       hasTokens(tokens,
         tokenType.TokenType.TOKEN_VARIABLE_START,
@@ -283,7 +281,7 @@ declare var nunjucks;
     });
 
 
-    it('should parse dicts', function() {
+    it('should parse dicts', () => {
       tokens = lex('{{ {one:1, "two":2} }}');
       hasTokens(tokens,
         tokenType.TokenType.TOKEN_VARIABLE_START,
@@ -300,7 +298,7 @@ declare var nunjucks;
     });
 
 
-    it('should parse blocks without whitespace', function() {
+    it('should parse blocks without whitespace', () => {
       tokens = lex('data{{hello}}{%if%}data');
       hasTokens(tokens,
         tokenType.TokenType.TOKEN_DATA,
@@ -314,7 +312,7 @@ declare var nunjucks;
     });
 
 
-    it('should parse filters', function() {
+    it('should parse filters', () => {
       hasTokens(lex('{{ foo|bar }}'),
         tokenType.TokenType.TOKEN_VARIABLE_START,
         [tokenType.TokenType.TOKEN_SYMBOL, 'foo'],
@@ -324,7 +322,7 @@ declare var nunjucks;
     });
 
 
-    it('should parse operators', function() {
+    it('should parse operators', () => {
       hasTokens(lex('{{ 3+3-3*3/3 }}'),
         tokenType.TokenType.TOKEN_VARIABLE_START,
         tokenType.TokenType.TOKEN_INT,
@@ -366,7 +364,7 @@ declare var nunjucks;
     });
 
 
-    it('should parse comments', function() {
+    it('should parse comments', () => {
       tokens = lex('data data {# comment #} data');
       hasTokens(tokens,
         tokenType.TokenType.TOKEN_DATA,
@@ -375,7 +373,7 @@ declare var nunjucks;
     });
 
 
-    it('should allow changing the variable start and end', function() {
+    it('should allow changing the variable start and end', () => {
       tokens = lex('data {= var =}', {
         tags: {
           variableStart: '{=',
@@ -390,7 +388,7 @@ declare var nunjucks;
     });
 
 
-    it('should allow changing the block start and end', function() {
+    it('should allow changing the block start and end', () => {
       tokens = lex('{= =}', {
         tags: {
           blockStart: '{=',
@@ -403,7 +401,7 @@ declare var nunjucks;
     });
 
 
-    it('should allow changing the variable start and end', function() {
+    it('should allow changing the variable start and end', () => {
       tokens = lex('data {= var =}', {
         tags: {
           variableStart: '{=',
@@ -418,7 +416,7 @@ declare var nunjucks;
     });
 
 
-    it('should allow changing the comment start and end', function() {
+    it('should allow changing the comment start and end', () => {
       tokens = lex('<!-- A comment! -->', {
         tags: {
           commentStart: '<!--',
@@ -433,7 +431,7 @@ declare var nunjucks;
      * Test that this bug is fixed: https://github.com/mozilla/nunjucks/issues/235
      */
 
-    it('should have individual lexer tag settings for each environment', function() {
+    it('should have individual lexer tag settings for each environment', () => {
       tokens = lex('{=', {
         tags: {
           variableStart: '{='
@@ -456,7 +454,7 @@ declare var nunjucks;
     });
 
 
-    it('should parse regular expressions', function() {
+    it('should parse regular expressions', () => {
       tokens = lex('{{ r/basic regex [a-z]/ }}');
       hasTokens(tokens,
         tokenType.TokenType.TOKEN_VARIABLE_START,
@@ -487,7 +485,7 @@ declare var nunjucks;
     });
 
 
-    it('should keep track of token positions', function() {
+    it('should keep track of token positions', () => {
       hasTokens(lex('{{ 3 != 4 == 5 <= 6 >= 7 < 8 > 9 }}'),
         {
           type: tokenType.TokenType.TOKEN_VARIABLE_START,
@@ -771,4 +769,4 @@ declare var nunjucks;
         });
     });
   });
-}());
+})());

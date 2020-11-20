@@ -1,7 +1,6 @@
 'use strict';
 
 import { Frame } from '../runtime/frame';
-import { transform } from '../transformer';
 import { parse } from '../parser/parser';
 import { compareOps } from './compareOps';
 import { TemplateError } from '../templateError';
@@ -47,6 +46,7 @@ import { IPreprocessor } from './IPreprocessor';
 import { ICompilerOptions } from './ICompilerOptions';
 import { Self } from '../nodes/self';
 import { BinOp } from '../lexer/operators/binOp';
+import { Transformer } from './transformer';
 
 
 
@@ -284,7 +284,7 @@ export class Compiler extends Obj {
             'use `parser.parseSignature`');
       }
 
-      args.children.forEach((arg, i): void => {
+      args.children.forEach((arg: NunjucksNode, i: number): void => {
         // Tag arguments are passed normally to the call. Note
         // that keyword arguments are turned into a single js
         // object as the last argument, if they exist.
@@ -297,7 +297,7 @@ export class Compiler extends Obj {
     }
 
     if (contentArgs.length) {
-      contentArgs.forEach((arg, i): void => {
+      contentArgs.forEach((arg: NunjucksNode, i: number): void => {
         if (i > 0) {
           this._emit(',');
         }
@@ -336,7 +336,7 @@ export class Compiler extends Obj {
   }
 
 
-  compileCallExtensionAsync(node, frame: Frame): void {
+  compileCallExtensionAsync(node: CallExtension, frame: Frame): void {
     this.compileCallExtension(node, frame, true);
   }
 
@@ -348,9 +348,9 @@ export class Compiler extends Obj {
   public readonly compileNunjucksNodeList: (node, frame: Frame) => void = this.compileNodeList;
 
 
-  compileLiteral(node, frame?): void {
+  compileLiteral(node: TemplateData, frame?: Frame): void {
     if (typeof node.value === 'string') {
-      let val = node.value.replace(/\\/g, '\\\\');
+      let val: string = node.value.replace(/\\/g, '\\\\');
       val = val.replace(/"/g, '\\"');
       val = val.replace(/\n/g, '\\n');
       val = val.replace(/\r/g, '\\r');
@@ -377,8 +377,8 @@ export class Compiler extends Obj {
   }
 
 
-  public readonly compileNunjucksSymbol = this.compileSymbol; // Alias for TypeScript project renaming of Symbol -> NunjucksSymbol
-  public readonly compileArrayNode = this.compileArray;  // Alias for TypeScript project renaming of Array -> ArrayNode
+  public readonly compileNunjucksSymbol: (node, frame: Frame) => void = this.compileSymbol; // Alias for TypeScript project renaming of Symbol -> NunjucksSymbol
+  public readonly compileArrayNode: (node, frame: Frame) => void = this.compileArray;  // Alias for TypeScript project renaming of Array -> ArrayNode
 
 
   compileGroup(node, frame: Frame): void {
@@ -466,36 +466,36 @@ export class Compiler extends Obj {
 
   // ensure concatenation instead of addition
   // by adding empty string in between
-  compileOr(node, frame: Frame): void {
+  compileOr(node: BinOp, frame: Frame): void {
     return this._binOpEmitter(node, frame, ' || ');
   }
 
 
-  compileAnd(node, frame: Frame): void {
+  compileAnd(node: BinOp, frame: Frame): void {
     return this._binOpEmitter(node, frame, ' && ');
   }
 
-  compileAdd(node, frame: Frame): void {
+  compileAdd(node: BinOp, frame: Frame): void {
     return this._binOpEmitter(node, frame, ' + ');
   }
 
-  compileConcat(node, frame: Frame): void {
+  compileConcat(node: BinOp, frame: Frame): void {
     return this._binOpEmitter(node, frame, ' + "" + ');
   }
 
-  compileSub(node, frame: Frame): void {
+  compileSub(node: BinOp, frame: Frame): void {
     return this._binOpEmitter(node, frame, ' - ');
   }
 
-  compileMul(node, frame: Frame): void {
+  compileMul(node: BinOp, frame: Frame): void {
     return this._binOpEmitter(node, frame, ' * ');
   }
 
-  compileDiv(node, frame: Frame): void {
+  compileDiv(node: BinOp, frame: Frame): void {
     return this._binOpEmitter(node, frame, ' / ');
   }
 
-  compileMod(node, frame: Frame): void {
+  compileMod(node: BinOp, frame: Frame): void {
     return this._binOpEmitter(node, frame, ' % ');
   }
 
@@ -506,7 +506,7 @@ export class Compiler extends Obj {
   }
 
 
-  compileFloorDiv(node, frame: Frame): void {
+  compileFloorDiv(node: BinOp, frame: Frame): void {
     this._emit('Math.floor(');
     this.compile(node.left, frame);
     this._emit(' / ');
@@ -514,7 +514,8 @@ export class Compiler extends Obj {
     this._emit(')');
   }
 
-  compilePow(node, frame: Frame): void {
+
+  compilePow(node: BinOp, frame: Frame): void {
     this._emit('Math.pow(');
     this.compile(node.left, frame);
     this._emit(', ');
@@ -522,15 +523,18 @@ export class Compiler extends Obj {
     this._emit(')');
   }
 
+
   compileNeg(node, frame: Frame): void {
     this._emit('-');
     this.compile(node.target, frame);
   }
 
+
   compilePos(node, frame: Frame): void {
     this._emit('+');
     this.compile(node.target, frame);
   }
+
 
   compileCompare(node, frame: Frame): void {
     this.compile(node.expr, frame);
@@ -540,6 +544,7 @@ export class Compiler extends Obj {
       this.compile(op.expr, frame);
     });
   }
+
 
   compileLookupVal(node, frame: Frame): void {
     this._emit('runtime.memberLookup((');
@@ -590,7 +595,7 @@ export class Compiler extends Obj {
 
 
   compileFilter(node: Filter, frame: Frame): void {
-    const name = node.name;
+    const name: NunjucksSymbol = node.name;
     this.assertType(name, NunjucksSymbol);
 
     // Handle special case of "default" filter, which is an invalid export.
@@ -604,8 +609,8 @@ export class Compiler extends Obj {
 
 
   compileFilterAsync(node: FilterAsync, frame: Frame): void {
-    const name = node.name;
-    const symbol = node.symbol.value;
+    const name: NunjucksSymbol = node.name;
+    const symbol: string = node.symbol.value;
 
     this.assertType(name, NunjucksSymbol);
 
@@ -622,7 +627,9 @@ export class Compiler extends Obj {
 
   compileKeywordArgs(node, frame: Frame): void {
     this._emit('runtime.makeKeywordArgs(');
-    this.compileDict(node, frame);
+    {
+      this.compileDict(node, frame);
+    }
     this._emit(')');
   }
 
@@ -633,8 +640,7 @@ export class Compiler extends Obj {
     // Lookup the variable names for each identifier and create
     // new ones if necessary
     node.targets.forEach((target: NunjucksSymbol): void => {
-      const name: string = target.value;
-      let id: string = frame.lookup(name);
+      let id: string = frame.lookup(target.value);
 
       if (id === null || id === undefined) {
         id = this._tmpid();
@@ -687,7 +693,7 @@ export class Compiler extends Obj {
     this.compile(node.expr, frame);
     this._emit(') {');
     this.currentIndentLevel++;
-    node.cases.forEach((c, i): void => {
+    node.cases.forEach((c, i: number): void => {
       this._emit('case ');
       this.compile(c.cond, frame);
       this._emit(': ');
@@ -740,6 +746,7 @@ export class Compiler extends Obj {
     this._emitLine('}');
   }
 
+
   compileIfAsync(node, frame: Frame): void {
     this._emit('(function(cb) {');
     this.currentIndentLevel++;
@@ -747,6 +754,7 @@ export class Compiler extends Obj {
     this._emit('})(' + this._makeCallback());
     this._addScopeLevel();
   }
+
 
   _emitLoopBindings(node, arr, i, len): void {
     const bindings: ( { val; name: string } )[] = [
@@ -759,7 +767,7 @@ export class Compiler extends Obj {
       {name: 'length', val: len},
     ];
 
-    bindings.forEach((b: { val: string; name: "index" } | { val; name: "index0" } | { val: string; name: "revindex" } | { val: string; name: "revindex0" } | { val: string; name: "first" } | { val: string; name: "last" } | { val; name: "length" }): void => {
+    bindings.forEach((b: { val; name: string }): void => {
       this._emitLine(`frame.set("loop.${b.name}", ${b.val});`);
     });
   }
@@ -811,27 +819,29 @@ export class Compiler extends Obj {
       this._emitLine('}');
 
       this._emitLine('} else {');
-      this.currentIndentLevel++;
-      // Iterate over the key/values of an object
-      const [key, val] = node.name.children;
-      const k: string = this._tmpid();
-      const v: string = this._tmpid();
-      frame.set(key.value, k);
-      frame.set(val.value, v);
+      {
+        this.currentIndentLevel++;
+        // Iterate over the key/values of an object
+        const [key, val] = node.name.children;
+        const k: string = this._tmpid();
+        const v: string = this._tmpid();
+        frame.set(key.value, k);
+        frame.set(val.value, v);
 
-      this._emitLine(`${i} = -1;`);
-      this._emitLine(`var ${len} = runtime.keys(${arr}).length;`);
-      this._emitLine(`for(var ${k} in ${arr}) {`);
-      this._emitLine(`${i}++;`);
-      this._emitLine(`var ${v} = ${arr}[${k}];`);
-      this._emitLine(`frame.set("${key.value}", ${k});`);
-      this._emitLine(`frame.set("${val.value}", ${v});`);
+        this._emitLine(`${i} = -1;`);
+        this._emitLine(`var ${len} = runtime.keys(${arr}).length;`);
+        this._emitLine(`for(var ${k} in ${arr}) {`);
+        this._emitLine(`${i}++;`);
+        this._emitLine(`var ${v} = ${arr}[${k}];`);
+        this._emitLine(`frame.set("${key.value}", ${k});`);
+        this._emitLine(`frame.set("${val.value}", ${v});`);
 
-      this._emitLoopBindings(node, arr, i, len);
-      this._withScopedSyntax((): void => {
-        this.compile(node.body, frame);
-      });
-      this.currentIndentLevel--;
+        this._emitLoopBindings(node, arr, i, len);
+        this._withScopedSyntax((): void => {
+          this.compile(node.body, frame);
+        });
+        this.currentIndentLevel--;
+      }
       this._emitLine('}');
 
       this.currentIndentLevel--;
@@ -887,7 +897,7 @@ export class Compiler extends Obj {
     this._emitLine(');');
 
     if (node.name instanceof ArrayNode) {
-      const arrayLen = node.name.children.length;
+      const arrayLen: number = node.name.children.length;
       this._emit(`runtime.${asyncMethod}(${arr}, ${arrayLen}, function(`);
 
       node.name.children.forEach((name): void => {
@@ -912,7 +922,7 @@ export class Compiler extends Obj {
     this._emitLoopBindings(node, arr, i, len);
 
     this._withScopedSyntax((): void => {
-      let buf;
+      let buf: string;
       if (parallel) {
         buf = this._pushBuffer();
       }
@@ -962,7 +972,7 @@ export class Compiler extends Obj {
     const keepFrame: boolean = (frame !== undefined);
 
     // Type check the definition of the args
-    node.args.children.forEach((arg, i): void => {
+    node.args.children.forEach((arg, i: number): void => {
       if (i === node.args.children.length - 1 && arg instanceof Dict) {
         kwargs = arg;
       } else {
@@ -975,13 +985,13 @@ export class Compiler extends Obj {
 
     // Quoted argument names
     const argNames: string[] = args.map((n): string => `"${n.value}"`);
-    const kwargNames = ((kwargs && kwargs.children) || []).map((n): string => `"${n.key.value}"`);
+    const kwargNames: string[] = ((kwargs && kwargs.children) || []).map((n): string => `"${n.key.value}"`);
 
     // We pass a function to makeMacro which destructures the
     // arguments so support setting positional args with keywords
     // args and passing keyword args as positional args
     // (essentially default values). See runtime.js.
-    let currFrame;
+    let currFrame: Frame;
     if (keepFrame) {
       currFrame = frame.push(true);
     } else {
@@ -1032,6 +1042,7 @@ export class Compiler extends Obj {
     return funcId;
   }
 
+
   compileMacro(node, frame: Frame): void {
     const funcId: string = this._compileMacro(node);
 
@@ -1048,6 +1059,7 @@ export class Compiler extends Obj {
       this._emitLine(`context.setVariable("${name}", ${funcId});`);
     }
   }
+
 
   compileCaller(node, frame: Frame): void {
     // basically an anonymous "macro expression"
@@ -1068,6 +1080,7 @@ export class Compiler extends Obj {
     return parentTemplateId;
   }
 
+
   compileImport(node, frame: Frame): void {
     const target = node.target.value;
     const id: string = this._compileGetTemplate(node, frame, false, false);
@@ -1086,6 +1099,7 @@ export class Compiler extends Obj {
       this._emitLine(`context.setVariable("${target}", ${id});`);
     }
   }
+
 
   compileFromImport(node, frame: Frame): void {
     const importedId: string = this._compileGetTemplate(node, frame, false, false);
@@ -1112,13 +1126,17 @@ export class Compiler extends Obj {
       }
 
       this._emitLine(`if(Object.prototype.hasOwnProperty.call(${importedId}, "${name}")) {`);
-      this.currentIndentLevel++;
-      this._emitLine(`var ${id} = ${importedId}.${name};`);
-      this.currentIndentLevel--;
+      {
+        this.currentIndentLevel++;
+        this._emitLine(`var ${id} = ${importedId}.${name};`);
+        this.currentIndentLevel--;
+      }
       this._emitLine('} else {');
-      this.currentIndentLevel++;
-      this._emitLine(`cb(new Error("cannot import '${name}'")); return;`);
-      this.currentIndentLevel--;
+      {
+        this.currentIndentLevel++;
+        this._emitLine(`cb(new Error("cannot import '${name}'")); return;`);
+        this.currentIndentLevel--;
+      }
       this._emitLine('}');
 
       frame.set(alias, id);
@@ -1268,7 +1286,7 @@ export class Compiler extends Obj {
 
 
   compileOutput(node: Output, frame: Frame): void {
-    const children = node.children;
+    const children: NunjucksNode[] = node.children;
     children.forEach((child: NunjucksNode): void => {
       // TemplateData is a special case because it is never
       // autoescaped, so simply output it for optimization
@@ -1324,7 +1342,7 @@ export class Compiler extends Obj {
 
     const blocks = node.findAll(Block);
 
-    blocks.forEach((block, i): void => {
+    blocks.forEach((block, i: number): void => {
       const name: string = block.name.value;
 
       if (blockNames.indexOf(name) !== -1) {
@@ -1378,6 +1396,7 @@ export function compile(
     extensions: IExtension[],
     name: string,
     opts: ICompilerOptions = { throwOnUndefined: undefined }): string {
+  const transformer: Transformer = new Transformer();
   const compiler: Compiler = new Compiler(name, opts.throwOnUndefined);
 
   // Run the extension preprocessors against the source.
@@ -1387,7 +1406,7 @@ export function compile(
 
   const processedSrc: string = preprocessors.reduce((s: IPreprocessor, processor: IPreprocessor) => processor(s), src);
 
-  compiler.compile(transform(
+  compiler.compile(transformer.transform(
       parse(processedSrc, extensions, opts),
       asyncFilters,
       name

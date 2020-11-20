@@ -8,13 +8,13 @@ import * as filters from '../filters';
 import * as lib from '../lib';
 import { extend, keys, indexOf } from '../lib';
 import waterfall from 'a-sync-waterfall';
-import { Loader } from '../loader';
-import { WebLoader, PrecompiledLoader } from '../web-loaders';
-import { globals } from '../globals';
+import { Loader } from '../loaders/loader';
+import { WebLoader, PrecompiledLoader } from '../loaders/web-loaders';
+import { globals } from './globals';
 import { noopTmplSrc } from './noopTmplSrc';
 import { callbackAsap } from './callbackAsap';
 import { EmitterObj } from '../object/emitterObj';
-import { FileSystemLoader } from '../file-system-loader';
+import { FileSystemLoader } from '../loaders/file-system-loader';
 import { Obj } from '../object/obj';
 import { Frame } from '../runtime/frame';
 import * as globalRuntime from '../runtime/runtime';
@@ -24,22 +24,24 @@ import { IBlockFunction } from './IBlockFunction';
 
 
 export interface IBlocks {
-  [index: string]: IBlockFunction[];
+
 }
 
-export interface IInitialBlocks {
-  [index: string]: IBlockFunction;
+export interface IContext {
+
 }
 
 
 export class Context extends Obj {
-  private env: Environment | undefined;
-  private exported: string[];
-  private ctx: Record<string, any>;
+  private env?: Environment;
+  private exported?: string[];
+  private ctx?: IContext;
   private blocks: IBlocks;
 
 
-  init(ctx: Context, blocks: IInitialBlocks, env: Environment): void {
+  constructor(ctx: Record<string, any>, blocks: IBlocks, env: Environment) {
+    super();
+
     // Has to be tied to an environment so we can tap into its globals.
     this.env = env ?? new Environment();
 
@@ -215,7 +217,7 @@ export class Template extends Obj {
       }
     }
 
-    const context: Context = new Context(ctx || { }, this.blocks, this.env);
+    const context: Context = new Context(ctx ?? { }, this.blocks, this.env);
     const frame: Frame = parentFrame ? parentFrame.push(true) : new Frame();
     frame.topLevel = true;
     let syncResult = null;
@@ -354,7 +356,9 @@ export class Environment extends EmitterObj {
   globals;
 
 
-  init(loaders: Loader | Loader[], opts: IEnvironmentOptions): void {
+  constructor(loaders?: Loader | Loader[], opts?: IEnvironmentOptions) {
+    super();
+
     // The dev flag determines the trace that'll be shown on errors.
     // If set to true, returns the full trace from the error point,
     // otherwise will return trace starting from Template.render
