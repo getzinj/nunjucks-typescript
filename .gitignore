@@ -253,3 +253,7 @@ nunjucks/src/nodes/nodeFactory.js.map
 nunjucks/src/compiler/lexer/ISavedTokensState.js
 nunjucks/src/compiler/lexer/ISavedTokensState.js.map
 scripts/lib/precompile.js
+nunjucks/src/loaders/ILoaderOptions.js
+nunjucks/src/loaders/ILoaderOptions.js.map
+nunjucks/src/loaders/ISource.js
+nunjucks/src/loaders/ISource.js.map

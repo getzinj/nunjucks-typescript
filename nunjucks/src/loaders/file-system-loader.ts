@@ -3,16 +3,17 @@ import * as path from 'path';
 
 import { globalchokidar } from '../environment/globals';
 import { Loader } from './loader';
-
+import { ILoaderOptions } from './ILoaderOptions';
+import { ISource } from './ISource';
 
 
 export class FileSystemLoader extends Loader {
-  private readonly pathsToNames: any;
+  private readonly pathsToNames: string[];
   private readonly noCache: boolean;
   private readonly searchPaths: string[];
 
 
-  constructor(searchPaths, opts?) {
+  constructor(searchPaths: string | string[], opts?: ILoaderOptions) {
     super();
     if (typeof opts === 'boolean') {
       console.log(
@@ -23,7 +24,7 @@ export class FileSystemLoader extends Loader {
     }
 
     opts = opts || {};
-    this.pathsToNames = {};
+    this.pathsToNames = [ ];
     this.noCache = !!opts.noCache;
 
     if (searchPaths) {
@@ -57,34 +58,35 @@ export class FileSystemLoader extends Loader {
   }
 
 
-  getSource(name: string): null | { path: string; noCache: boolean; src: string } {
-    let fullpath: string = null;
+  getSource(name: string): ISource | null {
+    let fullPath: string = null;
     const paths: string[] = this.searchPaths;
 
-    for (let i = 0; i < paths.length; i++) {
+    for (let i: number = 0; i < paths.length; i++) {
       const basePath: string = path.resolve(paths[i]);
       const p: string = path.resolve(paths[i], name);
 
       // Only allow the current directory and anything
       // underneath it to be searched
       if (p.indexOf(basePath) === 0 && fs.existsSync(p)) {
-        fullpath = p;
+        fullPath = p;
         break;
       }
     }
 
-    if (!fullpath) {
+    if (!fullPath) {
       return null;
     }
 
-    this.pathsToNames[fullpath] = name;
+    this.pathsToNames[fullPath] = name;
 
-    const source: { path: string; noCache: boolean; src: string } = {
-      src: fs.readFileSync(fullpath, 'utf-8'),
-      path: fullpath,
+    const source: ISource = {
+      src: fs.readFileSync(fullPath, 'utf-8'),
+      path: fullPath,
       noCache: this.noCache
     };
     this.emit('load', name, source);
+
     return source;
   }
 }

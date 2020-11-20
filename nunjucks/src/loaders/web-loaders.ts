@@ -1,7 +1,8 @@
-'use strict';
-
 import { Loader } from './loader';
+import { ISource } from './ISource';
+import { ILoaderOptions } from './ILoaderOptions';
 export { PrecompiledLoader } from './precompiled-loader';
+
 
 
 export class WebLoader extends Loader {
@@ -10,7 +11,7 @@ export class WebLoader extends Loader {
   private readonly async: boolean;
 
 
-  constructor(baseURL, opts?) {
+  constructor(baseURL: string, opts?: ILoaderOptions) {
     super();
     this.baseURL = baseURL || '.';
     opts = opts || {};
@@ -35,9 +36,9 @@ export class WebLoader extends Loader {
   }
 
 
-  getSource(name: string, cb): { src: any; path: any; noCache: boolean } {
+  getSource(name: string, cb): ISource | null {
     const useCache: boolean = this.useCache;
-    let result: { src: any; path: any; noCache: boolean; };
+    let result: ISource;
     this.fetch(this.baseURL + '/' + name, (err, src) => {
       if (err) {
         if (cb) {

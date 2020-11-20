@@ -1,20 +1,21 @@
 'use strict';
 
 import { Loader } from './loader';
+import { ISource } from './ISource';
 
 
 
 export class PrecompiledLoader extends Loader {
-  private readonly precompiled: Record<string, any>;
+  private readonly precompiled: Record<string, ISource>;
 
 
-  constructor(compiledTemplates) {
+  constructor(compiledTemplates: Record<string, ISource>) {
     super();
     this.precompiled = compiledTemplates || {};
   }
 
 
-  getSource(name: string): null | { path: string; src: { obj: any; type: string } } {
+  getSource(name: string): ISource | null {
     if (this.precompiled[name]) {
       return {
         src: {

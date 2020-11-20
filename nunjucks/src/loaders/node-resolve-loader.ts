@@ -3,7 +3,8 @@ import * as fs from 'fs';
 import { Loader } from './loader';
 import { globalchokidar } from '../environment/globals';
 import { URL } from 'url';
-
+import { ISource } from './ISource';
+import { ILoaderOptions } from './ILoaderOptions';
 
 
 export class NodeResolveLoader extends Loader {
@@ -12,7 +13,7 @@ export class NodeResolveLoader extends Loader {
   private watcher;
 
 
-  constructor(opts) {
+  constructor(opts?: ILoaderOptions) {
     super();
     opts = opts || {};
     this.pathsToNames = {};
@@ -60,7 +61,7 @@ export class NodeResolveLoader extends Loader {
 
     this.pathsToNames[fullpath] = name;
 
-    const source = {
+    const source: ISource = {
       src: fs.readFileSync(fullpath, 'utf-8'),
       path: fullpath,
       noCache: this.noCache,
@@ -70,3 +71,5 @@ export class NodeResolveLoader extends Loader {
     return source;
   }
 }
+
+
