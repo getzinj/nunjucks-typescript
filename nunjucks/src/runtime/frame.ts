@@ -1,9 +1,13 @@
+export interface IVariables {
+
+}
+
 // Frames keep track of scoping both at compile-time and run-time so
 // we know how to access variables. Block tags can introduce special
 // variables, for example.
 export class Frame {
   public topLevel: boolean = false;
-  private readonly variables: Record<string, any> = { };
+  private readonly variables: IVariables = { };
 
 
   /**
@@ -18,7 +22,7 @@ export class Frame {
     // Allow variables with dots by automatically creating the
     // nested structure
     const parts: string[] = name.split('.');
-    let obj: Record<string, any> = this.variables;
+    let obj: IVariables = this.variables;
     let frame: Frame = this;
 
     if (resolveUp) {
@@ -48,9 +52,9 @@ export class Frame {
   }
 
 
-  lookup<T>(name: string): T | undefined | null {
+  lookup<T>(name: string): T {
     const p: Frame = this.parent;
-    const val: T | undefined | null = this.variables[name];
+    const val: T = this.variables[name];
 
     return (val === undefined)
         ? p?.lookup?.(name)

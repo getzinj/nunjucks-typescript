@@ -24,7 +24,7 @@ export const supportsIterators: boolean = (
 export function makeMacro(argNames: string[], kwargNames, func): (...macroArgs) => any {
   return function macro(...macroArgs) {
     const argCount: number = numArgs(macroArgs);
-    let args;
+    let args: string[];
     const kwargs = getKeywordArgs(macroArgs);
 
     if (argCount > argNames.length) {
@@ -103,15 +103,15 @@ export function copySafeness(dest: string | SafeString, target): string | SafeSt
 
 
 export function markSafe(val: string | SafeString): SafeString;
-export function markSafe(val: (... args: any[]) => (string | SafeString)): SafeString;
-export function markSafe(val: string | SafeString | ((... args: any[]) => (string | SafeString))): SafeString | (() => SafeString) {
+export function markSafe(val: (... args) => (string | SafeString)): SafeString;
+export function markSafe(val: string | SafeString | ((... args) => (string | SafeString))): SafeString | (() => SafeString) {
   if (typeof val === 'string') {
     return new SafeString(val);
   } else if (val instanceof SafeString) {
     return val;
   } else if (typeof val === 'function') {
-    return function wrapSafe(...args: any[]): SafeString {
-      const ret: string | SafeString = (val as (... args: any[]) => (string | SafeString)).apply(this, arguments);
+    return function wrapSafe(...args): SafeString {
+      const ret: string | SafeString = (val as (... args) => (string | SafeString)).apply(this, arguments);
 
       return (typeof ret === 'string') ? new SafeString(ret) : ret;
     };
@@ -144,13 +144,13 @@ export function ensureDefined<T>(val: T | undefined, lineno: number, colno: numb
 }
 
 
-export var memberLookup: <O, K extends keyof O>(obj: O, val: K, autoescape?: boolean) => any  = <O, K extends keyof O>(obj: O, val: K) => {
+export var memberLookup: <O, K extends keyof O>(obj: O, val: K, autoescape?: boolean) => any  = <O, K extends keyof O>(obj: O, val: K): O[K] | ((...args) => any) | undefined => {
   if (obj === undefined || obj === null) {
     return undefined;
   } else {
     const element: O[K] = obj[val];
     if (typeof element === 'function') {
-        return (...args: any[]) => element.apply(obj, args);
+        return (...args) => element.apply(obj, args);
       } else {
         return element;
       }
@@ -158,7 +158,7 @@ export var memberLookup: <O, K extends keyof O>(obj: O, val: K, autoescape?: boo
 }
 
 
-export function callWrap<T>(obj: (... args: any[]) => T, name: string, context, args): T {
+export function callWrap<T>(obj: (... args) => T, name: string, context, args): T {
   if (!obj) {
     throw new Error('Unable to call `' + name + '`, which is undefined or falsey');
   } else if (typeof obj !== 'function') {
@@ -169,8 +169,8 @@ export function callWrap<T>(obj: (... args: any[]) => T, name: string, context, 
 }
 
 
-export var contextOrFrameLookup = function contextOrFrameLookup(context: Context, frame: Frame, name: string) {
-  const val = frame.lookup(name);
+export var contextOrFrameLookup: <T>(context: Context, frame: Frame, name: string) => T  = function contextOrFrameLookup<T>(context: Context, frame: Frame, name: string): T {
+  const val: T = frame.lookup<T>(name);
   return (val === undefined)
       ? context.lookup(name)
       : val
@@ -187,11 +187,11 @@ export function handleError<T, V extends T & { lineno }>(error: T | V, lineno: n
 }
 
 
-export function asyncEach(arr, dimen: number, iter: (...args: any[]) => void, cb: (err?, info?) => void): void {
+export function asyncEach<T>(arr: T[], dimen: number, iter: (...args) => void, cb: (err?, info?) => void): void {
   if (isArray(arr)) {
     const len: number = arr.length;
 
-    asyncIter(arr, function iterCallback(item: any[], i: number, next): void {
+    asyncIter(arr, function iterCallback(item: T, i: number, next: (i?: number) => void): void {
       switch (dimen) {
         case 1:
           iter(item, i, len, next);
@@ -203,12 +203,12 @@ export function asyncEach(arr, dimen: number, iter: (...args: any[]) => void, cb
           iter(item[0], item[1], item[2], i, len, next);
           break;
         default:
-          item.push(i, len, next);
+          (item as any).push(i, len, next);
           iter.apply(this, item);
       }
     }, cb);
   } else {
-    asyncFor(arr, function iterCallback(key: string | number, val, i: number, len: number, next): void {
+    asyncFor(arr, function iterCallback(key: string | number, val, i: number, len: number, next: (i?: number) => void): void {
       iter(key, val, i, len, next);
     }, cb);
   }
@@ -219,7 +219,7 @@ type errFn = (err?, info?: string) => void;
 export function asyncAll<T>(arr: ArrayLike<T>, dimen: 1, func: (item1, i: number, length: number, doneFn) => void, cb: errFn): void;
 export function asyncAll<T>(arr: ArrayLike<T>, dimen: 2, func: (item1, item2, i: number, length: number, doneFn) => void, cb: errFn): void;
 export function asyncAll<T>(arr: ArrayLike<T>, dimen: 3, func: (item1, item2, item3, i: number, length: number, doneFn) => void, cb: errFn): void;
-export function asyncAll<T>(arr: ArrayLike<T>, dimen: number, func: (...args: any[]) => void, cb: errFn): void {
+export function asyncAll<T>(arr: ArrayLike<T>, dimen: number, func: (...args) => void, cb: errFn): void {
   let finished: number = 0;
   let len: number;
   let outputArr: string[];

@@ -20,6 +20,7 @@ import { Frame } from '../runtime/frame';
 import * as globalRuntime from '../runtime/runtime';
 import { IExtension } from '../parser/IExtension';
 import { IEnvironmentOptions } from './IEnvironmentOptions';
+import { IBlockFunction } from './IBlockFunction';
 
 
 export interface IBlocks {
@@ -104,8 +105,7 @@ export class Context extends Obj {
   }
 
 
-  getSelf(env: Environment, name: string, block: IBlockFunction, frame: Frame, runtime, cb): void {
-    debugger;
+  getSelf(env: Environment, name: string, block: IBlockFunction, frame: Frame, runtime, cb: (...args: any[]) => void): void {
     const idx: number = indexOf(this.blocks[name] ?? [ ], block);
     const blk: IBlockFunction = this.blocks[name][idx];
     const context: Context = this;
@@ -130,10 +130,6 @@ export class Context extends Obj {
     });
     return exported;
   }
-}
-
-export interface IBlockFunction {
-  (env, context, frame, runtime, cb): void;
 }
 
 
@@ -343,14 +339,18 @@ export class Template extends Obj {
 }
 
 
+export interface IFilterFunction {
+
+}
+
 export class Environment extends EmitterObj {
   opts: IEnvironmentOptions;
   loaders: Loader[ ];
   private extensions;
   extensionsList;
-  asyncFilters;
+  asyncFilters: string[];
   private tests: Record<string, any>;
-  private filters: Record<string, any>;
+  private filters: Record<string, IFilterFunction>;
   globals;
 
 
@@ -479,8 +479,8 @@ export class Environment extends EmitterObj {
   }
 
 
-  addFilter(name, func, async?: boolean): Environment {
-    const wrapped = func;
+  addFilter(name: string, func: IFilterFunction, async?: boolean): Environment {
+    const wrapped: IFilterFunction = func;
 
     if (async) {
       this.asyncFilters.push(name);
@@ -565,7 +565,7 @@ export class Environment extends EmitterObj {
     }
     let syncResult: Template;
 
-    const createTemplate: (err, info) => void = (err, info) => {
+    const createTemplate: (err, info) => void = (err, info): void => {
       if (!info && !err && !ignoreMissing) {
         err = new Error('template not found: ' + name);
       }
@@ -625,7 +625,7 @@ export class Environment extends EmitterObj {
   }
 
 
-  render(name, ctx, cb?) {
+  render(name: string, ctx, cb?): string {
     if (lib.isFunction(ctx)) {
       cb = ctx;
       ctx = null;
@@ -635,7 +635,7 @@ export class Environment extends EmitterObj {
     // existing code to async. This works because if you don't do
     // anything async work, the whole thing is actually run
     // synchronously.
-    let syncResult = null;
+    let syncResult: string = null;
 
     this.getTemplate(name, (err, tmpl: Template): void => {
       if (err && cb) {

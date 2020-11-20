@@ -262,13 +262,13 @@ function createDynamicNode<T extends NunjucksNode>(typename: string, ...args: an
 }
 
 
-function walk(ast: NunjucksNode, func: (ast: NunjucksNode) => any, depthFirst?: boolean) {
+function walk(ast: NunjucksNode, func: (ast: NunjucksNode) => NunjucksNode | undefined, depthFirst?: boolean) {
   if (!(ast instanceof NunjucksNode)) {
     return ast;
   } else {
 
     if (!depthFirst) {
-      const astT = func(ast);
+      const astT: NunjucksNode | undefined = func(ast);
 
       if (astT && astT !== ast) {
         return astT;
@@ -282,19 +282,19 @@ function walk(ast: NunjucksNode, func: (ast: NunjucksNode) => any, depthFirst?: 
         ast = createDynamicNode(ast.typename, ast.lineno, ast.colno, children);
       }
     } else if (ast instanceof CallExtension) {
-      const args: NunjucksNodeList = walk(ast.args, func, depthFirst);
+      const args: NunjucksNodeList = walk(ast.args, func, depthFirst) as NunjucksNodeList;
       const contentArgs: NunjucksNode[] = mapCOW(ast.contentArgs, (node: NunjucksNode) => walk(node, func, depthFirst));
 
       if (args !== ast.args || contentArgs !== ast.contentArgs) {
         ast = createDynamicNode(ast.typename, ast.extName, ast.prop, args, contentArgs);
       }
     } else {
-      const props = ast.fields.map((field: string) => ast[field]);
-      const propsT = mapCOW(props, (prop) => walk(prop, func, depthFirst));
+      const props: NunjucksNode[] = ast.fields.map(<T extends NunjucksNode>(field: string): T => ast[field]);
+      const propsT: NunjucksNode[] = mapCOW(props, (prop: NunjucksNode): NunjucksNode => walk(prop, func, depthFirst));
 
       if (propsT !== props) {
         ast = createDynamicNode(ast.typename, ast.lineno, ast.colno);
-        propsT.forEach((prop, i: number): void => {
+        propsT.forEach((prop: NunjucksNode, i: number): void => {
           ast[ast.fields[i]] = prop;
         });
       }
@@ -305,15 +305,15 @@ function walk(ast: NunjucksNode, func: (ast: NunjucksNode) => any, depthFirst?: 
 }
 
 
-function depthWalk(ast: any, func) {
+function depthWalk(ast: NunjucksNode, func: (node: NunjucksNode) => NunjucksNode): NunjucksNode {
   return walk(ast, func, true);
 }
 
 
 function _liftFilters(node: CallExtension | Output | Set | For | If, asyncFilters: string[], prop?: string): CallExtension | Output | Set | For | If | NunjucksNodeList {
-  const children = [];
+  const children: NunjucksNode[] = [];
 
-  const walked = depthWalk(prop ? node[prop] : node, (descNode: Block | NunjucksSymbol | Filter): Block | NunjucksSymbol => {
+  const walked: NunjucksNode = depthWalk(prop ? node[prop] : node, (descNode: Block | NunjucksSymbol | Filter): Block | NunjucksSymbol => {
     let symbol: NunjucksSymbol;
     if (descNode instanceof Block) {
       return descNode;
@@ -337,7 +337,7 @@ function _liftFilters(node: CallExtension | Output | Set | For | If, asyncFilter
   if (prop) {
     node[prop] = walked;
   } else {
-    node = walked;
+    node = walked as Output | CallExtension | If | For | Set;
   }
 
   if (children.length) {
@@ -354,7 +354,7 @@ function _liftFilters(node: CallExtension | Output | Set | For | If, asyncFilter
 }
 
 
-function liftFilters(ast: Root, asyncFilters: string[]) {
+function liftFilters(ast: Root, asyncFilters: string[]): NunjucksNode | undefined {
   return depthWalk(ast, (node: CallExtension | Output | Set | For | If): NunjucksNodeList | CallExtension | Set | For | If | undefined => {
     if (node instanceof Output) {
       return _liftFilters(node, asyncFilters);
@@ -373,8 +373,8 @@ function liftFilters(ast: Root, asyncFilters: string[]) {
 }
 
 
-function liftSuper(ast: NunjucksNode): NunjucksSymbol | undefined {
-  return walk(ast, (blockNode: NunjucksNode): void => {
+function liftSuper(ast: NunjucksNode) {
+  return walk(ast, (blockNode: NunjucksNode): NunjucksNode => {
     if (!(blockNode instanceof Block)) {
       return;
     }
@@ -398,8 +398,8 @@ function liftSuper(ast: NunjucksNode): NunjucksSymbol | undefined {
 }
 
 
-function liftSelf(ast: NunjucksNode): Self | undefined {
-  return walk(ast, (blockNode: NunjucksNode): void => {
+function liftSelf(ast: NunjucksNode) {
+  return walk(ast, (blockNode: NunjucksNode): NunjucksSymbol => { // eslint-disable-line consistent-return
     if (!(blockNode instanceof Block)) {
       return;
     }
