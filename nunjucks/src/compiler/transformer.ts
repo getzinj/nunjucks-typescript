@@ -28,7 +28,7 @@ export class Transformer {
   readonly nodeFactory: NodeFactory = new NodeFactory();
 
 
-  gensym(): string {
+  private gensym(): string {
     return 'hole_' + this.sym++;
   }
 
@@ -53,7 +53,7 @@ export class Transformer {
 
 
 
-  walk(ast: NunjucksNode, func: (ast: NunjucksNode) => NunjucksNode | undefined, depthFirst?: boolean): NunjucksNode {
+  private walk(ast: NunjucksNode, func: (ast: NunjucksNode) => NunjucksNode | undefined, depthFirst?: boolean): NunjucksNode {
     if (!(ast instanceof NunjucksNode)) {
       return ast;
     } else {
@@ -96,12 +96,12 @@ export class Transformer {
   }
 
 
-  depthWalk(ast: NunjucksNode, func: (node: NunjucksNode) => NunjucksNode): NunjucksNode {
+  private depthWalk(ast: NunjucksNode, func: (node: NunjucksNode) => NunjucksNode): NunjucksNode {
     return this.walk(ast, func, true);
   }
 
 
-  _liftFilters(node: CallExtension | Output | Set | For | If, asyncFilters: string[], prop?: string): CallExtension | Output | Set | For | If | NunjucksNodeList {
+  private _liftFilters(node: CallExtension | Output | Set | For | If, asyncFilters: string[], prop?: string): CallExtension | Output | Set | For | If | NunjucksNodeList {
     const children: NunjucksNode[] = [];
 
     const walked: NunjucksNode = this.depthWalk(prop ? node[prop] : node, (descNode: Block | NunjucksSymbol | Filter): Block | NunjucksSymbol => {
@@ -145,7 +145,7 @@ export class Transformer {
   }
 
 
-  liftFilters(ast: Root, asyncFilters: string[]): NunjucksNode | undefined {
+  private liftFilters(ast: Root, asyncFilters: string[]): NunjucksNode | undefined {
     return this.depthWalk(ast, (node: CallExtension | Output | Set | For | If): NunjucksNodeList | CallExtension | Set | For | If | undefined => {
       if (node instanceof Output) {
         return this._liftFilters(node, asyncFilters);
@@ -164,7 +164,7 @@ export class Transformer {
   }
 
 
-  liftSuper(ast: NunjucksNode): NunjucksNode | undefined {
+  private liftSuper(ast: NunjucksNode): NunjucksNode | undefined {
     return this.walk(ast, (blockNode: NunjucksNode): NunjucksNode => {
       if (!(blockNode instanceof Block)) {
         return;
@@ -189,7 +189,7 @@ export class Transformer {
   }
 
 
-  liftSelf(ast: NunjucksNode): NunjucksNode | undefined {
+  private liftSelf(ast: NunjucksNode): NunjucksNode | undefined {
     return this.walk(ast, (blockNode: NunjucksNode): NunjucksSymbol => { // eslint-disable-line consistent-return
       if (!(blockNode instanceof Block)) {
         return;
@@ -214,7 +214,7 @@ export class Transformer {
   }
 
 
-  convertStatements(ast): NunjucksNode | undefined {
+  private convertStatements(ast): NunjucksNode | undefined {
     return this.depthWalk(ast, (node: NunjucksNode): AsyncEach | undefined | IfAsync => {
       if (!(node instanceof If) && !(node instanceof For)) {
         return undefined;
@@ -259,7 +259,7 @@ export class Transformer {
   }
 
 
-  cps(ast: Root, asyncFilters: string[]): NunjucksNode {
+  private cps(ast: Root, asyncFilters: string[]): NunjucksNode {
     return this.convertStatements(this.liftSelf(this.liftSuper(this.liftFilters(ast, asyncFilters))));
   }
 
