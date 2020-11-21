@@ -5,9 +5,10 @@ import { globalchokidar } from '../environment/globals';
 import { URL } from 'url';
 import { ISource } from './ISource';
 import { ILoaderOptions } from './ILoaderOptions';
+import { ILoader } from '../environment/ILoader';
 
 
-export class NodeResolveLoader extends Loader {
+export class NodeResolveLoader extends Loader implements ILoader {
   private readonly pathsToNames;
   private readonly noCache: boolean;
   private watcher;

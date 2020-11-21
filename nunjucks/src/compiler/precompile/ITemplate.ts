@@ -1,4 +1,4 @@
-import { Template } from '../../environment/environment';
+import { Template } from '../../environment/template';
 
 export interface ITemplate {
   name;

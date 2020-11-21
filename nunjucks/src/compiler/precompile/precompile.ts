@@ -10,9 +10,10 @@ import { Compiler } from '../compiler';
 import { IPrecompiled } from './IPrecompiled';
 import { IExtension } from '../parser/IExtension';
 import { IPrecompileOptions } from './IPrecompileOptions';
+import { IEnvironment } from '../../environment/IEnvironment';
 
 
-function match(filename: string, patterns: (string | RegExp)[]) {
+function match(filename: string, patterns: (string | RegExp)[]): boolean {
   if (!Array.isArray(patterns)) {
     return false;
   }
@@ -20,7 +21,7 @@ function match(filename: string, patterns: (string | RegExp)[]) {
 }
 
 
-export function precompileString(str: string, opts: { isString?: boolean; env?: Environment; wrapper?: any; name?: any; }) {
+export function precompileString(str: string, opts: IPrecompileOptions): string {
   opts = opts || {};
   opts.isString = true;
   const env = opts.env || new Environment([]);
@@ -33,7 +34,7 @@ export function precompileString(str: string, opts: { isString?: boolean; env?: 
 }
 
 
-export function precompile(input, opts?: IPrecompileOptions) {
+export function precompile(input, opts?: IPrecompileOptions): string {
   // The following options are available:
   //
   // * name: name of the template (auto-generated when compiling a directory)
@@ -49,7 +50,7 @@ export function precompile(input, opts?: IPrecompileOptions) {
   //       A custom loader will be necessary to load your custom wrapper.
 
   opts = opts || {};
-  const env: Environment = opts.env || new Environment([]);
+  const env: IEnvironment = opts.env || new Environment([]);
   const wrapper: (templates, opts) => string = opts.wrapper || precompileGlobal;
 
   if (opts.isString) {
@@ -111,7 +112,7 @@ export function precompile(input, opts?: IPrecompileOptions) {
 }
 
 
-function _precompile(str: string, name: string, env: Environment): IPrecompiled {
+function _precompile(str: string, name: string, env: IEnvironment): IPrecompiled {
   env = env || new Environment([]);
 
   const asyncFilters: string[] = env.asyncFilters;

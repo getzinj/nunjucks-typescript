@@ -1,7 +1,7 @@
 'use strict';
 
 import { TemplateError } from './templateError';
-import { Context } from './environment/environment';
+import { Context } from './environment/context';
 
 const ArrayProto = Array.prototype;
 const ObjProto = Object.prototype;

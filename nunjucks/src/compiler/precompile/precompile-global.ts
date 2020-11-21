@@ -1,9 +1,9 @@
 'use strict';
 
 
-import { Template } from '../../environment/environment';
 import { ITemplate } from './ITemplate';
 import { IPrecompileGlobalOptions } from './IPrecompileGlobalOptions';
+import { Template } from '../../environment/template';
 
 
 export function precompileGlobal(templates: ITemplate[], opts?: IPrecompileGlobalOptions): string {

@@ -280,3 +280,15 @@ nunjucks/src/compiler/precompile/IPrecompileGlobalOptions.js
 nunjucks/src/compiler/precompile/IPrecompileGlobalOptions.js.map
 nunjucks/src/compiler/precompile/ITemplate.js
 nunjucks/src/compiler/precompile/ITemplate.js.map
+nunjucks/src/compiler/lexer/ITags.js
+nunjucks/src/compiler/lexer/ITags.js.map
+nunjucks/src/environment/context.js
+nunjucks/src/environment/context.js.map
+nunjucks/src/environment/IEnvironment.js
+nunjucks/src/environment/IEnvironment.js.map
+nunjucks/src/environment/ILoader.js
+nunjucks/src/environment/ILoader.js.map
+nunjucks/src/environment/ITemplateClass.js
+nunjucks/src/environment/ITemplateClass.js.map
+nunjucks/src/environment/template.js
+nunjucks/src/environment/template.js.map

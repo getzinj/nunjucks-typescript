@@ -1,7 +1,6 @@
 import { Parser } from './compiler/parser/parser';
 import { _assign, _values, _entries, isObject } from './lib';
 import { keys, isArray, Frame, contextOrFrameLookup, memberLookup } from './runtime/runtime';
-import { Context } from './environment/environment';
 import { Slice } from './nodes/jinja/slice';
 import { ArrayNode } from './nodes/arrayNode';
 import { Dict } from './nodes/dict';
@@ -11,6 +10,7 @@ import { Token } from './compiler/lexer/token';
 import { Tokenizer } from './compiler/lexer/tokenizer';
 import { ISavedTokensState } from './compiler/lexer/ISavedTokensState';
 import { CodeGenerator } from './compiler/codeGenerator';
+import { Context } from './environment/context';
 
 
 function addCompileSliceToCodeGenerator(): void {

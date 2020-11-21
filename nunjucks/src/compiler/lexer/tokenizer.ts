@@ -2,9 +2,10 @@ import { whitespaceChars, delimChars, intChars } from './characters';
 import { indexOf } from '../../lib';
 import { Token } from './token';
 import { TokenType } from './tokenType';
-import { ITokenizerOptions, ITags } from './ITokenizerOptions';
+import { ITokenizerOptions} from './ITokenizerOptions';
 import { Tag } from './tag';
 import { IRegexTokenValue } from './IRegexTokenValue';
+import { ITags } from './ITags';
 
 
 export class Tokenizer {

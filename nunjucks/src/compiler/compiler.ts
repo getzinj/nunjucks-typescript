@@ -1,6 +1,5 @@
 'use strict';
 
-import { Obj } from '../object/obj';
 import { IExtension } from './parser/IExtension';
 import { IPreprocessor } from './IPreprocessor';
 import { ICompilerOptions } from './ICompilerOptions';
@@ -12,14 +11,12 @@ import { Root } from '../nodes/root';
 
 
 
-export class Compiler extends Obj {
+export class Compiler {
 
-  constructor(private readonly templateName: string, private readonly throwOnUndefined: boolean = false) {
-    super();
-  }
+  constructor(private readonly templateName: string, private readonly throwOnUndefined: boolean = false) { }
 
 
-  public getPreprocessedSource(extensions: IExtension[], src: string): string {
+  private getPreprocessedSource(extensions: IExtension[], src: string): string {
     // Run the extension preprocessors against the source.
     const preprocessors: IPreprocessor[] = (extensions ?? [])
         .map( (ext: IExtension): IPreprocessor => ext.preprocess )
@@ -28,12 +25,12 @@ export class Compiler extends Obj {
   }
 
 
-  public parseSource(processedSrc: string, extensions: IExtension[], opts: ICompilerOptions): Root {
+  private parseSource(processedSrc: string, extensions: IExtension[], opts: ICompilerOptions): Root {
     return new Parser().parseSource(processedSrc, extensions, opts);
   }
 
 
-  public getTransformedSource(parsedCode: Root, asyncFilters, name: string): NunjucksNode {
+  private getTransformedSource(parsedCode: Root, asyncFilters, name: string): NunjucksNode {
     return new Transformer().transform(
         parsedCode,
         asyncFilters,
@@ -42,7 +39,7 @@ export class Compiler extends Obj {
   }
 
 
-  public generateCode(transformedCode: NunjucksNode): string {
+  private generateCode(transformedCode: NunjucksNode): string {
     return new CodeGenerator(this.templateName, this.throwOnUndefined)
         .compile(transformedCode)
         .getCode();

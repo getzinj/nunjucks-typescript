@@ -1,12 +1,10 @@
 'use strict';
 
 
-import { Compiler } from '../compiler/compiler';
 import * as expressApp from './express-app';
 import * as tests from './tests';
 import * as filters from './filters/filters';
 import * as lib from '../lib';
-import { extend, keys, indexOf } from '../lib';
 import waterfall from 'a-sync-waterfall';
 import { Loader } from '../loaders/loader';
 import { WebLoader, PrecompiledLoader } from '../loaders/web-loaders';
@@ -15,326 +13,18 @@ import { noopTmplSrc } from './noopTmplSrc';
 import { callbackAsap } from './callbackAsap';
 import { EmitterObj } from '../object/emitterObj';
 import { FileSystemLoader } from '../loaders/file-system-loader';
-import { Obj } from '../object/obj';
-import { Frame } from '../runtime/frame';
-import * as globalRuntime from '../runtime/runtime';
 import { IExtension } from '../compiler/parser/IExtension';
 import { IEnvironmentOptions } from './IEnvironmentOptions';
-import { IBlockFunction } from './IBlockFunction';
-import { IBlocks } from './IBlocks';
-import { IContext } from './IContext';
 import { IFilterFunction } from './IFilterFunction';
+import { ILoader } from './ILoader';
+import { IEnvironment } from './IEnvironment';
+import { Template } from './template';
 
 
 
-export class Context extends Obj {
-  private env?: Environment;
-  private exported?: string[];
-  private readonly ctx?: IContext;
-  private readonly blocks: IBlocks;
-
-
-  constructor(ctx: Record<string, any>, blocks: IBlocks, env: Environment) {
-    super();
-
-    // Has to be tied to an environment so we can tap into its globals.
-    this.env = env ?? new Environment();
-
-    // Make a duplicate of ctx
-    this.ctx = extend({ }, ctx);
-
-    this.blocks = { };
-    this.exported = [ ];
-
-    keys(blocks).forEach((name: string): void => {
-      this.addBlock(name, blocks[name]);
-    });
-  }
-
-
-  lookup<T>(name: string): T {
-    // This is one of the most called functions, so optimize for
-    // the typical case where the name isn't in the globals
-    if (name in this.env.globals && !(name in this.ctx)) {
-      return this.env.globals[name];
-    } else {
-      return this.ctx[name];
-    }
-  }
-
-
-  setVariable(name: string, val): void {
-    this.ctx[name] = val;
-  }
-
-
-  getVariables(): Record<string, any> {
-    return this.ctx;
-  }
-
-
-  addBlock(name: string, block: IBlockFunction): this {
-    this.blocks[name] = this.blocks[name] ?? [ ];
-    this.blocks[name].push(block);
-    return this;
-  }
-
-
-  getBlock(name: string): IBlockFunction {
-    if (!this.blocks[name]) {
-      throw new Error('unknown block "' + name + '"');
-    }
-
-    return this.blocks[name][0];
-  }
-
-
-  public getSuper(env: Environment, name: string, block: IBlockFunction, frame: Frame, runtime, cb): void {
-    const idx: number = indexOf(this.blocks[name] ?? [ ], block);
-    const blk: IBlockFunction = this.blocks[name][idx + 1];
-    const context: Context = this;
-
-    if (idx === -1 || !blk) {
-      throw new Error('no super block available for "' + name + '"');
-    }
-
-    blk(env, context, frame, runtime, cb);
-  }
-
-
-  public getSelf(env: Environment, name: string, block: IBlockFunction, frame: Frame, runtime, cb: (...args: any[]) => void): void {
-    const idx: number = indexOf(this.blocks[name] ?? [ ], block);
-    const blk: IBlockFunction = this.blocks[name][idx];
-    const context: Context = this;
-
-    if (!blk) {
-      throw new Error('no self block available for "' + name + '"');
-    }
-
-    blk(env, context, frame, runtime, cb);
-  }
-
-
-  addExport(name: string): void {
-    this.exported.push(name);
-  }
-
-
-  getExported(): { } {
-    const exported: { } = { };
-    this.exported.forEach((name): void => {
-      exported[name] = this.ctx[name];
-    });
-    return exported;
-  }
-}
-
-
-
-export class Template extends Obj {
-  private compiled: boolean;
-  private readonly path: string;
-  private readonly env: Environment;
-  private readonly tmplProps;
-  private readonly tmplStr: string;
-  private blocks: Record<string, IBlockFunction[]>;
-  private rootRenderFunc: (env: Environment,
-                           context: Context,
-                           frame: Frame,
-                           runtime: typeof globalRuntime,
-                           callback:
-                               (err: any, info?: any) => void
-                          ) => void;
-
-
-  constructor(src, env: Environment | undefined | null, path?: string, eagerCompile?: boolean) {
-    super();
-    this.env = env || new Environment();
-
-    if (lib.isObject(src)) {
-      switch (src.type) {
-        case 'code':
-          this.tmplProps = src.obj;
-          break;
-        case 'string':
-          this.tmplStr = src.obj;
-          break;
-        default:
-          throw new Error(
-              `Unexpected template object type ${ src.type }; expected 'code', or 'string'`);
-      }
-    } else if (lib.isString(src)) {
-      this.tmplStr = src;
-    } else {
-      throw new Error('src must be a string or an object describing the source');
-    }
-
-    this.path = path;
-
-    if (eagerCompile) {
-      try {
-        this._compile();
-      } catch (err) {
-        throw lib._prettifyError(this.path, this.env.opts.dev, err);
-      }
-    } else {
-      this.compiled = false;
-    }
-  }
-
-
-  render(ctx: Context, cb?);
-  render(ctx: Context, parentFrame: undefined, cb?);
-  render(ctx: Context, parentFrame?: Frame, cb?) {
-    if (typeof ctx === 'function') {
-      cb = ctx;
-      ctx = { } as Context;
-    } else if (typeof parentFrame === 'function') {
-      cb = parentFrame;
-      parentFrame = null;
-    }
-
-    // If there is a parent frame, we are being called from internal
-    // code of another template, and the internal system
-    // depends on the sync/async nature of the parent template
-    // to be inherited, so force an async callback
-    const forceAsync: boolean = !parentFrame;
-
-    // Catch compile errors for async rendering
-    try {
-      this.compile();
-    } catch (e) {
-      const err = lib._prettifyError(this.path, this.env.opts.dev, e);
-      if (cb) {
-        return callbackAsap(cb, err);
-      } else {
-        throw err;
-      }
-    }
-
-    const context: Context = new Context(ctx ?? { }, this.blocks, this.env);
-    const frame: Frame = parentFrame ? parentFrame.push(true) : new Frame();
-    frame.topLevel = true;
-    let syncResult = null;
-    let didError: boolean = false;
-
-    this.rootRenderFunc(this.env, context, frame, globalRuntime, (err, res): void => {
-      // TODO: this is actually a bug in the compiled template (because waterfall
-      // tasks are both not passing errors up the chain of callbacks AND are not
-      // causing a return from the top-most render function). But fixing that
-      // will require a more substantial change to the compiler.
-      if (didError && cb && typeof res !== 'undefined') {
-        // prevent multiple calls to cb
-        return;
-      }
-
-      if (err) {
-        err = lib._prettifyError(this.path, this.env.opts.dev, err);
-        didError = true;
-      }
-
-      if (cb) {
-        if (forceAsync) {
-          callbackAsap(cb, err, res);
-        } else {
-          cb(err, res);
-        }
-      } else {
-        if (err) {
-          throw err;
-        }
-        syncResult = res;
-      }
-    });
-
-    return syncResult;
-  }
-
-
-  getExported(ctx, parentFrame, cb) { // eslint-disable-line consistent-return
-    if (typeof ctx === 'function') {
-      cb = ctx;
-      ctx = { };
-    }
-
-    if (typeof parentFrame === 'function') {
-      cb = parentFrame;
-      parentFrame = null;
-    }
-
-    // Catch compile errors for async rendering
-    try {
-      this.compile();
-    } catch (e) {
-      if (cb) {
-        return cb(e);
-      } else {
-        throw e;
-      }
-    }
-
-    const frame: Frame = parentFrame ? parentFrame.push() : new Frame();
-    frame.topLevel = true;
-
-    // Run the rootRenderFunc to populate the context with exported vars
-    const context: Context = new Context(ctx || { }, this.blocks, this.env);
-    this.rootRenderFunc(this.env, context, frame, globalRuntime, (err): void => {
-      if (err) {
-        cb(err, null);
-      } else {
-        cb(null, context.getExported());
-      }
-    });
-  }
-
-
-  compile(): void {
-    if (!this.compiled) {
-      this._compile();
-    }
-  }
-
-
-  _compile(): void {
-    let props;
-
-    if (this.tmplProps) {
-      props = this.tmplProps;
-    } else {
-      const source: string = new Compiler(this.path).compile(this.tmplStr, this.env.asyncFilters, this.env.extensionsList, this.path, this.env.opts);
-
-      try {
-        const func: Function = new Function(source); // eslint-disable-line no-new-func
-        props = func();
-      } catch (e) {
-        console.error(`Error compiling source: \n${ source }\n`, e);
-        throw e;
-      }
-    }
-
-    this.blocks = this._getBlocks(props);
-    this.rootRenderFunc = props.root;
-    this.compiled = true;
-  }
-
-
-  _getBlocks(props: { [x: string]: IBlockFunction[]; }): Record<string, IBlockFunction[]> {
-    const blocks: Record<string, IBlockFunction[]> = { };
-
-    lib.keys(props).forEach((k: string): void => {
-      if (k.slice(0, 2) === 'b_') {
-        blocks[k.slice(2)] = props[k];
-      }
-    });
-
-    return blocks;
-  }
-}
-
-
-export class Environment extends EmitterObj {
+export class Environment extends EmitterObj implements IEnvironment {
   opts: IEnvironmentOptions;
-  loaders: Loader[ ];
+  loaders: ILoader[ ];
   private readonly extensions;
   extensionsList: IExtension[];
   asyncFilters: string[];
@@ -343,7 +33,7 @@ export class Environment extends EmitterObj {
   globals;
 
 
-  constructor(loaders?: Loader | Loader[], opts?: IEnvironmentOptions) {
+  constructor(loaders?: ILoader | ILoader[], opts?: IEnvironmentOptions) {
     super();
 
     // The dev flag determines the trace that'll be shown on errors.
@@ -538,7 +228,7 @@ export class Environment extends EmitterObj {
       throw new Error('template names must be a string: ' + name);
     } else {
       for (let i = 0; i < this.loaders.length; i++) {
-        const loader: Loader = this.loaders[i];
+        const loader: ILoader = this.loaders[i];
         tmpl = loader.cache[this.resolveTemplate(loader, parentName, name)];
         if (tmpl) {
           break;

@@ -1,6 +1,9 @@
-import { Loader } from 'nunjucks/src/loaders/loader';
 import { IExtension } from '../nunjucks/src/compiler/parser/IExtension';
-import { Context, Template, Environment } from '../nunjucks/src/environment/environment';
+import { Environment } from '../nunjucks/src/environment/environment';
+import { Template } from '../nunjucks/src/environment/template';
+import { Context } from '../nunjucks/src/environment/context';
+import { ILoader } from '../nunjucks/src/environment/ILoader';
+import { IEnvironment } from '../nunjucks/src/environment/IEnvironment';
 
 
 
@@ -129,7 +132,7 @@ export interface IExtensionOption {
   }
 
 
-  function configureEnvironment(ctx, cb, opts, env: Environment | null): { ctx, cb, opts, loader: Loader, e: Environment } {
+  function configureEnvironment(ctx, cb, opts, env: Environment | null): { ctx, cb, opts, loader: ILoader, e: IEnvironment } {
     const __ret: { ctx; cb; opts; env: Environment } = configureEnvironment_aux(ctx, cb, opts, env);
     ctx = __ret.ctx;
     cb = __ret.cb;
@@ -139,7 +142,7 @@ export interface IExtensionOption {
     opts = opts || {};
     opts.dev = true;
 
-    let loader: Loader;
+    let loader: ILoader;
     let e: Environment;
 
     if (isSlim) {
@@ -153,7 +156,7 @@ export interface IExtensionOption {
   }
 
 
-  function loadFilters(opts, e: Environment): void {
+  function loadFilters(opts, e: IEnvironment): void {
     if (opts.filters) {
       let name: string | number;
       for (name in opts.filters) {
@@ -165,7 +168,7 @@ export interface IExtensionOption {
   }
 
 
-  function loadAsyncFilters(opts, e: Environment): void {
+  function loadAsyncFilters(opts, e: IEnvironment): void {
     if (opts.asyncFilters) {
       let name: string | number;
       for (name in opts.asyncFilters) {
@@ -177,7 +180,7 @@ export interface IExtensionOption {
   }
 
 
-  function loadExtensions(opts: IExtensionOption, e: Environment): void {
+  function loadExtensions(opts: IExtensionOption, e: IEnvironment): void {
     if (opts.extensions) {
       let name: string | number;
       for (name in opts.extensions) {
@@ -189,7 +192,7 @@ export interface IExtensionOption {
   }
 
 
-  function loadTemplate(str: string, e: Environment, ctx: Record<string, any>, loader: Loader): { t: Template; ctx: any } {
+  function loadTemplate(str: string, e: IEnvironment, ctx: Record<string, any>, loader: ILoader): { t: Template; ctx: any } {
     let tmplName: string;
     if (isSlim) {
       tmplName = randomTemplateName();
@@ -249,7 +252,7 @@ export interface IExtensionOption {
 
 // eslint-disable-next-line consistent-return
   function render(str: string, ctx: Context, opts, env, cb?) {
-    const environmentConfig: { ctx; cb; opts; loader: Loader; e: Environment } = configureEnvironment(ctx, cb, opts, env);
+    const environmentConfig: { ctx; cb; opts; loader: ILoader; e: IEnvironment } = configureEnvironment(ctx, cb, opts, env);
     ctx = environmentConfig.ctx;
 
     loadFilters(environmentConfig.opts, environmentConfig.e);

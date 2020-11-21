@@ -9,8 +9,8 @@ import { precompile, precompileString } from './src/compiler/precompile/precompi
 import { Parser } from './src/compiler/parser/parser';
 import { isObject } from './src/lib';
 import { installCompat } from './src/jinja-compat';
-import { Context } from './src/environment/environment';
 import { INunjucksOptions } from './INunjucksOptions';
+import { Context } from './src/environment/context';
 
 const {Environment, Template} = require('./src/environment/environment');
 

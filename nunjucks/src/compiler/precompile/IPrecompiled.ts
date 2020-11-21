@@ -1,4 +1,4 @@
 export interface IPrecompiled {
-  template: string;
+  template;
   name: string;
 }

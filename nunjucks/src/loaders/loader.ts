@@ -2,11 +2,12 @@
 
 import * as path from 'path';
 import { EmitterObj } from '../object/emitterObj';
-import { Template } from '../environment/environment';
+import { ILoader } from '../environment/ILoader';
+import { Template } from '../environment/template';
 
 
 
-export abstract class Loader extends EmitterObj {
+export abstract class Loader extends EmitterObj implements ILoader {
   cache: Record<string, Template>;
 
   resolve(from, to): string {

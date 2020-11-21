@@ -2,10 +2,11 @@
 
 import { Loader } from './loader';
 import { ISource } from './ISource';
+import { ILoader } from '../environment/ILoader';
 
 
 
-export class PrecompiledLoader extends Loader {
+export class PrecompiledLoader extends Loader implements ILoader {
   private readonly precompiled: Record<string, ISource>;
 
 

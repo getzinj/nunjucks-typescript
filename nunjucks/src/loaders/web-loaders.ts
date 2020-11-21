@@ -1,11 +1,12 @@
 import { Loader } from './loader';
 import { ISource } from './ISource';
 import { ILoaderOptions } from './ILoaderOptions';
+import { ILoader } from '../environment/ILoader';
 export { PrecompiledLoader } from './precompiled-loader';
 
 
 
-export class WebLoader extends Loader {
+export class WebLoader extends Loader implements ILoader {
   private readonly useCache: boolean;
   private readonly baseURL: string;
   private readonly async: boolean;

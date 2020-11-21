@@ -1,4 +1,4 @@
 export interface IRegexTokenValue {
   body,
-  flags
+  flags?: string
 }

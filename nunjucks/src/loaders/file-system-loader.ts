@@ -5,9 +5,10 @@ import { globalchokidar } from '../environment/globals';
 import { Loader } from './loader';
 import { ILoaderOptions } from './ILoaderOptions';
 import { ISource } from './ISource';
+import { ILoader } from '../environment/ILoader';
 
 
-export class FileSystemLoader extends Loader {
+export class FileSystemLoader extends Loader implements ILoader {
   private readonly pathsToNames: string[];
   private readonly noCache: boolean;
   private readonly searchPaths: string[];

@@ -4,6 +4,7 @@ import { TokenType } from '../nunjucks/src/compiler/lexer/tokenType';
 import { IExtension } from '../nunjucks/src/compiler/parser/IExtension';
 import { Environment } from '../nunjucks/src/environment/environment';
 import { Done } from 'mocha';
+import { Template } from '../nunjucks/src/environment/template';
 
 
 
@@ -12,7 +13,6 @@ import { Done } from 'mocha';
 
   let expect;
   let util;
-  let Template;
   let Loader;
   let Environment;
   let fs;
@@ -24,13 +24,11 @@ import { Done } from 'mocha';
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
     util = require('./util.spec');
-    Template = require('../nunjucks/src/environment/environment').Template;
     Environment = require('../nunjucks/src/environment/environment').Environment;
     fs = require('fs');
   } else {
     expect = window['expect'];
     util = window['util'];
-    Template = window['Template'];
     Environment = window['Environment'];
   }
 

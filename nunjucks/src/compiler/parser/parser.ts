@@ -3,7 +3,6 @@
 import { indexOf } from '../../lib';
 import * as lexer from '../lexer/characters';
 import { TemplateError } from '../../templateError';
-import { Obj } from '../../object/obj';
 import { Root } from '../../nodes/root';
 import { Literal } from '../../nodes/literal';
 import { NunjucksSymbol } from '../../nodes/nunjucksSymbol';
@@ -64,17 +63,12 @@ import { IParserOptions } from './IParserOptions';
 
 
 
-export class Parser extends Obj implements IParser {
+export class Parser implements IParser {
   extensions: IExtension[] | undefined = [ ];
   private dropLeadingWhitespace: boolean = false;
   private breakOnBlocks: string[] | undefined | null = null;
   parserTokenStream: ParserTokenStream;
   public tokens: Tokenizer;
-
-
-  constructor() {
-    super();
-  }
 
 
   public parseSource(src: string, extensions?: IExtension[], opts?: IParserOptions): Root {
