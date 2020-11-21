@@ -6,7 +6,7 @@ import { _prettifyError } from '../../lib';
 
 import { Environment } from '../../environment/environment';
 import { precompileGlobal } from './precompile-global';
-import { compile } from '../compiler';
+import { Compiler } from '../compiler';
 
 
 function match(filename, patterns) {
@@ -111,18 +111,14 @@ export function precompile(input, opts) {
 function _precompile(str: string, name: string, env: Environment): { template: string; name: string } {
   env = env || new Environment([]);
 
-  const asyncFilters = env.asyncFilters;
+  const asyncFilters: string[] = env.asyncFilters;
   const extensions = env.extensionsList;
   let template: string;
 
   name = name.replace(/\\/g, '/');
 
   try {
-    template = compile(str,
-      asyncFilters,
-      extensions,
-      name,
-      env.opts);
+    template = new Compiler(name, env.opts.throwOnUndefined).compile(str, asyncFilters, extensions, name, env.opts);
   } catch (err) {
     throw _prettifyError(name, false, err);
   }

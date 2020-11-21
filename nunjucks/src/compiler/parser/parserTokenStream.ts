@@ -5,7 +5,7 @@ import { TokenType } from '../lexer/tokenType';
 
 
 export class ParserTokenStream {
-  peeked: Token | null;
+  peeked: Token<any> | null = null;
 
   get currentLine(): string { return this.tokens.currentLine; }
 
@@ -13,8 +13,8 @@ export class ParserTokenStream {
   constructor(public tokens: Tokenizer) { }
 
 
-  nextToken(withWhitespace?): Token | null {
-    let tok: Token | null;
+  nextToken(withWhitespace?): Token<any> | null {
+    let tok: Token<any> | null;
 
     if (this.peeked) {
       if (!withWhitespace && this.peeked.type === TokenType.TOKEN_WHITESPACE) {
@@ -38,7 +38,7 @@ export class ParserTokenStream {
   }
 
 
-  peekToken(): Token {
+  peekToken(): Token<any> {
     this.peeked = this.peeked || this.nextToken();
     return this.peeked;
   }

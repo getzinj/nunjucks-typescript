@@ -21,22 +21,18 @@ import * as globalRuntime from '../runtime/runtime';
 import { IExtension } from '../compiler/parser/IExtension';
 import { IEnvironmentOptions } from './IEnvironmentOptions';
 import { IBlockFunction } from './IBlockFunction';
+import { IBlocks } from './IBlocks';
+import { IContext } from './IContext';
+import { IFilterFunction } from './IFilterFunction';
+import { Compiler } from '../compiler/compiler';
 
-
-export interface IBlocks {
-
-}
-
-export interface IContext {
-
-}
 
 
 export class Context extends Obj {
   private env?: Environment;
   private exported?: string[];
-  private ctx?: IContext;
-  private blocks: IBlocks;
+  private readonly ctx?: IContext;
+  private readonly blocks: IBlocks;
 
 
   constructor(ctx: Record<string, any>, blocks: IBlocks, env: Environment) {
@@ -306,11 +302,7 @@ export class Template extends Obj {
     if (this.tmplProps) {
       props = this.tmplProps;
     } else {
-      const source: string = compiler.compile(this.tmplStr,
-          this.env.asyncFilters,
-          this.env.extensionsList,
-          this.path,
-          this.env.opts);
+      const source: string = new Compiler(this.path).compile(this.tmplStr, this.env.asyncFilters, this.env.extensionsList, this.path, this.env.opts);
 
       try {
         const func: Function = new Function(source); // eslint-disable-line no-new-func
@@ -341,18 +333,14 @@ export class Template extends Obj {
 }
 
 
-export interface IFilterFunction {
-
-}
-
 export class Environment extends EmitterObj {
   opts: IEnvironmentOptions;
   loaders: Loader[ ];
-  private extensions;
+  private readonly extensions;
   extensionsList;
   asyncFilters: string[];
-  private tests: Record<string, any>;
-  private filters: Record<string, IFilterFunction>;
+  private readonly tests: Record<string, any>;
+  private readonly filters: Record<string, IFilterFunction>;
   globals;
 
 
@@ -522,7 +510,11 @@ export class Environment extends EmitterObj {
   }
 
 
-  getTemplate(name, eagerCompile?: boolean | ((param1, param2?) => void), parentName?: (param1, param2?) => void, ignoreMissing?: boolean, cb?: (param1, param2?) => void) {
+  getTemplate(name,
+              eagerCompile?: boolean | ((param1, param2?) => void),
+              parentName?: (param1, param2?) => void,
+              ignoreMissing?: boolean,
+              cb?: (param1, param2?) => void) {
     const that: Environment = this;
     let tmpl = null;
     if (name && name.raw) {
@@ -655,7 +647,7 @@ export class Environment extends EmitterObj {
   }
 
 
-  renderString(src, ctx, opts, cb?) {
+  renderString(src, ctx, opts, cb?): string {
     if (lib.isFunction(opts)) {
       cb = opts;
       opts = { };

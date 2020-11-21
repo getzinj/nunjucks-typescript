@@ -11,7 +11,7 @@ export interface IExtension {
 
   parse(parser, nodes, lexer): CallExtension;
 
-  run(context: any, prefix: string | (() => string), kwargs: { cutoff?: any; } | (() => string), body: () => string): string;
+  run(context, prefix: string | (() => string), kwargs: { cutoff?: any; } | (() => string), body: () => string): string;
 
   parse(parser: IParser, nodes, lexer);
 }

@@ -187,24 +187,6 @@ export function each<T>(obj: T[], func: (this: Context, value: T, i: number, obj
 
 export function map<T, V>(obj: T[], func: (src: T, index?: number, arr?: T[], thisArg?: any) => V): V[] {
   return (obj ?? [ ]).map(func);
-  // const results: V[] = [];
-  // if (obj == null) {
-  //   return results;
-  // }
-  //
-  // if (ArrayProto.map && map === ArrayProto.map) {
-  //   return obj.map(func);
-  // }
-  //
-  // for (let i = 0; i < obj.length; i++) {
-  //   results[results.length] = func(obj[i], i);
-  // }
-  //
-  // if (obj.length === +obj.length) {
-  //   results.length = obj.length;
-  // }
-  //
-  // return results;
 }
 
 
@@ -252,7 +234,6 @@ export function asyncFor<T>(obj: T[], iter, cb: (err?, info?) => void): void {
 
 export function indexOf<T>(arr: T[], searchElement: T, fromIndex?: number): number {
   return (arr ?? [ ]).indexOf(searchElement, fromIndex);
-  //  return Array.prototype.indexOf.call(arr || [], searchElement, fromIndex);
 }
 
 

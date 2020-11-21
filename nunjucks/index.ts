@@ -10,17 +10,9 @@ import { Parser } from './src/compiler/parser/parser';
 import { isObject } from './src/lib';
 import { installCompat } from './src/jinja-compat';
 import { Context } from './src/environment/environment';
+import { INunjucksOptions } from './INunjucksOptions';
 
-// const lib = require('./src/lib');
 const {Environment, Template} = require('./src/environment/environment');
-//const loaders = require('./src/loaders');
-//const precompile = require('./src/precompile');
-//const compiler = require('./src/compiler');
-//const parser = require('./src/parser');
-//const lexer = require('./src/lexer');
-// const runtime = require('./src/runtime');
-// const nodes = require('./src/nodes');
-// const installJinjaCompat = require('./src/jinja-compat');
 
 // A single instance of an environment, since this is so commonly used
 let e;
@@ -97,12 +89,3 @@ module.exports = {
   precompile: precompile ?? undefined,
   precompileString: precompileString ?? undefined,
 };
-
-
-
-export interface INunjucksOptions {
-  watch?: boolean;
-  noCache?: boolean;
-  web?;
-  express?;
-}

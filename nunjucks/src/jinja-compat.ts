@@ -1,5 +1,4 @@
 import { Parser } from './compiler/parser/parser';
-import { Compiler } from './compiler/compiler';
 import { _assign, _values, _entries, isObject } from './lib';
 import { keys, isArray, Frame, contextOrFrameLookup, memberLookup } from './runtime/runtime';
 import { Context } from './environment/environment';
@@ -11,10 +10,11 @@ import { TokenType } from './compiler/lexer/tokenType';
 import { Token } from './compiler/lexer/token';
 import { Tokenizer } from './compiler/lexer/tokenizer';
 import { ISavedTokensState } from './compiler/lexer/ISavedTokensState';
+import { CodeGenerator } from './compiler/codeGenerator';
 
 
-function addCompileSliceToCompiler(): void {
-  Compiler.prototype['compileSlice'] = function compileSlice(node, frame): void {
+function addCompileSliceToCodeGenerator(): void {
+  CodeGenerator.prototype['compileSlice'] = function compileSlice(node, frame): void {
     this._emit('(');
     this._compileExpression(node.start, frame);
     this._emit('),(');
@@ -59,10 +59,10 @@ export function installCompat() {
   const nunjucks = this;
   const orig_contextOrFrameLookup = contextOrFrameLookup;
   const orig_memberLookup = memberLookup;
-  let orig_Compiler_assertType: { (node: any, ...types: any[]): void; (node: any, ...types: any[]): void; apply?: any; };
+  let orig_CodeGenerator_assertType: { (node: any, ...types: any[]): void; (node: any, ...types: any[]): void; apply?: any; };
   let orig_Parser_parseAggregate: { (): Group | ArrayNode | Dict; (): Group | ArrayNode | Dict; };
-  if (Compiler) {
-    orig_Compiler_assertType = Compiler.prototype.assertType;
+  if (CodeGenerator) {
+    orig_CodeGenerator_assertType = CodeGenerator.prototype.assertType;
   }
   if (Parser) {
     orig_Parser_parseAggregate = Parser.prototype.parseAggregate;
@@ -74,8 +74,8 @@ export function installCompat() {
     contextOrFrameLookup = orig_contextOrFrameLookup;
     // @ts-ignore
     memberLookup = orig_memberLookup;
-    if (Compiler) {
-      Compiler.prototype.assertType = orig_Compiler_assertType;
+    if (CodeGenerator) {
+      CodeGenerator.prototype.assertType = orig_CodeGenerator_assertType;
     }
     if (Parser) {
       Parser.prototype.parseAggregate = orig_Parser_parseAggregate;
@@ -99,14 +99,14 @@ export function installCompat() {
   }
 
 
-  if (process.env.BUILD_TYPE !== 'SLIM' && Compiler && Parser) { // i.e., not slim mode
-    Compiler.prototype.assertType = function assertType(node) {
+  if (process.env.BUILD_TYPE !== 'SLIM' && CodeGenerator && Parser) { // i.e., not slim mode
+    CodeGenerator.prototype.assertType = function assertType(node): void {
       if (node instanceof Slice) {
         return;
       }
-      orig_Compiler_assertType.apply(this, arguments);
+      orig_CodeGenerator_assertType.apply(this, arguments);
     };
-    addCompileSliceToCompiler();
+    addCompileSliceToCodeGenerator();
 
     Parser.prototype.parseAggregate = jinjaParseAggregate;
   }
@@ -122,7 +122,7 @@ export function installCompat() {
       return orig_Parser_parseAggregate.apply(this);
     } catch (e) {
       const errState: ISavedTokensState = getTokensState(this.tokens);
-      const rethrow: () => any = (): any => {
+      const rethrow: <T>() => T = <T>(): any => {
         restoreTokenizerState.call(this, errState);
         return e;
       };
@@ -132,7 +132,7 @@ export function installCompat() {
 
       this.parserTokenStream.peeked = null; // TODO: was false;
 
-      const tok: Token = this.parserTokenStream.peekToken();
+      const tok: Token<any> = this.parserTokenStream.peekToken();
       if (tok.type !== TokenType.TOKEN_LEFT_BRACKET) {
         throw rethrow();
       } else {
@@ -174,7 +174,7 @@ export function installCompat() {
   }
 
 
-  function sliceLookup(obj, start, stop, step) {
+  function sliceLookup(obj: string | string[], start: number, stop: number, step: number) {
     obj = obj || [];
     if (start === null) {
       start = (step < 0) ? (obj.length - 1) : 0;

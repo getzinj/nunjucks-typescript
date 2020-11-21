@@ -1,6 +1,6 @@
-export interface IVariables {
+import { IVariables } from './IVariables';
 
-}
+
 
 // Frames keep track of scoping both at compile-time and run-time so
 // we know how to access variables. Block tags can introduce special

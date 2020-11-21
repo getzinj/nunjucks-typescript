@@ -49,7 +49,7 @@ import {
   Pos,
   Pow,
   Sub
-} from '../lexer/operators/operators';
+} from '../../nodes/operators/operators';
 import { Compare } from '../../nodes/compare';
 import { CompareOperand } from '../../nodes/compareOperand';
 import { Tokenizer } from '../lexer/tokenizer';
@@ -60,32 +60,41 @@ import { NunjucksNode, NunjucksNodeList } from '../../nodes/nunjucksNode';
 import { ParserTokenStream } from './parserTokenStream';
 import { IParser } from './IParser';
 import { IExtension } from './IExtension';
+import { IParserOptions } from './IParserOptions';
 
 
 
 export class Parser extends Obj implements IParser {
-  extensions: IExtension[] | undefined;
-  private dropLeadingWhitespace: boolean;
-  private breakOnBlocks: string[] | undefined;
-  readonly parserTokenStream: ParserTokenStream;
+  extensions: IExtension[] | undefined = [ ];
+  private dropLeadingWhitespace: boolean = false;
+  private breakOnBlocks: string[] | undefined | null = null;
+  parserTokenStream: ParserTokenStream;
+  public tokens: Tokenizer;
 
 
-  constructor(public readonly tokens: Tokenizer) {
+  constructor() {
     super();
-
-    this.breakOnBlocks = null;
-    this.dropLeadingWhitespace = false;
-
-    this.parserTokenStream = new ParserTokenStream(this.tokens);
-    this.parserTokenStream.peeked = null;
-
-    this.extensions = [];
   }
 
 
-  error(msg, lineno, colno): TemplateError {
+  public parseSource(src: string, extensions?: IExtension[], opts?: IParserOptions): Root {
+    this.tokens = new Tokenizer(src, opts)
+    this.parserTokenStream = new ParserTokenStream(this.tokens);
+    if (extensions !== undefined) {
+      this.extensions = extensions;
+    }
+    return this.parseAsRoot();
+  }
+
+
+  private parse(): NunjucksNodeList {
+    return new NunjucksNodeList(0, 0, this.parseNodes());
+  }
+
+
+  private error(msg: string, lineno, colno): TemplateError {
     if (lineno === undefined || colno === undefined) {
-      const tok: Token | { lineno: undefined; colno: undefined } = this.parserTokenStream.peekToken() || { lineno: undefined, colno: undefined };
+      const tok: Token<any> | { lineno: undefined; colno: undefined } = this.parserTokenStream.peekToken() || { lineno: undefined, colno: undefined };
       lineno = tok.lineno;
       colno = tok.colno;
     }
@@ -100,13 +109,13 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  fail(msg, lineno?: number, colno?: number): void {
+  public fail(msg: string, lineno?: number, colno?: number): void {
     throw this.error(msg, lineno, colno);
   }
 
 
-  skip(type): boolean {
-    const tok: Token = this.parserTokenStream.nextToken();
+  public skip(type): boolean {
+    const tok: Token<any> = this.parserTokenStream.nextToken();
     if (!tok || tok.type !== type) {
       this.parserTokenStream.pushToken(tok);
       return false;
@@ -115,8 +124,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  expect(type: string): Token {
-    const tok: Token = this.parserTokenStream.nextToken();
+  private expect(type: string): Token<any> {
+    const tok: Token<any> = this.parserTokenStream.nextToken();
     if (tok.type !== type) {
       this.fail('expected ' + type + ', got ' + tok.type,
         tok.lineno,
@@ -126,8 +135,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  skipValue(type: TokenType, val: string): boolean {
-    const tok: Token = this.parserTokenStream.nextToken();
+  private skipValue(type: TokenType, val: string): boolean {
+    const tok: Token<any> = this.parserTokenStream.nextToken();
     if (!tok || tok.type !== type || tok.value !== val) {
       this.parserTokenStream.pushToken(tok);
       return false;
@@ -136,13 +145,16 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  skipSymbol(val: string): boolean {
+  private skipSymbol(val: string): boolean {
     return this.skipValue(TokenType.TOKEN_SYMBOL, val);
   }
 
 
-  advanceAfterBlockEnd(name?: string): Token {
-    let tok: Token;
+  /**
+   * @private Visible for testing.
+   */
+  advanceAfterBlockEnd(name?: string): Token<any> {
+    let tok: Token<any>;
     if (!name) {
       tok = this.parserTokenStream.peekToken();
 
@@ -172,8 +184,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  advanceAfterVariableEnd(): void {
-    const tok: Token = this.parserTokenStream.nextToken();
+  private advanceAfterVariableEnd(): void {
+    const tok: Token<any> = this.parserTokenStream.nextToken();
 
     if (tok && tok.type === TokenType.TOKEN_VARIABLE_END) {
       this.dropLeadingWhitespace = tok.value.charAt(
@@ -186,8 +198,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseFor(): For {
-    const forTok: Token = this.parserTokenStream.peekToken();
+  private parseFor(): For {
+    const forTok: Token<any> = this.parserTokenStream.peekToken();
     let node: For;
     let endBlock: string;
 
@@ -244,8 +256,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseMacro(): Macro {
-    const macroTok: Token = this.parserTokenStream.peekToken();
+  private parseMacro(): Macro {
+    const macroTok: Token<any> = this.parserTokenStream.peekToken();
     if (!this.skipSymbol('macro')) {
       this.fail('expected macro');
     }
@@ -262,10 +274,10 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseCall(): Output {
+  private parseCall(): Output {
     // a call block is parsed as a normal FunCall, but with an added
     // 'caller' kwarg which is a Caller node.
-    const callTok: Token = this.parserTokenStream.peekToken();
+    const callTok: Token<any> = this.parserTokenStream.peekToken();
     if (!this.skipSymbol('call')) {
       this.fail('expected call');
     }
@@ -299,8 +311,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseWithContext(): boolean | undefined {
-    const tok: Token = this.parserTokenStream.peekToken();
+  private parseWithContext(): boolean | undefined {
+    const tok: Token<any> = this.parserTokenStream.peekToken();
 
     let withContext: boolean | null = null;
     if (this.skipSymbol('with')) {
@@ -321,8 +333,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseImport(): Import {
-    const importTok: Token = this.parserTokenStream.peekToken();
+  private parseImport(): Import {
+    const importTok: Token<any> = this.parserTokenStream.peekToken();
     if (!this.skipSymbol('import')) {
       this.fail('parseImport: expected import',
         importTok.lineno,
@@ -351,8 +363,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseFrom(): FromImport {
-    const fromTok: Token = this.parserTokenStream.peekToken();
+  private parseFrom(): FromImport {
+    const fromTok: Token<any> = this.parserTokenStream.peekToken();
     if (!this.skipSymbol('from')) {
       this.fail('parseFrom: expected from');
     }
@@ -369,7 +381,7 @@ export class Parser extends Obj implements IParser {
     let withContext: boolean;
 
     while (1) { // eslint-disable-line no-constant-condition
-      const nextTok: Token = this.parserTokenStream.peekToken();
+      const nextTok: Token<any> = this.parserTokenStream.peekToken();
       if (nextTok.type === TokenType.TOKEN_BLOCK_END) {
         if (!names.children.length) {
           this.fail('parseFrom: Expected at least one import name',
@@ -422,8 +434,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseBlock(): Block {
-    const tag: Token = this.parserTokenStream.peekToken();
+  private parseBlock(): Block {
+    const tag: Token<any> = this.parserTokenStream.peekToken();
     if (!this.skipSymbol('block')) {
       this.fail('parseBlock: expected block', tag.lineno, tag.colno);
     }
@@ -443,7 +455,7 @@ export class Parser extends Obj implements IParser {
     this.skipSymbol('endblock');
     this.skipSymbol(node.name.value);
 
-    const tok: Token = this.parserTokenStream.peekToken();
+    const tok: Token<any> = this.parserTokenStream.peekToken();
     if (!tok) {
       this.fail('parseBlock: expected endblock, got end of file');
     }
@@ -454,9 +466,9 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseExtends(): Extends {
+  private parseExtends(): Extends {
     const tagName: string = 'extends';
-    const tag: Token = this.parserTokenStream.peekToken();
+    const tag: Token<any> = this.parserTokenStream.peekToken();
     if (!this.skipSymbol(tagName)) {
       this.fail('parseTemplateRef: expected ' + tagName);
     }
@@ -469,9 +481,9 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseInclude(): Include {
+  private parseInclude(): Include {
     const tagName: string = 'include';
-    const tag: Token = this.parserTokenStream.peekToken();
+    const tag: Token<any> = this.parserTokenStream.peekToken();
     if (!this.skipSymbol(tagName)) {
       this.fail('parseInclude: expected ' + tagName);
     }
@@ -488,8 +500,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseIf(): If {
-    const tag: Token = this.parserTokenStream.peekToken();
+  private parseIf(): If {
+    const tag: Token<any> = this.parserTokenStream.peekToken();
     let node: If;
 
     if (this.skipSymbol('if') || this.skipSymbol('elif') || this.skipSymbol('elseif')) {
@@ -506,7 +518,7 @@ export class Parser extends Obj implements IParser {
     this.advanceAfterBlockEnd(tag.value);
 
     node.body = this.parseUntilBlocks('elif', 'elseif', 'else', 'endif');
-    const tok: Token = this.parserTokenStream.peekToken();
+    const tok: Token<any> = this.parserTokenStream.peekToken();
 
     switch (tok && tok.value) {
       case 'elseif':
@@ -530,8 +542,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseSet(): Set {
-    const tag: Token = this.parserTokenStream.peekToken();
+  private parseSet(): Set {
+    const tag: Token<any> = this.parserTokenStream.peekToken();
     if (!this.skipSymbol('set')) {
       this.fail('parseSet: expected set', tag.lineno, tag.colno);
     }
@@ -570,7 +582,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseSwitch(): Switch {
+  private parseSwitch(): Switch {
     /*
      * Store the tag names in variables in case someone ever wants to
      * customize this.
@@ -581,7 +593,7 @@ export class Parser extends Obj implements IParser {
     const caseDefault: string = 'default';
 
     // Get the switch tag.
-    const tag: Token = this.parserTokenStream.peekToken();
+    const tag: Token<any> = this.parserTokenStream.peekToken();
 
     // fail early if we get some unexpected tag.
     if (
@@ -600,7 +612,7 @@ export class Parser extends Obj implements IParser {
     this.parseUntilBlocks(caseStart, caseDefault, switchEnd);
 
     // this is the first case. it could also be an endswitch, we'll check.
-    let tok: Token = this.parserTokenStream.peekToken();
+    let tok: Token<any> = this.parserTokenStream.peekToken();
 
     // create new variables for our cases and default case.
     const cases: Case[] = [];
@@ -639,8 +651,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseStatement(): null | NunjucksNode {
-    const tok: Token = this.parserTokenStream.peekToken();
+  private parseStatement(): null | NunjucksNode {
+    const tok: Token<any> = this.parserTokenStream.peekToken();
     if (tok.type !== TokenType.TOKEN_SYMBOL) {
       this.fail('tag name expected', tok.lineno, tok.colno);
     }
@@ -698,7 +710,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseRaw(tagName?: string): Output {
+  private parseRaw(tagName?: string): Output {
     tagName = tagName || 'raw';
     const endTagName: string = 'end' + tagName;
     // Look for upcoming raw blocks (ignore all other kinds of blocks)
@@ -709,7 +721,7 @@ export class Parser extends Obj implements IParser {
 
     // Skip opening raw token
     // Keep this token to track line and column numbers
-    const begun: Token = this.advanceAfterBlockEnd();
+    const begun: Token<any> = this.advanceAfterBlockEnd();
 
     // Exit when there's nothing to match
     // or when we've found the matching "endraw" block
@@ -744,9 +756,9 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parsePostfix(node: NunjucksNode): NunjucksNode {
+  private parsePostfix(node: NunjucksNode): NunjucksNode {
     let lookup: Group | ArrayNode | Dict | Literal;
-    let tok: Token = this.parserTokenStream.peekToken();
+    let tok: Token<any> = this.parserTokenStream.peekToken();
 
     while (tok) {
       if (tok.type === TokenType.TOKEN_LEFT_PAREN) {
@@ -769,7 +781,7 @@ export class Parser extends Obj implements IParser {
       } else if (tok.type === TokenType.TOKEN_OPERATOR && tok.value === '.') {
         // Reference
         this.parserTokenStream.nextToken();
-        const val: Token = this.parserTokenStream.nextToken();
+        const val: Token<any> = this.parserTokenStream.nextToken();
 
         if (val.type !== TokenType.TOKEN_SYMBOL) {
           this.fail('expected name as lookup value, got ' + val.value,
@@ -796,12 +808,12 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseExpression(): NunjucksNode {
+  public parseExpression(): NunjucksNode {
     return this.parseInlineIf();
   }
 
 
-  parseInlineIf(): NunjucksNode {
+  private parseInlineIf(): NunjucksNode {
     let node: NunjucksNode | InlineIf = this.parseOr();
     if (this.skipSymbol('if')) {
       const condNode: NunjucksNode = this.parseOr();
@@ -820,7 +832,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseOr(): NunjucksNode {
+  private parseOr(): NunjucksNode {
     let node: NunjucksNode = this.parseAnd();
     while (this.skipSymbol('or')) {
       const node2: NunjucksNode = this.parseAnd();
@@ -833,7 +845,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseAnd(): NunjucksNode {
+  private parseAnd(): NunjucksNode {
     let node: NunjucksNode = this.parseNot();
     while (this.skipSymbol('and')) {
       const node2: NunjucksNode = this.parseNot();
@@ -846,8 +858,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseNot(): NunjucksNode {
-    const tok: Token = this.parserTokenStream.peekToken();
+  private parseNot(): NunjucksNode {
+    const tok: Token<any> = this.parserTokenStream.peekToken();
     if (this.skipSymbol('not')) {
       return new Not(tok.lineno,
         tok.colno,
@@ -857,11 +869,11 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseIn(): NunjucksNode {
+  private parseIn(): NunjucksNode {
     let node: NunjucksNode = this.parseIs();
     while (1) { // eslint-disable-line no-constant-condition
       // check if the next token is 'not'
-      const tok: Token = this.parserTokenStream.nextToken();
+      const tok: Token<any> = this.parserTokenStream.nextToken();
       if (!tok) {
         break;
       }
@@ -895,7 +907,7 @@ export class Parser extends Obj implements IParser {
 
   // I put this right after "in" in the operator precedence stack. That can
   // obviously be changed to be closer to Jinja.
-  parseIs(): NunjucksNode {
+  private parseIs(): NunjucksNode {
     let node: NunjucksNode = this.parseCompare();
     // look for an is
     if (this.skipSymbol('is')) {
@@ -915,13 +927,13 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseCompare(): NunjucksNode {
+  private parseCompare(): NunjucksNode {
     const compareOps: string[] = ['==', '===', '!=', '!==', '<', '>', '<=', '>='];
     const expr: NunjucksNode = this.parseConcat();
     const ops: NunjucksNode[] = [];
 
     while (1) { // eslint-disable-line no-constant-condition
-      const tok: Token = this.parserTokenStream.nextToken();
+      const tok: Token<any> = this.parserTokenStream.nextToken();
 
       if (!tok) {
         break;
@@ -948,7 +960,7 @@ export class Parser extends Obj implements IParser {
 
 
   // finds the '~' for string concatenation
-  parseConcat(): NunjucksNode {
+  private parseConcat(): NunjucksNode {
     let node: NunjucksNode = this.parseAdd();
     while (this.skipValue(TokenType.TOKEN_TILDE, '~')) {
       const node2: NunjucksNode = this.parseAdd();
@@ -961,7 +973,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseAdd(): NunjucksNode {
+  private parseAdd(): NunjucksNode {
     let node: NunjucksNode = this.parseSub();
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '+')) {
       const node2: NunjucksNode = this.parseSub();
@@ -974,7 +986,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseSub(): NunjucksNode {
+  private parseSub(): NunjucksNode {
     let node: NunjucksNode = this.parseMul();
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '-')) {
       const node2: NunjucksNode = this.parseMul();
@@ -987,7 +999,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseMul(): NunjucksNode {
+  private parseMul(): NunjucksNode {
     let node: NunjucksNode = this.parseDiv();
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '*')) {
       const node2: NunjucksNode = this.parseDiv();
@@ -1000,7 +1012,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseDiv(): NunjucksNode {
+  private parseDiv(): NunjucksNode {
     let node: NunjucksNode = this.parseFloorDiv();
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '/')) {
       const node2: NunjucksNode = this.parseFloorDiv();
@@ -1013,7 +1025,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseFloorDiv(): NunjucksNode {
+  private parseFloorDiv(): NunjucksNode {
     let node: NunjucksNode = this.parseMod();
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '//')) {
       const node2: NunjucksNode = this.parseMod();
@@ -1026,7 +1038,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseMod(): NunjucksNode {
+  private parseMod(): NunjucksNode {
     let node: NunjucksNode = this.parsePow();
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '%')) {
       const node2: NunjucksNode = this.parsePow();
@@ -1039,7 +1051,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parsePow(): NunjucksNode {
+  private parsePow(): NunjucksNode {
     let node: NunjucksNode = this.parseUnary();
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '**')) {
       const node2: NunjucksNode = this.parseUnary();
@@ -1052,8 +1064,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseUnary(noFilters?: boolean): NunjucksNode {
-    const tok: Token = this.parserTokenStream.peekToken();
+  private parseUnary(noFilters?: boolean): NunjucksNode {
+    const tok: Token<any> = this.parserTokenStream.peekToken();
     let node: NunjucksNode;
 
     if (this.skipValue(TokenType.TOKEN_OPERATOR, '-')) {
@@ -1076,9 +1088,9 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parsePrimary(noPostfix: boolean = false): NunjucksNode {
-    const tok: Token = this.parserTokenStream.nextToken();
-    let val;
+  private parsePrimary(noPostfix: boolean = false): NunjucksNode {
+    const tok: Token<any> = this.parserTokenStream.nextToken();
+    let val: number | boolean | RegExp;
 
     if (!tok) {
       this.fail('expected expression, got end of file');
@@ -1106,7 +1118,7 @@ export class Parser extends Obj implements IParser {
 
     let node: NunjucksNode | undefined;
     if (val !== undefined) {
-      node = new Literal(tok.lineno, tok.lineno, val);
+      node = new Literal(tok.lineno, tok.lineno, val as number);
     } else if (tok.type === TokenType.TOKEN_SYMBOL) {
       if (tok.value === 'self') {
         return this.parseSelf(tok);
@@ -1132,9 +1144,9 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseSelf(tok): FunCall {
+  private parseSelf(tok): FunCall {
     if (this.skipValue(TokenType.TOKEN_OPERATOR, '.')) {
-      const nextToken: Token = this.parserTokenStream.nextToken();
+      const nextToken: Token<any> = this.parserTokenStream.nextToken();
       if (nextToken.type === TokenType.TOKEN_SYMBOL) {
         if (this.skip(TokenType.TOKEN_LEFT_PAREN)) {
           if (this.skip(TokenType.TOKEN_RIGHT_PAREN)) {
@@ -1158,8 +1170,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseFilterName(): NunjucksSymbol {
-    const tok: Token = this.expect(TokenType.TOKEN_SYMBOL);
+  private parseFilterName(): NunjucksSymbol {
+    const tok: Token<any> = this.expect(TokenType.TOKEN_SYMBOL);
     let name: string = tok.value;
 
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '.')) {
@@ -1170,7 +1182,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseFilterArgs(node: NunjucksNode): NunjucksNode[] {
+  private parseFilterArgs(node: NunjucksNode): NunjucksNode[] {
     if (this.parserTokenStream.peekToken().type === TokenType.TOKEN_LEFT_PAREN) {
       // Get a FunCall node and add the parameters to the
       // filter
@@ -1181,7 +1193,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseFilter(node: NunjucksNode): NunjucksNode {
+  private parseFilter(node: NunjucksNode): NunjucksNode {
     while (this.skip(TokenType.TOKEN_PIPE)) {
       const name: NunjucksSymbol = this.parseFilterName();
 
@@ -1201,14 +1213,14 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseFilterStatement(): Output {
-    const filterTok: Token = this.parserTokenStream.peekToken();
+  private parseFilterStatement(): Output {
+    const filterTok: Token<any> = this.parserTokenStream.peekToken();
     if (!this.skipSymbol('filter')) {
       this.fail('parseFilterStatement: expected filter');
     }
 
     const name: NunjucksSymbol = this.parseFilterName();
-    const args = this.parseFilterArgs(name);
+    const args: NunjucksNode[] = this.parseFilterArgs(name);
 
     this.advanceAfterBlockEnd(filterTok.value);
     const body: Capture = new Capture(name.lineno, name.colno, this.parseUntilBlocks('endfilter'));
@@ -1233,8 +1245,8 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseAggregate(): Group | ArrayNode | Dict | null {
-    const tok: Token = this.parserTokenStream.nextToken();
+  public parseAggregate(): Group | ArrayNode | Dict | null {
+    const tok: Token<any> = this.parserTokenStream.nextToken();
     let node: Group | ArrayNode | Dict;
 
     switch (tok.type) {
@@ -1262,9 +1274,7 @@ export class Parser extends Obj implements IParser {
 
       if (node.children.length > 0) {
         if (!this.skip(TokenType.TOKEN_COMMA)) {
-          this.fail('parseAggregate: expected comma after expression',
-            tok.lineno,
-            tok.colno);
+          this.fail('parseAggregate: expected comma after expression', tok.lineno, tok.colno);
         }
       }
 
@@ -1297,8 +1307,11 @@ export class Parser extends Obj implements IParser {
   }
 
 
+  /**
+   * @private Visible for testing.
+   */
   parseSignature(tolerant?: boolean, noParens?: boolean): NunjucksNodeList | null {
-    let tok: Token = this.parserTokenStream.peekToken();
+    let tok: Token<any> = this.parserTokenStream.peekToken();
     if (!noParens && tok.type !== TokenType.TOKEN_LEFT_PAREN) {
       if (tolerant) {
         return null;
@@ -1354,6 +1367,9 @@ export class Parser extends Obj implements IParser {
   }
 
 
+  /**
+   * @private Visible for testing.
+   */
   parseUntilBlocks(...blockNames: string[]): NunjucksNodeList {
     const prev: string[] | undefined = this.breakOnBlocks;
     this.breakOnBlocks = blockNames;
@@ -1365,14 +1381,14 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parseNodes(): NunjucksNode[] {
-    let tok: Token | null;
+  private parseNodes(): NunjucksNode[] {
+    let tok: Token<any> | null;
     const buf: NunjucksNode[] = [];
 
     while ((tok = this.parserTokenStream.nextToken())) {
       if (tok.type === TokenType.TOKEN_DATA) {
         let data: string = tok.value;
-        const nextToken: Token = this.parserTokenStream.peekToken();
+        const nextToken: Token<any> = this.parserTokenStream.peekToken();
         const nextVal: string = nextToken && nextToken.value;
 
         // If the last token has "-" we need to trim the
@@ -1428,35 +1444,7 @@ export class Parser extends Obj implements IParser {
   }
 
 
-  parse(): NunjucksNodeList {
-    return new NunjucksNodeList(0, 0, this.parseNodes());
-  }
-
-
-  parseAsRoot(): Root {
+  private parseAsRoot(): Root {
     return new Root(0, 0, this.parseNodes());
   }
-}
-
-
-// var util = require('util');
-
-// var l = lex('{%- if x -%}\n hello {% endif %}');
-// var t;
-// while((t = l.nextToken())) {
-//     console.log(util.inspect(t));
-// }
-
-// var p = new Parser(lex('hello {% filter title %}' +
-//                              'Hello madam how are you' +
-//                              '{% endfilter %}'));
-// var n = p.parseAsRoot();
-// nodes.printNodes(n);
-
-export function parse(src: string, extensions: IExtension[], opts): Root {
-  const p: Parser = new Parser(new Tokenizer(src, opts));
-  if (extensions !== undefined) {
-    p.extensions = extensions;
-  }
-  return p.parseAsRoot();
 }

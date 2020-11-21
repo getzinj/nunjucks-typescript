@@ -44,7 +44,7 @@ export function joiner(sep: string): () => string {
 // uses it, they will each have their own copy.
 export function globals() {
   return {
-    range(start, stop, step: number) {
+    range(start: number, stop: number, step: number): number[] {
       if (typeof stop === 'undefined') {
         stop = start;
         start = 0;
@@ -72,7 +72,7 @@ export function globals() {
     },
 
 
-    joiner(sep) {
+    joiner(sep): () => string {
       return joiner(sep);
     }
   };

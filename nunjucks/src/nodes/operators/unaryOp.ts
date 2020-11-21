@@ -1,4 +1,4 @@
-import { NunjucksNode } from '../../../nodes/nunjucksNode';
+import { NunjucksNode } from '../nunjucksNode';
 
 
 

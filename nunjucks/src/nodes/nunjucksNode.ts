@@ -1,4 +1,4 @@
-export class NunjucksNode {
+export abstract class NunjucksNode {
   public children: NunjucksNode[] | undefined;
   readonly lineno: number;
   readonly colno: number;

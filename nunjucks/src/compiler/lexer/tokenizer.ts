@@ -4,6 +4,7 @@ import { Token } from './token';
 import { TokenType } from './tokenType';
 import { ITokenizerOptions } from './ITokenizerOptions';
 import { Tag } from './tag';
+import { IRegexTokenValue } from './IRegexTokenValue';
 
 
 export class Tokenizer {
@@ -18,7 +19,7 @@ export class Tokenizer {
   lineno: number;
   colno: number;
   in_code: boolean;
-  public readonly tags: Record<string, any>;
+  public readonly tags: Record<string, string>;
   readonly trimBlocks: boolean;
   readonly lstripBlocks: boolean;
   private readonly src: string;
@@ -53,7 +54,7 @@ export class Tokenizer {
   }
 
 
-  nextToken(): Token | null {
+  nextToken<T>(): Token<string | IRegexTokenValue> | null {
     const lineno: number = this.lineno;
     const colno: number = this.colno;
     let tok: string;
@@ -132,7 +133,7 @@ export class Tokenizer {
           }
         }
 
-        return new Token(TokenType.TOKEN_REGEX, {
+        return new Token<IRegexTokenValue>(TokenType.TOKEN_REGEX, {
           body: regexBody,
           flags: regexFlags
         }, lineno, colno);

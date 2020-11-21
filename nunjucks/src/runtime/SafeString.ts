@@ -6,7 +6,7 @@ export class SafeString extends String {
   set length(value: number) { this.length_ = value; }
 
 
-  constructor(val) {
+  constructor(val: string | SafeString) {
     super(val);
     if (typeof val === 'string') {
       this.val = val;

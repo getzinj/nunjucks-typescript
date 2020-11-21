@@ -19,12 +19,13 @@ declare var nunjucks;
     tokenType = nunjucks.tokenType;
   }
 
+
   function lex(src, opts?) {
     return new Tokenizer(src, opts);
   }
 
 
-  function _hasTokens(ws, tokens, types) {
+  function _hasTokens(ws, tokens, types): void {
     let i;
     let type;
     let tok;
@@ -58,12 +59,13 @@ declare var nunjucks;
     }
   }
 
-  function hasTokens(tokens, ...types) {
+
+  function hasTokens(tokens, ...types): void {
     return _hasTokens(false, tokens, lib.toArray(arguments).slice(1));
   }
 
 
-  function hasTokensWithWS(tokens, ...types) {
+  function hasTokensWithWS(tokens, ...types): void {
     return _hasTokens(true, tokens, lib.toArray(arguments).slice(1));
   }
 
