@@ -22,21 +22,19 @@ export class Compiler extends Obj {
   public getPreprocessedSource(extensions: IExtension[], src: string): string {
     // Run the extension preprocessors against the source.
     const preprocessors: IPreprocessor[] = (extensions ?? [])
-    .map((ext: IExtension): IPreprocessor => ext.preprocess)
-    .filter((f: IPreprocessor | null | undefined): boolean => !!f);
-    return preprocessors.reduce((s: IPreprocessor, processor: IPreprocessor) => processor(s), src);
+        .map( (ext: IExtension): IPreprocessor => ext.preprocess )
+        .filter( (f: IPreprocessor | null | undefined): boolean => !!f );
+    return preprocessors.reduce((s: string, processor: IPreprocessor): string => processor(s), src);
   }
 
 
   public parseSource(processedSrc: string, extensions: IExtension[], opts: ICompilerOptions): Root {
-    const parser: Parser = new Parser();
-    return parser.parseSource(processedSrc, extensions, opts);
+    return new Parser().parseSource(processedSrc, extensions, opts);
   }
 
 
   public getTransformedSource(parsedCode: Root, asyncFilters, name: string): NunjucksNode {
-    const transformer: Transformer = new Transformer();
-    return transformer.transform(
+    return new Transformer().transform(
         parsedCode,
         asyncFilters,
         name
@@ -45,9 +43,9 @@ export class Compiler extends Obj {
 
 
   public generateCode(transformedCode: NunjucksNode): string {
-    const codeGenerator: CodeGenerator = new CodeGenerator(this.templateName, this.throwOnUndefined);
-    codeGenerator.compile(transformedCode);
-    return codeGenerator.getCode();
+    return new CodeGenerator(this.templateName, this.throwOnUndefined)
+        .compile(transformedCode)
+        .getCode();
   }
 
 

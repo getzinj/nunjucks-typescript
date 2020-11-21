@@ -262,7 +262,7 @@ export class Parser extends Obj implements IParser {
       this.fail('expected macro');
     }
 
-    const name: NunjucksNode = this.parsePrimary(true);
+    const name: NunjucksSymbol = this.parsePrimary(true) as NunjucksSymbol;
     const args: NunjucksNodeList = this.parseSignature();
     const node: Macro = new Macro(macroTok.lineno, macroTok.colno, name, args);
 

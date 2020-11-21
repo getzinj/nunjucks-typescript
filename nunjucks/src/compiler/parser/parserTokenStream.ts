@@ -13,7 +13,7 @@ export class ParserTokenStream {
   constructor(public tokens: Tokenizer) { }
 
 
-  nextToken(withWhitespace?): Token<any> | null {
+  nextToken(withWhitespace?: boolean): Token<any> | null {
     let tok: Token<any> | null;
 
     if (this.peeked) {

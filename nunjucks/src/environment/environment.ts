@@ -1,7 +1,7 @@
 'use strict';
 
 
-import * as compiler from '../compiler/compiler';
+import { Compiler } from '../compiler/compiler';
 import * as expressApp from './express-app';
 import * as tests from './tests';
 import * as filters from './filters/filters';
@@ -24,7 +24,6 @@ import { IBlockFunction } from './IBlockFunction';
 import { IBlocks } from './IBlocks';
 import { IContext } from './IContext';
 import { IFilterFunction } from './IFilterFunction';
-import { Compiler } from '../compiler/compiler';
 
 
 
@@ -90,7 +89,7 @@ export class Context extends Obj {
   }
 
 
-  getSuper(env: Environment, name: string, block: IBlockFunction, frame: Frame, runtime, cb): void {
+  public getSuper(env: Environment, name: string, block: IBlockFunction, frame: Frame, runtime, cb): void {
     const idx: number = indexOf(this.blocks[name] ?? [ ], block);
     const blk: IBlockFunction = this.blocks[name][idx + 1];
     const context: Context = this;
@@ -103,7 +102,7 @@ export class Context extends Obj {
   }
 
 
-  getSelf(env: Environment, name: string, block: IBlockFunction, frame: Frame, runtime, cb: (...args: any[]) => void): void {
+  public getSelf(env: Environment, name: string, block: IBlockFunction, frame: Frame, runtime, cb: (...args: any[]) => void): void {
     const idx: number = indexOf(this.blocks[name] ?? [ ], block);
     const blk: IBlockFunction = this.blocks[name][idx];
     const context: Context = this;
@@ -337,7 +336,7 @@ export class Environment extends EmitterObj {
   opts: IEnvironmentOptions;
   loaders: Loader[ ];
   private readonly extensions;
-  extensionsList;
+  extensionsList: IExtension[];
   asyncFilters: string[];
   private readonly tests: Record<string, any>;
   private readonly filters: Record<string, IFilterFunction>;

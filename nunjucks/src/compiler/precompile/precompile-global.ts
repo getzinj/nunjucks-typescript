@@ -2,8 +2,11 @@
 
 
 import { Template } from '../../environment/environment';
+import { ITemplate } from './ITemplate';
+import { IPrecompileGlobalOptions } from './IPrecompileGlobalOptions';
 
-export function precompileGlobal(templates, opts) {
+
+export function precompileGlobal(templates: ITemplate[], opts?: IPrecompileGlobalOptions): string {
   let out: string = '';
   opts = opts || {};
 

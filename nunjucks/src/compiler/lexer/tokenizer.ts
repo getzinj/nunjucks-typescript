@@ -2,7 +2,7 @@ import { whitespaceChars, delimChars, intChars } from './characters';
 import { indexOf } from '../../lib';
 import { Token } from './token';
 import { TokenType } from './tokenType';
-import { ITokenizerOptions } from './ITokenizerOptions';
+import { ITokenizerOptions, ITags } from './ITokenizerOptions';
 import { Tag } from './tag';
 import { IRegexTokenValue } from './IRegexTokenValue';
 
@@ -39,7 +39,7 @@ export class Tokenizer {
 
     opts = opts ?? {};
 
-    const tags = opts.tags || {};
+    const tags: ITags = opts.tags || {};
     this.tags = {
       BLOCK_START: tags.blockStart || Tag.BLOCK_START,
       BLOCK_END: tags.blockEnd || Tag.BLOCK_END,

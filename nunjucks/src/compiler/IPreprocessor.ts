@@ -1,3 +1,3 @@
 export interface IPreprocessor {
-  (s): any;
+  (s: string): string;
 }

@@ -7,13 +7,16 @@ import { _prettifyError } from '../../lib';
 import { Environment } from '../../environment/environment';
 import { precompileGlobal } from './precompile-global';
 import { Compiler } from '../compiler';
+import { IPrecompiled } from './IPrecompiled';
+import { IExtension } from '../parser/IExtension';
+import { IPrecompileOptions } from './IPrecompileOptions';
 
 
-function match(filename, patterns) {
+function match(filename: string, patterns: (string | RegExp)[]) {
   if (!Array.isArray(patterns)) {
     return false;
   }
-  return patterns.some((pattern): boolean => filename.match(pattern));
+  return patterns.some((pattern: string | RegExp): RegExpMatchArray => filename.match(pattern));
 }
 
 
@@ -30,7 +33,7 @@ export function precompileString(str: string, opts: { isString?: boolean; env?: 
 }
 
 
-export function precompile(input, opts) {
+export function precompile(input, opts?: IPrecompileOptions) {
   // The following options are available:
   //
   // * name: name of the template (auto-generated when compiling a directory)
@@ -46,16 +49,16 @@ export function precompile(input, opts) {
   //       A custom loader will be necessary to load your custom wrapper.
 
   opts = opts || {};
-  const env = opts.env || new Environment([]);
-  const wrapper = opts.wrapper || precompileGlobal;
+  const env: Environment = opts.env || new Environment([]);
+  const wrapper: (templates, opts) => string = opts.wrapper || precompileGlobal;
 
   if (opts.isString) {
     return precompileString(input, opts);
   }
 
   const pathStats = fs.existsSync(input) && fs.statSync(input);
-  const precompiled = [];
-  const templates = [];
+  const precompiled: IPrecompiled[] = [];
+  const templates: string[] = [];
 
   function addTemplates(dir): void {
     fs.readdirSync(dir).forEach((file: string): void => {
@@ -84,7 +87,7 @@ export function precompile(input, opts) {
     addTemplates(input);
 
     for (let i: number = 0; i < templates.length; i++) {
-      const name = templates[i].replace(path.join(input, '/'), '');
+      const name: string = templates[i].replace(path.join(input, '/'), '');
 
       try {
         precompiled.push(_precompile(
@@ -108,11 +111,11 @@ export function precompile(input, opts) {
 }
 
 
-function _precompile(str: string, name: string, env: Environment): { template: string; name: string } {
+function _precompile(str: string, name: string, env: Environment): IPrecompiled {
   env = env || new Environment([]);
 
   const asyncFilters: string[] = env.asyncFilters;
-  const extensions = env.extensionsList;
+  const extensions: IExtension[] = env.extensionsList;
   let template: string;
 
   name = name.replace(/\\/g, '/');

@@ -1,4 +1,5 @@
 import { NunjucksNode, NunjucksNodeList } from './nunjucksNode';
+import { NunjucksSymbol } from './nunjucksSymbol';
 
 
 
@@ -7,12 +8,12 @@ export class Macro extends NunjucksNode {
     return 'Macro';
   }
 
-  public name: NunjucksNode;
+  public name: NunjucksSymbol;
   public args: NunjucksNodeList;
   public body;
 
 
-  constructor(lineno: number, colno: number, name: NunjucksNode, args: NunjucksNodeList, body?) {
+  constructor(lineno: number, colno: number, name: NunjucksSymbol, args: NunjucksNodeList, body?) {
     super(lineno, colno, name, args, body);
   }
 

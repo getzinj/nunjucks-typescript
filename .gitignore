@@ -272,3 +272,11 @@ nunjucks/src/compiler/codeGenerator.js
 nunjucks/src/compiler/codeGenerator.js.map
 nunjucks/src/compiler/parser/IParserOptions.js
 nunjucks/src/compiler/parser/IParserOptions.js.map
+nunjucks/src/compiler/precompile/IPrecompiled.js
+nunjucks/src/compiler/precompile/IPrecompiled.js.map
+nunjucks/src/compiler/precompile/IPrecompileOptions.js
+nunjucks/src/compiler/precompile/IPrecompileOptions.js.map
+nunjucks/src/compiler/precompile/IPrecompileGlobalOptions.js
+nunjucks/src/compiler/precompile/IPrecompileGlobalOptions.js.map
+nunjucks/src/compiler/precompile/ITemplate.js
+nunjucks/src/compiler/precompile/ITemplate.js.map
