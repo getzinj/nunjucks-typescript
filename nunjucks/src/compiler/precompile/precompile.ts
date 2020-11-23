@@ -7,10 +7,10 @@ import { _prettifyError } from '../../lib';
 import { Environment } from '../../environment/environment';
 import { precompileGlobal } from './precompile-global';
 import { Compiler } from '../compiler';
-import { IPrecompiled } from './IPrecompiled';
-import { IExtension } from '../parser/IExtension';
-import { IPrecompileOptions } from './IPrecompileOptions';
-import { IEnvironment } from '../../environment/IEnvironment';
+import { IPrecompiled } from '../../interfaces/IPrecompiled';
+import { IExtension } from '../../interfaces/IExtension';
+import { IPrecompileOptions } from '../../interfaces/IPrecompileOptions';
+import { IEnvironment } from '../../interfaces/IEnvironment';
 
 
 function match(filename: string, patterns: (string | RegExp)[]): boolean {
@@ -24,8 +24,8 @@ function match(filename: string, patterns: (string | RegExp)[]): boolean {
 export function precompileString(str: string, opts: IPrecompileOptions): string {
   opts = opts || {};
   opts.isString = true;
-  const env = opts.env || new Environment([]);
-  const wrapper = opts.wrapper || precompileGlobal;
+  const env: IEnvironment = opts.env || new Environment([]);
+  const wrapper: (templates: IPrecompiled[], opts: IPrecompileOptions) => string = opts.wrapper || precompileGlobal;
 
   if (!opts.name) {
     throw new Error('the "name" option is required when compiling a string');

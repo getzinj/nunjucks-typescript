@@ -1,31 +1,15 @@
 import { Environment } from '../nunjucks/src/environment/environment';
 
-declare var nunjucks;
 
 
 (function(): void {
   'use strict';
 
-  let expect;
-  let util;
-  let Environment;
-  let Loader;
-  let templatesPath;
-  let path;
-
-  if (typeof require !== 'undefined') {
-    expect = require('expect.js');
-    util = require('./util.spec');
-    Environment = require('../nunjucks/src/environment/environment').Environment;
-    Loader = require('../nunjucks/src/loaders/file-system-loader').FileSystemLoader;
-    templatesPath = 'tests/templates';
-    path = require('path');
-  } else {
-    expect = window['expect'];
-    Environment = nunjucks.Environment;
-    Loader = nunjucks.WebLoader;
-    templatesPath = '../templates';
-  }
+  const expect = require('expect.js');
+  const util = require('./util.spec');
+  const Loader = require('../nunjucks/src/loaders/FileSystemLoader').FileSystemLoader;
+  const templatesPath = 'tests/templates';
+  const path = require('path');
 
 
   describe('api', function(): void {
@@ -50,17 +34,13 @@ declare var nunjucks;
 
 
     it('should handle correctly relative paths', function(): void {
-      let env;
-      let child1;
-      let child2;
       if (typeof path === 'undefined') {
         this.skip();
         return;
       }
-      env = new Environment(new Loader(templatesPath));
-      child1 = env.getTemplate('relative/test1.njk');
-      child2 = env.getTemplate('relative/test2.njk');
-
+      let env = new Environment(new Loader(templatesPath));
+      let child1 = env.getTemplate('relative/test1.njk');
+      let child2 = env.getTemplate('relative/test2.njk');
       expect(child1.render()).to.be('FooTest1BazFizzle');
       expect(child2.render()).to.be('FooTest2BazFizzle');
     });
@@ -79,15 +59,12 @@ declare var nunjucks;
 
 
     it('should handle correctly relative paths in renderString', function(): void {
-      let env;
       if (typeof path === 'undefined') {
         this.skip();
         return;
       }
-      env = new Environment(new Loader(templatesPath));
-      expect(env.renderString('{% extends "./relative/test1.njk" %}{% block block1 %}Test3{% endblock %}', {}, {
-        path: path.resolve(templatesPath, 'string.njk')
-      })).to.be('FooTest3BazFizzle');
+      let env = new Environment(new Loader(templatesPath));
+      expect(env.renderString('{% extends "./relative/test1.njk" %}{% block block1 %}Test3{% endblock %}', {}, { path: path.resolve(templatesPath, 'string.njk') })).to.be('FooTest3BazFizzle');
     });
 
 

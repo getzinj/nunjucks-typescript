@@ -1,4 +1,6 @@
-import { ISource } from '../loaders/ISource';
+import { ISource } from './ISource';
+
+
 
 export interface ILoader {
   cache;

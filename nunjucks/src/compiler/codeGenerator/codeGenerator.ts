@@ -1,54 +1,54 @@
-import { repeat } from '../lib';
-import { NunjucksNode, NunjucksNodeList, CallExtension } from '../nodes/nunjucksNode';
-import { Frame } from '../runtime/frame';
-import { Literal } from '../nodes/literal';
-import { NunjucksSymbol } from '../nodes/nunjucksSymbol';
-import { Group } from '../nodes/group';
-import { Dict } from '../nodes/dict';
-import { FunCall } from '../nodes/funCall';
-import { Caller } from '../nodes/caller';
-import { Filter } from '../nodes/filter';
-import { LookupVal } from '../nodes/lookupVal';
-import { Compare } from '../nodes/compare';
-import { InlineIf } from '../nodes/inlineIf';
-import { In } from '../nodes/operators/in';
-import { Is } from '../nodes/operators/is';
-import { And } from '../nodes/operators/and';
-import { Or } from '../nodes/operators/or';
-import { Not } from '../nodes/operators/not';
-import { Add } from '../nodes/operators/add';
-import { Concat } from '../nodes/operators/concat';
-import { Sub } from '../nodes/operators/sub';
-import { Mul } from '../nodes/operators/mul';
-import { Div } from '../nodes/operators/div';
-import { FloorDiv } from '../nodes/operators/floorDiv';
-import { Mod } from '../nodes/operators/mod';
-import { Pow } from '../nodes/operators/pow';
-import { Neg } from '../nodes/operators/neg';
-import { Pos } from '../nodes/operators/pos';
-import { TemplateData } from '../nodes/templateData';
-import { BinOp } from '../nodes/operators/binOp';
+import { repeat } from '../../lib';
+import { NunjucksNode, NunjucksNodeList, CallExtension } from '../../nodes/nunjucksNode';
+import { Frame } from '../../runtime/frame';
+import { Literal } from '../../nodes/literal';
+import { NunjucksSymbol } from '../../nodes/nunjucksSymbol';
+import { Group } from '../../nodes/group';
+import { Dict } from '../../nodes/dict';
+import { FunCall } from '../../nodes/funCall';
+import { Caller } from '../../nodes/caller';
+import { Filter } from '../../nodes/filter';
+import { LookupVal } from '../../nodes/lookupVal';
+import { Compare } from '../../nodes/compare';
+import { InlineIf } from '../../nodes/inlineIf';
+import { In } from '../../nodes/operators/in';
+import { Is } from '../../nodes/operators/is';
+import { And } from '../../nodes/operators/and';
+import { Or } from '../../nodes/operators/or';
+import { Not } from '../../nodes/operators/not';
+import { Add } from '../../nodes/operators/add';
+import { Concat } from '../../nodes/operators/concat';
+import { Sub } from '../../nodes/operators/sub';
+import { Mul } from '../../nodes/operators/mul';
+import { Div } from '../../nodes/operators/div';
+import { FloorDiv } from '../../nodes/operators/floorDiv';
+import { Mod } from '../../nodes/operators/mod';
+import { Pow } from '../../nodes/operators/pow';
+import { Neg } from '../../nodes/operators/neg';
+import { Pos } from '../../nodes/operators/pos';
+import { TemplateData } from '../../nodes/templateData';
+import { BinOp } from '../../nodes/operators/binOp';
 import { compareOps } from './compareOps';
-import { FilterAsync } from '../nodes/filterAsync';
-import { ArrayNode } from '../nodes/arrayNode';
-import { Pair } from '../nodes/pair';
-import { Block } from '../nodes/block';
-import { Super } from '../nodes/super';
-import { Self } from '../nodes/self';
-import { Extends } from '../nodes/extends';
-import { Include } from '../nodes/include';
-import { Output } from '../nodes/output';
-import { TemplateError } from '../templateError';
-import { Capture } from '../nodes/capture';
-import { Macro } from '../nodes/macro';
-import { AsyncAll } from '../nodes/asyncAll';
-import { AsyncEach } from '../nodes/asyncEach';
-import { IfAsync } from '../nodes/ifAsync';
-import { If } from '../nodes/if';
-import { Switch } from '../nodes/switch';
-import { Case } from '../nodes/case';
-import { KeywordArgs } from '../nodes/keywordArgs';
-import { CallExtensionAsync } from '../nodes/callExtensionAsync';
+import { FilterAsync } from '../../nodes/filterAsync';
+import { ArrayNode } from '../../nodes/arrayNode';
+import { Pair } from '../../nodes/pair';
+import { Block } from '../../nodes/block';
+import { Super } from '../../nodes/super';
+import { Self } from '../../nodes/self';
+import { Extends } from '../../nodes/extends';
+import { Include } from '../../nodes/include';
+import { Output } from '../../nodes/output';
+import { TemplateError } from '../../templateError';
+import { Capture } from '../../nodes/capture';
+import { Macro } from '../../nodes/macro';
+import { AsyncAll } from '../../nodes/asyncAll';
+import { AsyncEach } from '../../nodes/asyncEach';
+import { IfAsync } from '../../nodes/ifAsync';
+import { If } from '../../nodes/if';
+import { Switch } from '../../nodes/switch';
+import { Case } from '../../nodes/case';
+import { KeywordArgs } from '../../nodes/keywordArgs';
+import { CallExtensionAsync } from '../../nodes/callExtensionAsync';
 
 
 
@@ -742,7 +742,7 @@ export class CodeGenerator {
   }
 
 
-  private _emitLoopBindings(node, arr, i: string, len: string): void {
+  private _emitLoopBindings(node, arr: string, i: string, len: string): void {
     const bindings: ({ val; name: string })[] = [
       {name: 'index', val: `${i} + 1`},
       {name: 'index0', val: i},
@@ -1364,10 +1364,11 @@ export class CodeGenerator {
 
 
   public compile(node: NunjucksNode, frame?: Frame): CodeGenerator {
-    const _compile: (node, frame: Frame) => void = this['compile' + node.typename];
+    const _compile: (node, frame: Frame) => void = this.lookupTable[node.typename];
     if (_compile) {
       _compile.call(this, node, frame);
     } else {
+      debugger;
       this.fail(`compile: Cannot compile node: ${node.typename}`, node.lineno, node.colno);
     }
     return this;
@@ -1395,4 +1396,60 @@ export class CodeGenerator {
     this.compile(transformedCode);
     return this.getCode();
   }
+
+
+  private readonly lookupTable: Readonly<Record< string, (node, frame: Frame, async?: boolean) => void>> = {
+    'Add': this.compileAdd,
+    'And': this.compileAnd,
+    'ArrayNode': this.compileArrayNode,
+    'AsyncAll': this.compileAsyncAll,
+    'AsyncEach': this.compileAsyncEach,
+    'Block': this.compileBlock,
+    'Caller': this.compileCaller,
+    'CallExtension': this.compileCallExtension,
+    'CallExtensionAsync': this.compileCallExtensionAsync,
+    'Capture': this.compileCapture,
+    'Compare': this.compileCompare,
+    'Concat': this.compileConcat,
+    'Dict': this.compileDict,
+    'Div': this.compileDiv,
+    'Extends': this.compileExtends,
+    'Filter': this.compileFilter,
+    'FilterAsync': this.compileFilterAsync,
+    'FloorDiv': this.compileFloorDiv,
+    'For': this.compileFor,
+    'FromImport': this.compileFromImport,
+    'FunCall': this.compileFunCall,
+    'Group': this.compileGroup,
+    'If': this.compileIf,
+    'IfAsync': this.compileIfAsync,
+    'Import': this.compileImport,
+    'In': this.compileIn,
+    'InlineIf': this.compileInlineIf,
+    'Include': this.compileInclude,
+    'Is': this.compileIs,
+    'KeywordArgs': this.compileKeywordArgs,
+    'Literal': this.compileLiteral,
+    'LookupVal': this.compileLookupVal,
+    'Macro': this.compileMacro,
+    'Mod': this.compileMod,
+    'Mul': this.compileMul,
+    'Neg': this.compileNeg,
+    'Not': this.compileNot,
+    'Or': this.compileOr,
+    'Output': this.compileOutput,
+    'Pair': this.compilePair,
+    'Pos': this.compilePos,
+    'Pow': this.compilePow,
+    'NunjucksNodeList': this.compileNodeList,
+    'NunjucksSymbol': this.compileNunjucksSymbol,
+    'Root': this.compileRoot,
+    'Self': this.compileSelf,
+    'Set': this.compileSet,
+    'Slice': CodeGenerator.prototype['compileSlice'] ?? undefined,
+    'Switch': this.compileSwitch,
+    'Sub': this.compileSub,
+    'Super': this.compileSuper,
+    'TemplateData': this.compileTemplateData
+  };
 }

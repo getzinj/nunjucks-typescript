@@ -1,8 +1,8 @@
-import { IContext } from './IContext';
-import { IEnvironment } from './IEnvironment';
-import { IBlocks } from './IBlocks';
-import { extend, keys, indexOf } from '../lib';
-import { IBlockFunction } from './IBlockFunction';
+import { IContext } from '../interfaces/IContext';
+import { IEnvironment } from '../interfaces/IEnvironment';
+import { IBlocks } from '../interfaces/IBlocks';
+import { keys, indexOf } from '../lib';
+import { IBlockFunction } from '../interfaces/IBlockFunction';
 import { Frame } from '../runtime/frame';
 import { Environment } from './environment';
 
@@ -15,12 +15,12 @@ export class Context implements IContext {
   private readonly blocks: IBlocks;
 
 
-  constructor(ctx: Record<string, any>, blocks: IBlocks, env: IEnvironment) {
+  constructor(ctx: IContext, blocks: IBlocks, env: IEnvironment) {
     // Has to be tied to an environment so we can tap into its globals.
     this.env = env ?? new Environment();
 
     // Make a duplicate of ctx
-    this.ctx = extend({}, ctx);
+    this.ctx = ctx ? { ... ctx } : { };
 
     this.blocks = {};
     this.exported = [];
@@ -81,7 +81,12 @@ export class Context implements IContext {
   }
 
 
-  public getSelf(env: Environment, name: string, block: IBlockFunction, frame: Frame, runtime, cb: (...args: any[]) => void): void {
+  public getSelf(env: Environment,
+                 name: string,
+                 block: IBlockFunction,
+                 frame: Frame,
+                 runtime,
+                 cb: (...args: any[]) => void): void {
     const idx: number = indexOf(this.blocks[name] ?? [], block);
     const blk: IBlockFunction = this.blocks[name][idx];
     const context: Context = this;
@@ -101,7 +106,7 @@ export class Context implements IContext {
 
   getExported(): {} {
     const exported: {} = {};
-    this.exported.forEach((name): void => {
+    this.exported.forEach((name: string): void => {
       exported[name] = this.ctx[name];
     });
     return exported;

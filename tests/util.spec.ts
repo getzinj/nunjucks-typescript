@@ -1,52 +1,23 @@
-import { IExtension } from '../nunjucks/src/compiler/parser/IExtension';
 import { Environment } from '../nunjucks/src/environment/environment';
 import { Template } from '../nunjucks/src/environment/template';
 import { Context } from '../nunjucks/src/environment/context';
-import { ILoader } from '../nunjucks/src/environment/ILoader';
-import { IEnvironment } from '../nunjucks/src/environment/IEnvironment';
+import { ILoader } from '../nunjucks/src/interfaces/ILoader';
+import { IEnvironment } from '../nunjucks/src/interfaces/IEnvironment';
+import { IContext } from '../nunjucks/src/interfaces/IContext';
+import { IExtensionOption } from '../nunjucks/src/interfaces/IExtensionOption';
 
-
-
-export interface IExtensionOption {
-  extensions: IExtension[];
-}
 
 
 ((() => {
   /* eslint-disable vars-on-top */
+  let isSlim = false;
 
-  'use strict';
-
-  let nunjucks,
-      nunjucksFull,
-      isSlim = false,
-      Environment,
-      Loader,
-      precompileString,
-      templatesPath,
-      expect;
-
-  if (typeof window === 'undefined') {
-    nunjucks = nunjucksFull = require('../nunjucks');
-    Loader = nunjucks.FileSystemLoader;
-    templatesPath = 'tests/templates';
-    expect = require('expect.js');
-  } else {
-    nunjucks = window['nunjucks'];
-    if (window['nunjucksFull']) {
-      isSlim = true;
-      nunjucksFull = window['nunjucksFull'];
-      // These must be the same for instanceof checks to succeed
-      nunjucksFull.runtime.SafeString.prototype = nunjucks.runtime.SafeString.prototype;
-    } else {
-      nunjucksFull = window['nunjucksFull'] = nunjucks;
-    }
-    Loader = nunjucksFull.WebLoader;
-    templatesPath = '../templates';
-    expect = window['expect'];
-  }
-  precompileString = nunjucksFull.precompileString;
-  Environment = nunjucks.Environment;
+  let nunjucksFull = require('../nunjucks');
+  let nunjucks = nunjucksFull;
+  let Loader = nunjucks.FileSystemLoader;
+  let templatesPath = 'tests/templates';
+  let expect = require('expect.js');
+  let precompileString = nunjucksFull.precompileString;
 
   let numAsyncs: number;
   let doneHandler: (arg?) => void;
@@ -114,7 +85,7 @@ export interface IExtensionOption {
   }
 
 
-  function configureEnvironment_aux(ctx, cb, opts, env: Environment): { ctx, cb, opts, env: Environment | null } {
+  function configureEnvironmentAux(ctx, cb, opts, env: IEnvironment): { ctx, cb, opts, env: IEnvironment | null } {
     if (typeof ctx === 'function') {
       cb = ctx;
       ctx = null;
@@ -128,12 +99,24 @@ export interface IExtensionOption {
       cb = env;
       env = null;
     }
-    return {ctx, cb, opts, env};
+    return {
+      ctx,
+      cb,
+      opts,
+      env
+    };
   }
 
 
-  function configureEnvironment(ctx, cb, opts, env: Environment | null): { ctx, cb, opts, loader: ILoader, e: IEnvironment } {
-    const __ret: { ctx; cb; opts; env: Environment } = configureEnvironment_aux(ctx, cb, opts, env);
+  function configureEnvironment(ctx: IContext, cb, opts, env: IEnvironment | null):
+      {
+        ctx: IContext,
+        cb,
+        opts,
+        loader: ILoader,
+        e: IEnvironment
+      } {
+    const __ret: { ctx; cb; opts; env: IEnvironment } = configureEnvironmentAux(ctx, cb, opts, env);
     ctx = __ret.ctx;
     cb = __ret.cb;
     opts = __ret.opts;
@@ -143,7 +126,7 @@ export interface IExtensionOption {
     opts.dev = true;
 
     let loader: ILoader;
-    let e: Environment;
+    let e: IEnvironment;
 
     if (isSlim) {
       e = env || new Environment([], opts);
@@ -152,7 +135,13 @@ export interface IExtensionOption {
       loader = new Loader(templatesPath);
       e = env || new Environment(loader, opts);
     }
-    return {ctx, cb, opts, loader, e};
+    return {
+      ctx: ctx,
+      cb: cb,
+      opts: opts,
+      loader: loader,
+      e: e
+    };
   }
 
 
@@ -266,7 +255,6 @@ export interface IExtensionOption {
   }
 
 
-  if (typeof window === 'undefined') {
     module.exports.render = render;
     module.exports.equal = equal;
     module.exports.jinjaEqual = jinjaEqual;
@@ -274,15 +262,4 @@ export interface IExtensionOption {
     module.exports.normEOL = normEOL;
     module.exports.isSlim = isSlim;
     module.exports.Loader = Loader;
-  } else {
-    window['util'] = {
-      render: render,
-      equal: equal,
-      jinjaEqual: jinjaEqual,
-      finish: finish,
-      normEOL: normEOL,
-      isSlim: isSlim,
-      Loader: Loader,
-    };
-  }
 })());

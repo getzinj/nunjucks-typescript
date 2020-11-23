@@ -1,18 +1,22 @@
-import { whitespaceChars, delimChars, intChars } from './characters';
 import { indexOf } from '../../lib';
 import { Token } from './token';
 import { TokenType } from './tokenType';
-import { ITokenizerOptions} from './ITokenizerOptions';
+import { ITokenizerOptions } from '../../interfaces/ITokenizerOptions';
 import { Tag } from './tag';
-import { IRegexTokenValue } from './IRegexTokenValue';
-import { ITags } from './ITags';
+import { IRegexTokenValue } from '../../interfaces/IRegexTokenValue';
+import { ITags } from '../../interfaces/ITags';
+import { ITokenizer } from '../../interfaces/ITokenizer';
 
 
-export class Tokenizer {
+export class Tokenizer implements ITokenizer {
+  private readonly whitespaceChars: string = ' \n\t\r\u00A0';
+  private readonly delimChars: string = '()[]{}%*-+~/#,:|.<>=!';
+  private readonly intChars: string = '0123456789';
+
   /**
    * The possible flags are according to https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/RegExp)
    */
-  private static readonly regexFlags: string[] = ['g', 'i', 'm', 'y'];
+  private static readonly regexFlags: string[] = [ 'g', 'i', 'm', 'y' ];
 
   index: number;
   private readonly str: string;
@@ -55,7 +59,7 @@ export class Tokenizer {
   }
 
 
-  nextToken<T>(): Token<string | IRegexTokenValue> | null {
+  nextToken(): Token<string | IRegexTokenValue> | null {
     const lineno: number = this.lineno;
     const colno: number = this.colno;
     let tok: string;
@@ -70,7 +74,7 @@ export class Tokenizer {
       } else if (cur === '"' || cur === '\'') {
         // We've hit a string
         return new Token(TokenType.TOKEN_STRING, this._parseString(cur), lineno, colno);
-      } else if ((tok = this._extract(whitespaceChars))) {
+      } else if ((tok = this._extract(this.whitespaceChars))) {
         // We hit some whitespace
         return new Token(TokenType.TOKEN_WHITESPACE, tok, lineno, colno);
       } else if ((tok = this._extractString(this.tags.BLOCK_END)) ||
@@ -138,10 +142,10 @@ export class Tokenizer {
           body: regexBody,
           flags: regexFlags
         }, lineno, colno);
-      } else if (delimChars.indexOf(cur) !== -1) {
+      } else if (this.delimChars.indexOf(cur) !== -1) {
         // We've hit a delimiter (a special char like a bracket)
         this.forward();
-        const complexOps: string[] = ['==', '===', '!=', '!==', '<=', '>=', '//', '**'];
+        const complexOps: string[] = [ '==', '===', '!=', '!==', '<=', '>=', '//', '**' ];
         const curComplex: string = cur + this.current();
         let type: TokenType;
 
@@ -195,12 +199,12 @@ export class Tokenizer {
       } else {
         // We are not at whitespace or a delimiter, so extract the
         // text and parse it
-        tok = this._extractUntil(whitespaceChars + delimChars);
+        tok = this._extractUntil(this.whitespaceChars + this.delimChars);
 
         if (tok.match(/^[-+]?[0-9]+$/)) {
           if (this.current() === '.') {
             this.forward();
-            const dec: string = this._extract(intChars);
+            const dec: string = this._extract(this.intChars);
             return new Token(TokenType.TOKEN_FLOAT, tok + '.' + dec, lineno, colno);
           } else {
             return new Token(TokenType.TOKEN_INT, tok, lineno, colno);
@@ -435,7 +439,7 @@ export class Tokenizer {
   forward(): void {
     if (this.currentLine_ === '') {
       const nextNewlineIndex: number = this.str.indexOf('\n');
-      this.currentLine_ = this.str.substring(this.index, (nextNewlineIndex === -1) ? undefined: nextNewlineIndex);
+      this.currentLine_ = this.str.substring(this.index, (nextNewlineIndex === -1) ? undefined : nextNewlineIndex);
     }
     this.index++;
 
@@ -445,7 +449,7 @@ export class Tokenizer {
       this.colno = 0;
 
       const nextNewlineIndex: number = this.str.indexOf('\n');
-      this.currentLine_ = this.str.substring(this.index, (nextNewlineIndex === -1) ? undefined: nextNewlineIndex);
+      this.currentLine_ = this.str.substring(this.index, (nextNewlineIndex === -1) ? undefined : nextNewlineIndex);
     } else {
       this.colno++;
     }

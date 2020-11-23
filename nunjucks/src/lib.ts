@@ -27,7 +27,7 @@ export function lookupEscape(ch): string | undefined {
 }
 
 
-export function _prettifyError(path, withInternals, err): TemplateError {
+export function _prettifyError(path: string, withInternals: boolean, err): TemplateError {
   if (!err.Update) {
     // not one of ours, cast it
     err = new TemplateError(err);
@@ -81,19 +81,17 @@ export function isObject(obj): boolean {
   return ObjProto.toString.call(obj) === '[object Object]';
 }
 
+
 /**
  * @private
  */
-function _prepareAttributeParts(attr: null | undefined): [ ]
-function _prepareAttributeParts(attr: number): [ number ]
-function _prepareAttributeParts(attr: string): string[]
-function _prepareAttributeParts(attr: string | number | null | undefined): (string | number)[] {
-  if (!attr) {
+function _prepareAttributeParts<A extends string | number | null | undefined>(attr: A): string[] | number[] {
+  if (attr == null) {
     return [ ];
   } else if (typeof attr === 'string') {
     return attr.split('.');
   } else {
-    return [ attr ];
+    return [ attr as number ];
   }
 }
 
@@ -101,14 +99,14 @@ function _prepareAttributeParts(attr: string | number | null | undefined): (stri
 /**
  * @param   attribute      Attribute value. Dots allowed.
  */
-export function getAttrGetter(attribute: string): (obj: Record<string | number, any>) => any {
-  const parts: string[] = _prepareAttributeParts(attribute);
+export function getAttrGetter<A extends string | number | null | undefined>(attribute: A) {
+  const parts: string[] | number[] = _prepareAttributeParts(attribute);
 
-  return function attrGetter(item: Record<string | number, any>): Record<string | number, any> | undefined {
-    let _item: Record<string, any> = item;
+  return function get(item) {
+    let _item = item;
 
-    for (let i = 0; i < parts.length; i++) {
-      const part: string = parts[i];
+    for (let i: number = 0; i < parts.length; i++) {
+      const part: string | number = parts[i];
 
       // If item is not an object, and we still got parts to handle, it means
       // that something goes wrong. Just roll out to undefined in that case.
@@ -124,11 +122,11 @@ export function getAttrGetter(attribute: string): (obj: Record<string | number, 
 }
 
 
-export function groupBy<A>(obj: A[], val, throwOnUndefined: boolean) {
+export function groupBy<O>(obj: O[], val, throwOnUndefined: boolean) {
   const result = { };
   const iterator = isFunction(val) ? val : getAttrGetter(val);
   for (let i = 0; i < obj.length; i++) {
-    const value: A = obj[i];
+    const value: O = obj[i];
     const key = iterator(value, i);
     if (key === undefined && throwOnUndefined === true) {
       throw new TypeError(`groupby: attribute "${ val }" resolved to undefined`);
@@ -185,7 +183,7 @@ export function each<T>(obj: T[], func: (this: Context, value: T, i: number, obj
 }
 
 
-export function map<T, V>(obj: T[], func: (src: T, index?: number, arr?: T[], thisArg?: any) => V): V[] {
+export function map<T, V>(obj, func: (src: T, index?: number, arr?: T[], thisArg?: any) => V): V[] {
   return (obj ?? [ ]).map(func);
 }
 

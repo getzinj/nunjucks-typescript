@@ -3,7 +3,7 @@ import * as path from 'path';
 
 export function express(env, app) {
 
-  function NunjucksView(name, opts) {
+  function NunjucksView(name, opts): void {
     this.name = name;
     this.path = name;
     this.defaultEngine = opts.defaultEngine;
@@ -16,11 +16,14 @@ export function express(env, app) {
     }
   }
 
+
   NunjucksView.prototype.render = function render(opts, cb) {
     env.render(this.name, opts, cb);
   };
 
+
   app.set('view', NunjucksView);
   app.set('nunjucksEnv', env);
+
   return env;
 }

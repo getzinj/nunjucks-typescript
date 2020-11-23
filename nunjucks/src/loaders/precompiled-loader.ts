@@ -1,8 +1,8 @@
 'use strict';
 
 import { Loader } from './loader';
-import { ISource } from './ISource';
-import { ILoader } from '../environment/ILoader';
+import { ISource } from '../interfaces/ISource';
+import { ILoader } from '../interfaces/ILoader';
 
 
 

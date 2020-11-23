@@ -1,14 +1,16 @@
 /**
  * A no-op template, for use with {% include ignore missing %}
  */
-import { handleError } from '../runtime/runtime';
+import { handleError, Frame } from '../runtime/runtime';
+import { IContext } from '../interfaces/IContext';
+import { IEnvironment } from '../interfaces/IEnvironment';
 
 
 
 export const noopTmplSrc = {
   type: 'code',
   obj: {
-    root(env, context, frame, runtime, cb) {
+    root(env: IEnvironment, context: IContext, frame: Frame, runtime, cb: (arg0, arg1?: string) => void) {
       try {
         cb(null, '');
       } catch (e) {

@@ -1,13 +1,13 @@
 'use strict';
 
 import * as path from 'path';
-import { EmitterObj } from '../object/emitterObj';
-import { ILoader } from '../environment/ILoader';
+import { ILoader } from '../interfaces/ILoader';
 import { Template } from '../environment/template';
+import { EventEmitter } from "events";
 
 
 
-export abstract class Loader extends EmitterObj implements ILoader {
+export abstract class Loader extends EventEmitter implements ILoader {
   cache: Record<string, Template>;
 
   resolve(from, to): string {
@@ -18,5 +18,5 @@ export abstract class Loader extends EmitterObj implements ILoader {
     return (filename.indexOf('./') === 0 || filename.indexOf('../') === 0);
   }
 
-  abstract getSource(name: string, cb?);
+  abstract getSource(name: string, cb?: (err, src) => void);
 }

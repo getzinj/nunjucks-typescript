@@ -4,8 +4,8 @@
   "version": "0.0.2",
   "author": "Jeffrey Getzin <getzinj@gmail.com>",
   "repository": {
-    "type" : "git",
-    "url" : "git://github.com/getzinj/nunjucks-typescript.git"
+    "type": "git",
+    "url": "git://github.com/getzinj/nunjucks-typescript.git"
   },
   "dependencies": {
     "a-sync-waterfall": "^1.0.0",
@@ -22,13 +22,15 @@
     "@babel/register": "^7.0.0-beta.38",
     "@types/mocha": "< 8.x",
     "@types/node": "^14.14.3",
+    "@typescript-eslint/eslint-plugin": "^4.8.1",
+    "@typescript-eslint/parser": "^4.8.1",
     "babel-loader": "^8.0.0-beta.0",
     "babel-plugin-istanbul": "^4.1.5",
     "babel-plugin-module-resolver": "3.0.0-beta.5",
     "connect": "^3.6.5",
     "core-js": "^2.5.3",
     "cross-env": "^5.1.3",
-    "eslint": "^4.13.0",
+    "eslint": "^7.14.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.8.0",
     "expect.js": "*",
@@ -80,7 +82,7 @@
     "build": "npm run build:transpile && npm run build:bundle",
     "codecov": "codecov",
     "mocha": "cross-env NODE_ENV=test NODE_PATH=tests/test-node-pkgs mocha -R spec tests",
-    "lint": "eslint --ext .ts nunjucks scripts tests",
+    "lint": "eslint **/*.ts",
     "prepare": "npm run build",
     "test:instrument": "cross-env NODE_ENV=test scripts/bundle.js",
     "test:runner": "cross-env NODE_ENV=test NODE_PATH=tests/test-node-pkgs scripts/testrunner.js",

@@ -2,10 +2,11 @@
 
 import * as he from 'he';
 import * as lib from '../../lib';
-import * as r from '../../runtime/runtime';
 import { isArray, _entries } from '../../lib';
+import * as r from '../../runtime/runtime';
 import { SafeString } from '../../runtime/SafeString';
 import { TemplateError, TemplateError as TemplateError1 } from '../../templateError';
+import { IKeyValuePair } from '../../interfaces/IKeyValuePair';
 
 
 export function normalize<T, V>(value: T | null | undefined | false, defaultValue: V): T | V {
@@ -74,7 +75,7 @@ export function center(str: string | SafeString, width?: number): string | SafeS
 }
 
 
-export function default_<T>(val: T, def: T, bool): T {
+export function default_<T>(val: T, def: T, bool?: boolean): T {
   if (bool) {
     return val || def;
   } else {
@@ -83,43 +84,58 @@ export function default_<T>(val: T, def: T, bool): T {
 }
 
 
-export function dictsort(val, caseSensitive, by) {
+function getTupleSortIndex(by: 'key' | 'value' | undefined | null): 0 | 1 {
+  if (by === undefined || by === 'key') {
+    return 0;
+  } else if (by === 'value') {
+    return 1;
+  } else {
+    throw new TemplateError('dictsort filter: You can only sort by either key or value');
+  }
+}
+
+
+function sortTuples<K, V>(tuples: [K, V][], sortBy: 'key' | 'value', caseSensitive: boolean): void {
+  const sortIndex: 0 | 1 = getTupleSortIndex(sortBy);
+  tuples.sort(<T, V1 extends T[keyof T]>(t1: T, t2: T): number => {
+    let a: V1 = t1[sortIndex];
+    let b: V1 = t2[sortIndex];
+
+    if (!caseSensitive) {
+      if (lib.isString(a)) {
+        a = a.toUpperCase() as any;
+      }
+      if (lib.isString(b)) {
+        b = b.toUpperCase() as any;
+      }
+    }
+
+    return (a > b) ? 1 : (a === b ? 0 : -1); // eslint-disable-line no-nested-ternary
+  });
+}
+
+
+function dictToTuples<O, K extends keyof O, V extends O[K]>(val: O): [ K, V ][] {
+  const tuples: [ K, V ][] = [ ];
+  // deliberately include properties from the object's prototype
+  for (const k in val) { // eslint-disable-line guard-for-in, no-restricted-syntax
+    tuples.push([ k as unknown as K, val[k] as unknown as V ]);
+  }
+  return tuples;
+}
+
+
+export function dictsort<O, K extends keyof O, V extends O[K]>(val: O,
+                                                               caseSensitive: boolean = false,
+                                                               by: 'key' | 'value' = 'key'): [K, V][] {
   if (!lib.isObject(val)) {
     throw new TemplateError1('dictsort filter: val must be an object');
   }
 
-  const array = [];
-  // deliberately include properties from the object's prototype
-  for (const k in val) { // eslint-disable-line guard-for-in, no-restricted-syntax
-    array.push([k, val[k]]);
-  }
+  const tuples: [ K, V ][] = dictToTuples(val);
+  sortTuples(tuples, by, caseSensitive);
 
-  let si;
-  if (by === undefined || by === 'key') {
-    si = 0;
-  } else if (by === 'value') {
-    si = 1;
-  } else {
-    throw new TemplateError('dictsort filter: You can only sort by either key or value');
-  }
-
-  array.sort((t1, t2): number => {
-    let a = t1[si];
-    let b = t2[si];
-
-    if (!caseSensitive) {
-      if (lib.isString(a)) {
-        a = a.toUpperCase();
-      }
-      if (lib.isString(b)) {
-        b = b.toUpperCase();
-      }
-    }
-
-    return a > b ? 1 : (a === b ? 0 : -1); // eslint-disable-line no-nested-ternary
-  });
-
-  return array;
+  return tuples;
 }
 
 
@@ -128,7 +144,7 @@ export function dump(obj, spaces): string {
 }
 
 
-export function escape(str) {
+export function escape(str): SafeString {
   if (str instanceof SafeString) {
     return str;
   }
@@ -137,7 +153,7 @@ export function escape(str) {
 }
 
 
-export function safe(str) {
+export function safe(str): SafeString {
   if (str instanceof SafeString) {
     return str;
   }
@@ -162,29 +178,26 @@ export function groupby(arr, attr) {
 }
 
 
-export function indent(str, width: number, indentfirst?: boolean) {
+export function indent(str, width: number = 4, indentfirst?: boolean): string | SafeString {
   str = normalize(str, '');
 
   if (str === '') {
     return '';
   }
 
-  width = width || 4;
   // let res = '';
-  const lines = str.split('\n');
+  const lines: string[] = str.split('\n');
   const sp: string = lib.repeat(' ', width);
 
-  const res = lines.map((l, i) => {
-    return (i === 0 && !indentfirst) ? l : `${sp}${l}`;
-  }).join('\n');
+  const res: string = lines
+      .map( (l: string, i: number): string => ((i === 0) && !indentfirst) ? l : `${sp}${l}` )
+      .join('\n');
 
   return r.copySafeness(str, res);
 }
 
 
-export function join(arr, del, attr) {
-  del = del || '';
-
+export function join(arr, del: string = '', attr?: string | number | symbol) {
   if (attr) {
     arr = lib.map(arr, (v) => v[attr]);
   }
@@ -193,12 +206,12 @@ export function join(arr, del, attr) {
 }
 
 
-export function last<T>(arr: T[]): T {
+export function last<T>(arr: T[]): T | undefined {
   return arr[arr.length - 1];
 }
 
 
-export function length(val) {
+export function length<T>(val: T): number {
   const value: any = normalize(val, '');
 
   if (value === undefined) {
@@ -220,11 +233,18 @@ export function length(val) {
 }
 
 
-export function list(val) {
+export function list(val: string): string[];
+export function list<T>(val: T[]): T[];
+export function list<T>(val: Record<string | number | symbol, T>): IKeyValuePair<T>[];
+export function list<T>(val: T[] | Record<string | number | symbol, T> | string): T[] | IKeyValuePair<T>[] | string[] {
   if (lib.isString(val)) {
     return val.split('');
   } else if (lib.isObject(val)) {
-    return lib._entries(val || {}).map(([key, value]): { value; key } => ({key, value}));
+    const tuples: [string | number | symbol, T][] = lib._entries(val || {});
+    return tuples.map<IKeyValuePair<T>>( (tuple: [string | number | symbol, T]): IKeyValuePair<T> => ({
+      key: tuple[0],
+      value: tuple[1]
+    }));
   } else if (lib.isArray(val)) {
     return val;
   } else {
@@ -365,7 +385,7 @@ export function reverse(val) {
     arr = list(val);
   } else {
     // Copy it
-    arr = [... val];
+    arr = [ ... val ];
   }
 
   arr.reverse();
@@ -377,18 +397,23 @@ export function reverse(val) {
 }
 
 
-export function round(val: number, precision: number, method: string): number {
-  precision = precision || 0;
+function getRoundFunction(method: 'ceil' | 'floor' | 'round' = 'round'): (num: number) => number {
+  switch (method) {
+    case 'ceil':
+      return Math.ceil;
+    case 'floor':
+      return Math.floor;
+    case 'round':
+    default:
+      return Math.round;
+  }
+}
+
+
+export function round(val: number, precision: number = 0, method: 'ceil' | 'floor' | 'round' = 'round'): number {
   const factor: number = Math.pow(10, precision);
 
-  let rounder: (val: number) => number;
-  if (method === 'ceil') {
-    rounder = Math.ceil;
-  } else if (method === 'floor') {
-    rounder = Math.floor;
-  } else {
-    rounder = Math.round;
-  }
+  const rounder: (num: number) => number = getRoundFunction(method);
 
   return rounder(val * factor) / factor;
 }
@@ -427,40 +452,43 @@ export function sum(arr, attr, start: number = 0) {
 }
 
 
-export const sort: (...macroArgs) => any = r.makeMacro(
-    ['value', 'reverse', 'case_sensitive', 'attribute'], [],
-    function sortFilter(arr, reversed, caseSens, attr) {
-    // Copy it
-      const array = lib.map(arr, (v) => v);
-      const getAttribute: (item) => (undefined) = lib.getAttrGetter(attr);
+function sortFilter(arr, reversed: boolean, caseSens: boolean, attr: string) {
+  // Copy it
+  const copiedArray = [ ... arr ];
+  const attributeGetter = lib.getAttrGetter(attr);
 
-      array.sort((a, b): 1 | -1 | number => {
-      let x = (attr) ? getAttribute(a) : a;
-      let y = (attr) ? getAttribute(b) : b;
+  copiedArray.sort( <V>(a: V, b: V): number => {
+    let x: V = (attr) ? attributeGetter(a) : a;
+    let y: V = (attr) ? attributeGetter(b) : b;
 
-      if (
+    if (
         this.env.opts.throwOnUndefined &&
         attr && (x === undefined || y === undefined)
-      ) {
-        throw new TypeError(`sort: attribute "${attr}" resolved to undefined`);
-      }
+    ) {
+      throw new TypeError(`sort: attribute "${attr}" resolved to undefined`);
+    }
 
-      if (!caseSens && lib.isString(x) && lib.isString(y)) {
-        x = x.toLowerCase();
-        y = y.toLowerCase();
-      }
+    if (!caseSens && lib.isString(x) && lib.isString(y)) {
+      // @ts-ignore
+      x = x.toLowerCase();
+      // @ts-ignore
+      y = y.toLowerCase();
+    }
 
-      if (x < y) {
-        return reversed ? 1 : -1;
-      } else if (x > y) {
-        return reversed ? -1 : 1;
-      } else {
-        return 0;
-      }
-    });
+    if (x < y) {
+      return reversed ? 1 : -1;
+    } else if (x > y) {
+      return reversed ? -1 : 1;
+    } else {
+      return 0;
+    }
+  } );
 
-    return array;
-  });
+  return copiedArray;
+}
+
+
+export const sort: (...macroArgs) => any = r.makeMacro([ 'value', 'reverse', 'case_sensitive', 'attribute' ], [], sortFilter);
 
 
 export function string(obj): string | SafeString {
@@ -498,27 +526,26 @@ export function trim(str: string | SafeString): string | SafeString {
 }
 
 
-export function truncate(input: string | SafeString, length: number, killWords?: boolean, end?: number): string | SafeString {
+export function truncate(input: string | SafeString, toLength: number = 255, killWords?: boolean, end?: number): string | SafeString {
   const orig: string | SafeString = input;
   input = normalize(input, '');
-  length = length || 255;
 
-  if (input.length <= length) {
+  if (input.length <= toLength) {
     return input;
   }
 
   if (killWords) {
-    input = input.substring(0, length);
+    input = input.substring(0, toLength);
   } else {
-    let idx: number = input.lastIndexOf(' ', length);
+    let idx: number = input.lastIndexOf(' ', toLength);
     if (idx === -1) {
-      idx = length;
+      idx = toLength;
     }
 
     input = input.substring(0, idx);
   }
 
-  input += (end !== undefined && end !== null) ? end : '...';
+  input += (end !== undefined && end !== null) ? end : '...'; // TODO: Maybe use Closure library for this sort of thing?
   return r.copySafeness(orig, input);
 }
 
@@ -535,7 +562,9 @@ export function urlencode(obj: string | SimplestTuple[] | SimplestObject): strin
     return enc(obj);
   } else {
     const keyVals: SimplestTuple[] = (lib.isArray(obj)) ? obj : lib._entries(obj);
-    return keyVals.map(([k, v]: [string | number, string | number]): string => `${ enc(k) }=${ enc(v) }`).join('&');
+    return keyVals
+        .map( ([ k, v ]: [string | number, string | number]): string => `${ enc(k) }=${ enc(v) }` )
+        .join('&');
   }
 }
 
@@ -550,7 +579,10 @@ type SimplestObject = Record<string | number, string | number>;
 
 
 function isSimple(val): val is Simple {
-  return (typeof val === 'string') || (typeof val === 'symbol') || (typeof val === 'number') || (typeof val === 'boolean');
+  return (typeof val === 'string')
+      || (typeof val === 'symbol')
+      || (typeof val === 'number')
+      || (typeof val === 'boolean');
 }
 
 
@@ -573,7 +605,7 @@ export function entities(obj: Simple | SafeString | SimpleTuple | SimpleObject |
   } else if (lib.isString(obj)) {
     return safer(encoder(obj));
   } else if (isSimple(obj)) {
-    return safer(String(obj))
+    return safer(String(obj));
   } else if (isSimpleTuple(obj)) {
     return safer(`${ entities(obj[0]).val }=${ entities(obj[1]).val }`);
   } else if (isArray(obj)) {
@@ -602,79 +634,78 @@ const wwwRe: RegExp = /^www\./;
 const tldRe: RegExp = /\.(?:org|net|com)(?:\:|\/|$)/;
 
 
-export function urlize(str, length, nofollow): string {
-  if (isNaN(length)) {
-    length = Infinity;
+export function urlize(str, maxLength: number = Infinity, nofollow?: boolean): string {
+  if (isNaN(maxLength)) {
+    maxLength = Infinity;
   }
 
   const noFollowAttr: string = (nofollow === true ? ' rel="nofollow"' : '');
 
-  const words: string[] = str.split(/(\s+)/).filter((word: string): boolean => {
-    // If the word has no length, bail. This can happen for str with
-    // trailing whitespace.
-    return !!(word?.length);
-  }).map((word: string): string => {
-    const matches: RegExpMatchArray = word.match(puncRe);
-    const possibleUrl: string = (matches) ? matches[1] : word;
-    const shortUrl: string = possibleUrl.substr(0, length);
+  const words: string[] = str.split(/(\s+)/)
+      .filter( (word: string): boolean => {
+        // If the word has no length, bail. This can happen for str with
+        // trailing whitespace.
+        return !!(word?.length);
+      } )
+      .map((word: string): string => {
+        const matches: RegExpMatchArray = word.match(puncRe);
+        const possibleUrl: string = (matches) ? matches[1] : word;
+        const shortUrl: string = possibleUrl.substr(0, maxLength);
 
-    // url that starts with http or https
-    if (httpHttpsRe.test(possibleUrl)) {
-      return `<a href="${possibleUrl}"${noFollowAttr}>${shortUrl}</a>`;
-    }
+        // url that starts with http or https
+        if (httpHttpsRe.test(possibleUrl)) {
+          return `<a href="${possibleUrl}"${noFollowAttr}>${shortUrl}</a>`;
+        }
 
-    // url that starts with www.
-    if (wwwRe.test(possibleUrl)) {
-      return `<a href="http://${possibleUrl}"${noFollowAttr}>${shortUrl}</a>`;
-    }
+        // url that starts with www.
+        if (wwwRe.test(possibleUrl)) {
+          return `<a href="http://${possibleUrl}"${noFollowAttr}>${shortUrl}</a>`;
+        }
 
-    // an email address of the form username@domain.tld
-    if (emailRe.test(possibleUrl)) {
-      return `<a href="mailto:${ possibleUrl }">${ possibleUrl }</a>`;
-    }
+        // an email address of the form username@domain.tld
+        if (emailRe.test(possibleUrl)) {
+          return `<a href="mailto:${ possibleUrl }">${ possibleUrl }</a>`;
+        }
 
-    // url that ends in .com, .org or .net that is not an email address
-    if (tldRe.test(possibleUrl)) {
-      return `<a href="http://${ possibleUrl }"${ noFollowAttr }>${ shortUrl }</a>`;
-    }
+        // url that ends in .com, .org or .net that is not an email address
+        if (tldRe.test(possibleUrl)) {
+          return `<a href="http://${ possibleUrl }"${ noFollowAttr }>${ shortUrl }</a>`;
+        }
 
-    return word;
-  });
+        return word;
+      });
 
   return words.join('');
 }
 
 
-export function wordcount(str) {
+export function wordcount(str: string | SafeString): number | null {
   str = normalize(str, '');
-  const words = (str) ? str.match(/\w+/g) : null;
+  const words: RegExpMatchArray | null = (str) ? str.match(/\w+/g) : null;
   return (words) ? words.length : null;
 }
 
 
-export function float(val, def) {
-  const res: number = parseFloat(val);
-  return (isNaN(res)) ? def : res;
+export function float(val: string, def?: number): number | undefined {
+  const result: number = parseFloat(val);
+  return isNaN(result) ? def : result;
 }
 
 
 export const intFilter: (...macroArgs) => any = r.makeMacro(
-  ['value', 'default', 'base'],
-  [],
-  function doInt(value, defaultValue, base: number = 10) {
+  [ 'value', 'default', 'base' ],
+  [ ],
+  function doInt(value: string, defaultValue: number | undefined = undefined, base: number = 10): number | undefined {
     const res: number = parseInt(value, base);
-    return (isNaN(res)) ? defaultValue : res;
+    return isNaN(res) ? defaultValue : res;
   }
 );
 
 
-// Aliases
-//export const d = exports.default;
-//export const e = exports.escape;
-
 module.exports = {
   ... module.exports,
+  // eslint-disable-next-line quote-props
   'int': intFilter,
-  'e': escape,
-  'd': default_
-}
+  e: escape,
+  d: default_
+};

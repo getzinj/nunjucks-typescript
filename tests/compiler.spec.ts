@@ -1,7 +1,7 @@
 import { Parser } from '../nunjucks/src/compiler/parser/parser';
 import { CallExtension } from '../nunjucks/src/nodes/nunjucksNode';
 import { TokenType } from '../nunjucks/src/compiler/lexer/tokenType';
-import { IExtension } from '../nunjucks/src/compiler/parser/IExtension';
+import { IExtension } from '../nunjucks/src/interfaces/IExtension';
 import { Environment } from '../nunjucks/src/environment/environment';
 import { Done } from 'mocha';
 import { Template } from '../nunjucks/src/environment/template';
@@ -11,41 +11,20 @@ import { Template } from '../nunjucks/src/environment/template';
 (((): void => {
   'use strict';
 
-  let expect;
-  let util;
-  let Loader;
-  let Environment;
-  let fs;
-  let render;
-  let equal;
-  let finish;
-  let isSlim;
-
-  if (typeof require !== 'undefined') {
-    expect = require('expect.js');
-    util = require('./util.spec');
-    Environment = require('../nunjucks/src/environment/environment').Environment;
-    fs = require('fs');
-  } else {
-    expect = window['expect'];
-    util = window['util'];
-    Environment = window['Environment'];
-  }
-
-  render = util.render;
-  equal = util.equal;
-  finish = util.finish;
-  isSlim = util.isSlim;
-  Loader = util.Loader;
-
+  const expect = require('expect.js');
+  const util = require('./util.spec');
+  const fs = require('fs');
+  const render = util.render;
+  const equal = util.equal;
+  const finish = util.finish;
+  const isSlim = util.isSlim;
+  const Loader = util.Loader;
 
   describe('compiler', (): void => {
     it('should compile templates', (done: Done): void => {
       equal('Hello world', 'Hello world');
       equal('Hello world, {{ name }}',
-        {
-          name: 'James'
-        },
+        { name: 'James' },
         'Hello world, James');
 
       equal('Hello world, {{name}}{{suffix}}, how are you',
@@ -73,19 +52,11 @@ import { Template } from '../nunjucks/src/environment/template';
 
     it('should compile references', (done: Done): void => {
       equal('{{ foo.bar }}',
-        {
-          foo: {
-            bar: 'baz'
-          }
-        },
+        { foo: { bar: 'baz' } },
         'baz');
 
       equal('{{ foo["bar"] }}',
-        {
-          foo: {
-            bar: 'baz'
-          }
-        },
+        { foo: { bar: 'baz' } },
         'baz');
 
       finish(done);
@@ -119,12 +90,8 @@ import { Template } from '../nunjucks/src/environment/template';
 
 
     it('should not treat falsy values the same as undefined', (done: Done): void => {
-      equal('{{ foo }}', {
-        foo: 0
-      }, '0');
-      equal('{{ foo }}', {
-        foo: false
-      }, 'false');
+      equal('{{ foo }}', { foo: 0 }, '0');
+      equal('{{ foo }}', { foo: false }, 'false');
       finish(done);
     });
 
@@ -149,9 +116,7 @@ import { Template } from '../nunjucks/src/environment/template';
 
     it('should compile function calls', (done: Done): void => {
       equal('{{ foo("msg") }}',
-        {
-          foo: (str): string => str + 'hi'
-        },
+        { foo: (str): string => str + 'hi' },
         'msghi');
       finish(done);
     });
@@ -179,19 +144,11 @@ import { Template } from '../nunjucks/src/environment/template';
       // test fall-through cases
       const tpl3: string = '{% switch foo %}{% case "bar" %}{% case "baz" %}BAR{% endswitch %}';
       equal(tpl1, 'NEITHER FOO NOR BAR');
-      equal(tpl1, {
-        foo: 'bar'
-      }, 'BAR');
-      equal(tpl1, {
-        foo: 'baz'
-      }, 'BAZ');
+      equal(tpl1, { foo: 'bar' }, 'BAR');
+      equal(tpl1, { foo: 'baz' }, 'BAZ');
       equal(tpl2, '');
-      equal(tpl3, {
-        foo: 'bar'
-      }, 'BAR');
-      equal(tpl3, {
-        foo: 'baz'
-      }, 'BAR');
+      equal(tpl3, { foo: 'bar' }, 'BAR');
+      equal(tpl3, { foo: 'baz' }, 'BAR');
     });
 
 
@@ -199,16 +156,10 @@ import { Template } from '../nunjucks/src/environment/template';
       const tmpl: string = ('Give me some {% if hungry %}pizza' +
           '{% else %}water{% endif %}');
 
-      equal(tmpl, {
-        hungry: true
-      }, 'Give me some pizza');
-      equal(tmpl, {
-        hungry: false
-      }, 'Give me some water');
+      equal(tmpl, { hungry: true }, 'Give me some pizza');
+      equal(tmpl, { hungry: false }, 'Give me some water');
       equal('{% if not hungry %}good{% endif %}',
-        {
-          hungry: false
-        },
+        { hungry: false },
         'good');
 
       equal('{% if hungry and like_pizza %}good{% endif %}',
@@ -236,49 +187,33 @@ import { Template } from '../nunjucks/src/environment/template';
       equal(
         '{% if food == "pizza" %}pizza{% endif %}' +
         '{% if food =="beer" %}beer{% endif %}',
-        {
-          food: 'beer'
-        },
+        { food: 'beer' },
         'beer');
 
       equal('{% if "pizza" in food %}yum{% endif %}',
-        {
-          food: {
-            pizza: true
-          }
-        },
+        { food: { pizza: true } },
         'yum');
 
       equal('{% if pizza %}yum{% elif anchovies %}yuck{% endif %}',
-        {
-          pizza: true
-        },
+        { pizza: true },
         'yum');
 
       equal('{% if pizza %}yum{% elseif anchovies %}yuck{% endif %}',
-        {
-          pizza: true
-        },
+        { pizza: true },
         'yum');
 
       equal('{% if pizza %}yum{% elif anchovies %}yuck{% endif %}',
-        {
-          anchovies: true
-        },
+        { anchovies: true },
         'yuck');
 
       equal('{% if pizza %}yum{% elseif anchovies %}yuck{% endif %}',
-        {
-          anchovies: true
-        },
+        { anchovies: true },
         'yuck');
 
       equal(
         '{% if topping == "pepperoni" %}yum{% elseif topping == "anchovies" %}' +
         'yuck{% else %}hmmm{% endif %}',
-        {
-          topping: 'sausage'
-        },
+        { topping: 'sausage' },
         'hmmm');
 
       finish(done);
@@ -287,9 +222,7 @@ import { Template } from '../nunjucks/src/environment/template';
 
     it('should compile the ternary operator', (done: Done): void => {
       equal('{{ "foo" if bar else "baz" }}', 'baz');
-      equal('{{ "foo" if bar else "baz" }}', {
-        bar: true
-      }, 'foo');
+      equal('{{ "foo" if bar else "baz" }}', { bar: true }, 'foo');
 
       finish(done);
     });
@@ -298,16 +231,10 @@ import { Template } from '../nunjucks/src/environment/template';
     it('should compile inline conditionals', (done: Done): void => {
       const tmpl: string = 'Give me some {{ "pizza" if hungry else "water" }}';
 
-      equal(tmpl, {
-        hungry: true
-      }, 'Give me some pizza');
-      equal(tmpl, {
-        hungry: false
-      }, 'Give me some water');
+      equal(tmpl, { hungry: true }, 'Give me some pizza');
+      equal(tmpl, { hungry: false }, 'Give me some water');
       equal('{{ "good" if not hungry }}',
-        {
-          hungry: false
-        }, 'good');
+        { hungry: false }, 'good');
       equal('{{ "good" if hungry and like_pizza }}',
         {
           hungry: true,
@@ -327,9 +254,7 @@ import { Template } from '../nunjucks/src/environment/template';
       equal(
         '{{ "pizza" if food == "pizza" }}' +
         '{{ "beer" if food == "beer" }}',
-        {
-          food: 'beer'
-        }, 'beer');
+        { food: 'beer' }, 'beer');
 
       finish(done);
     });
@@ -344,18 +269,17 @@ import { Template } from '../nunjucks/src/environment/template';
 
 
         describe('the ' + block + ' tag', (): void => {
-
           it('should loop over simple arrays', (): void => {
             equal(
               '{% ' + block + ' i in arr %}{{ i }}{% ' + end + ' %}',
-              { arr: [1, 2, 3, 4, 5] },
+              { arr: [ 1, 2, 3, 4, 5 ] },
               '12345');
           });
 
           it('should loop normally with an {% else %} tag and non-empty array', (): void => {
             equal(
               '{% ' + block + ' i in arr %}{{ i }}{% else %}empty{% ' + end + ' %}',
-              { arr: [1, 2, 3, 4, 5] },
+              { arr: [ 1, 2, 3, 4, 5 ] },
               '12345');
           });
 
@@ -370,7 +294,7 @@ import { Template } from '../nunjucks/src/environment/template';
             equal(
               '{% ' + block + ' a, b, c in arr %}' +
               '{{ a }},{{ b }},{{ c }}.{% ' + end + ' %}',
-              { arr: [['x', 'y', 'z'], ['1', '2', '3']] },
+              { arr: [ [ 'x', 'y', 'z' ], [ '1', '2', '3' ] ] },
               'x,y,z.1,2,3.');
           });
 
@@ -437,30 +361,26 @@ import { Template } from '../nunjucks/src/environment/template';
 
           it('should loop over two-dimensional arrays', (): void => {
             equal('{% ' + block + ' x, y in points %}[{{ x }},{{ y }}]{% ' + end + ' %}',
-              { points: [[1, 2], [3, 4], [5, 6]] },
+              { points: [ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ] },
               '[1,2][3,4][5,6]');
           });
 
           it('should loop over four-dimensional arrays', (): void => {
             equal(
               '{% ' + block + ' a, b, c, d in arr %}[{{ a }},{{ b }},{{ c }},{{ d }}]{% ' + end + '%}',
-              { arr: [[1, 2, 3, 4], [5, 6, 7, 8]] },
+              { arr: [ [ 1, 2, 3, 4 ], [ 5, 6, 7, 8 ] ] },
               '[1,2,3,4][5,6,7,8]');
           });
 
           it('should support loop.index with two-dimensional loops', (): void => {
             equal('{% ' + block + ' x, y in points %}{{ loop.index }}{% ' + end + ' %}',
-              {
-                points: [[1, 2], [3, 4], [5, 6]]
-              },
+              { points: [ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ] },
               '123');
           });
 
           it('should support loop.revindex with two-dimensional loops', (): void => {
             equal('{% ' + block + ' x, y in points %}{{ loop.revindex }}{% ' + end + ' %}',
-              {
-                points: [[1, 2], [3, 4], [5, 6]]
-              },
+              { points: [ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ] },
               '321');
           });
 
@@ -529,7 +449,7 @@ import { Template } from '../nunjucks/src/environment/template';
               '{% ' + end + ' %}',
               {
                 passed_var: 'test',
-                passed_iter: ['1', '2', '3']
+                passed_iter: [ '1', '2', '3' ]
               },
               'showing test\nshowing 1\nshowing 2\nshowing 3\n');
           });
@@ -540,11 +460,11 @@ import { Template } from '../nunjucks/src/environment/template';
               this.skip();
             } else {
               equal('{% ' + block + ' i in set %}{{ i }}{% ' + end + ' %}',
-                { set: new Set([1, 2, 3, 4, 5]) },
+                { set: new Set([ 1, 2, 3, 4, 5 ]) },
                 '12345');
 
               equal('{% ' + block + ' i in set %}{{ i }}{% else %}empty{% ' + end + ' %}',
-                { set: new Set([1, 2, 3, 4, 5]) },
+                { set: new Set([ 1, 2, 3, 4, 5 ]) },
                 '12345');
 
               equal('{% ' + block + ' i in set %}{{ i }}{% else %}empty{% ' + end + ' %}',
@@ -559,11 +479,11 @@ import { Template } from '../nunjucks/src/environment/template';
               this.skip();
             } else {
               equal('{% ' + block + ' k, v in map %}[{{ k }},{{ v }}]{% ' + end + ' %}',
-                { map: new Map([[1, 2], [3, 4], [5, 6]]) },
+                { map: new Map([ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ]) },
                 '[1,2][3,4][5,6]');
 
               equal('{% ' + block + ' k, v in map %}[{{ k }},{{ v }}]{% else %}empty{% ' + end + ' %}',
-                { map: new Map([[1, 2], [3, 4], [5, 6]]) },
+                { map: new Map([ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ]) },
                 '[1,2][3,4][5,6]');
 
               equal('{% ' + block + ' k, v in map %}[{{ k }},{{ v }}]{% else %}empty{% ' + end + ' %}',
@@ -590,11 +510,10 @@ import { Template } from '../nunjucks/src/environment/template';
 
 
       it('should compile async control', function(done: Done): void {
-        let opts;
         if (!fs) {
           this.skip();
         } else {
-          opts = {
+          let opts = {
             asyncFilters: {
               getContents: (tmpl, cb): void => {
                 fs.readFile(tmpl, cb);
@@ -602,61 +521,48 @@ import { Template } from '../nunjucks/src/environment/template';
 
               getContentsArr: (arr, cb): void => {
                 fs.readFile(arr[0], (err, res): void => {
-                  cb(err, [res]);
+                  cb(err, [ res ]);
                 });
               }
             }
           };
-
           render('{{ tmpl | getContents }}',
-            {
-              tmpl: 'tests/templates/for-async-content.njk'
-            },
+            { tmpl: 'tests/templates/for-async-content.njk' },
             opts,
               (err, res): void => {
               expect(res).to.be('somecontenthere');
             });
 
           render('{% if tmpl %}{{ tmpl | getContents }}{% endif %}',
-            {
-              tmpl: 'tests/templates/for-async-content.njk'
-            },
+            { tmpl: 'tests/templates/for-async-content.njk' },
             opts,
               (err, res): void => {
               expect(res).to.be('somecontenthere');
             });
 
           render('{% if tmpl | getContents %}yes{% endif %}',
-            {
-              tmpl: 'tests/templates/for-async-content.njk'
-            },
+            { tmpl: 'tests/templates/for-async-content.njk' },
             opts,
               (err, res): void => {
               expect(res).to.be('yes');
             });
 
           render('{% for t in [tmpl, tmpl] %}{{ t | getContents }}*{% endfor %}',
-            {
-              tmpl: 'tests/templates/for-async-content.njk'
-            },
+            { tmpl: 'tests/templates/for-async-content.njk' },
             opts,
               (err, res): void => {
               expect(res).to.be('somecontenthere*somecontenthere*');
             });
 
           render('{% for t in [tmpl, tmpl] | getContentsArr %}{{ t }}{% endfor %}',
-            {
-              tmpl: 'tests/templates/for-async-content.njk'
-            },
+            { tmpl: 'tests/templates/for-async-content.njk' },
             opts,
               (err, res): void => {
               expect(res).to.be('somecontenthere');
             });
 
           render('{% if test %}{{ tmpl | getContents }}{% endif %}oof',
-            {
-              tmpl: 'tests/templates/for-async-content.njk'
-            },
+            { tmpl: 'tests/templates/for-async-content.njk' },
             opts,
               (err, res): void => {
               expect(res).to.be('oof');
@@ -666,63 +572,49 @@ import { Template } from '../nunjucks/src/environment/template';
             '{% if tmpl %}' +
             '{% for i in [0, 1] %}{{ tmpl | getContents }}*{% endfor %}' +
             '{% endif %}',
-            {
-              tmpl: 'tests/templates/for-async-content.njk'
-            },
+            { tmpl: 'tests/templates/for-async-content.njk' },
             opts,
               (err, res): void => {
               expect(res).to.be('somecontenthere*somecontenthere*');
             });
 
           render('{% block content %}{{ tmpl | getContents }}{% endblock %}',
-            {
-              tmpl: 'tests/templates/for-async-content.njk'
-            },
+            { tmpl: 'tests/templates/for-async-content.njk' },
             opts,
               (err, res): void => {
               expect(res).to.be('somecontenthere');
             });
 
           render('{% block content %}hello{% endblock %} {{ tmpl | getContents }}',
-            {
-              tmpl: 'tests/templates/for-async-content.njk'
-            },
+            { tmpl: 'tests/templates/for-async-content.njk' },
             opts,
               (err, res): void => {
               expect(res).to.be('hello somecontenthere');
             });
 
           render('{% block content %}{% set foo = tmpl | getContents %}{{ foo }}{% endblock %}',
-            {
-              tmpl: 'tests/templates/for-async-content.njk'
-            },
+            { tmpl: 'tests/templates/for-async-content.njk' },
             opts,
               (err, res): void => {
               expect(res).to.be('somecontenthere');
             });
 
           render('{% block content %}{% include "async.njk" %}{% endblock %}',
-            {
-              tmpl: 'tests/templates/for-async-content.njk'
-            },
+            { tmpl: 'tests/templates/for-async-content.njk' },
             opts,
               (err, res): void => {
               expect(res).to.be('somecontenthere\n');
             });
 
           render('{% asyncEach i in [0, 1] %}{% include "async.njk" %}{% endeach %}',
-            {
-              tmpl: 'tests/templates/for-async-content.njk'
-            },
+            { tmpl: 'tests/templates/for-async-content.njk' },
             opts,
               (err, res): void => {
               expect(res).to.be('somecontenthere\nsomecontenthere\n');
             });
 
           render('{% asyncAll i in [0, 1, 2, 3, 4] %}-{{ i }}:{% include "async.njk" %}-{% endall %}',
-            {
-              tmpl: 'tests/templates/for-async-content.njk'
-            },
+            { tmpl: 'tests/templates/for-async-content.njk' },
             opts,
               (err, res): void => {
               expect(res).to.be('-0:somecontenthere\n-' +
@@ -805,7 +697,7 @@ import { Template } from '../nunjucks/src/environment/template';
         equal('{% if 1 not in [1, 2] %}yes{% endif %}', '');
         equal('{% if 1 not in [2, 3] %}yes{% endif %}', 'yes');
         equal('{% if "a" in vals %}yes{% endif %}',
-          { vals: ['a', 'b'] },
+          { vals: [ 'a', 'b' ] },
           'yes');
       });
 
@@ -829,9 +721,7 @@ import { Template } from '../nunjucks/src/environment/template';
         render(
           '{% if "a" in 1 %}yes{% endif %}',
           {},
-          {
-            noThrow: true
-          },
+          { noThrow: true },
             (err, res): void => {
             expect(res).to.be(undefined);
             expect(err).to.match(
@@ -843,9 +733,7 @@ import { Template } from '../nunjucks/src/environment/template';
         render(
           '{% if "a" in obj %}yes{% endif %}',
           {},
-          {
-            noThrow: true
-          },
+          { noThrow: true },
             (err, res): void => {
             expect(res).to.be(undefined);
             expect(err).to.match(
@@ -908,7 +796,7 @@ import { Template } from '../nunjucks/src/environment/template';
           throw new Error('ERROR');
         }
 
-        tmpl.render({foo: foo}, (err, res): void => {
+        tmpl.render({ foo: foo }, (err, res): void => {
           expect(res).to.be(undefined);
           expect(err.toString()).to.be([
             'Template render error: (user-error.njk) [Line 1, Column 11]',
@@ -922,7 +810,7 @@ import { Template } from '../nunjucks/src/environment/template';
 
     it('should throw exceptions from included templates when called synchronously', (): void => {
       function templateRender(): void {
-        render('{% include "broken-import.njk" %}', {str: 'abc'});
+        render('{% include "broken-import.njk" %}', { str: 'abc' });
       }
       expect(templateRender).to.throwException(/template not found: doesnotexist/);
     });
@@ -931,8 +819,8 @@ import { Template } from '../nunjucks/src/environment/template';
     it('should pass errors from included templates to callback when async', (done: Done): void => {
       render(
         '{% include "broken-import.njk" %}',
-        {str: 'abc'},
-        {noThrow: true},
+        { str: 'abc' },
+        { noThrow: true },
           (err, res): void => {
           expect(err).to.match(/template not found: doesnotexist/);
           expect(res).to.be(undefined);
@@ -1089,9 +977,7 @@ import { Template } from '../nunjucks/src/environment/template';
         equal(
           '{% macro foo() %}{% include "include.njk" %}{% endmacro %}' +
           '{{ foo() }}',
-          {
-            name: 'james'
-          },
+          { name: 'james' },
           'FooInclude james');
         finish(done);
       });
@@ -1345,7 +1231,7 @@ import { Template } from '../nunjucks/src/environment/template';
         render(
           '{% extends "base.njk" %}' +
           '{% block notReal %}{{ foo() }}{% endblock %}',
-          { foo: (): void => { count++; }},
+          { foo: (): void => { count++; } },
             (): void => {
             expect(count).to.be(0);
           });
@@ -1519,9 +1405,7 @@ import { Template } from '../nunjucks/src/environment/template';
 
       it('should include templates with context', (done: Done): void => {
         equal('hello world {% include "include.njk" %}',
-          {
-            name: 'james'
-          },
+          { name: 'james' },
           'hello world FooInclude james');
         finish(done);
       });
@@ -1546,9 +1430,7 @@ import { Template } from '../nunjucks/src/environment/template';
 
       it('should include templates dynamically based on a set var', (done: Done): void => {
         equal('hello world {% set tmpl = "include.njk" %}{% include tmpl %}',
-          {
-            name: 'thedude'
-          },
+          { name: 'thedude' },
           'hello world FooInclude thedude');
         finish(done);
       });
@@ -1558,9 +1440,7 @@ import { Template } from '../nunjucks/src/environment/template';
         equal('hello world {% include data.tmpl %}',
           {
             name: 'thedude',
-            data: {
-              tmpl: 'include.njk'
-            }
+            data: { tmpl: 'include.njk' }
           },
           'hello world FooInclude thedude');
 
@@ -1572,9 +1452,7 @@ import { Template } from '../nunjucks/src/environment/template';
         render(
           '{% include "missing.njk" %}',
           {},
-          {
-            noThrow: true
-          },
+          { noThrow: true },
             (err, res): void => {
             expect(res).to.be(undefined);
             expect(err).to.match(/template not found: missing.njk/);
@@ -1590,9 +1468,7 @@ import { Template } from '../nunjucks/src/environment/template';
           'hello world ');
 
         equal('hello world {% include "missing.njk" ignore missing %}',
-          {
-            name: 'thedude'
-          },
+          { name: 'thedude' },
           'hello world ');
 
         finish(done);
@@ -1654,9 +1530,7 @@ import { Template } from '../nunjucks/src/environment/template';
 
     it('should compile a set block', (done: Done): void => {
       equal('{% set username = "foo" %}{{ username }}',
-        {
-          username: 'james'
-        },
+        { username: 'james' },
         'foo');
 
       equal('{% set x, y = "foo" %}{{ x }}{{ y }}',
@@ -1666,21 +1540,15 @@ import { Template } from '../nunjucks/src/environment/template';
         '3');
 
       equal('{% for i in [1] %}{% set foo=1 %}{% endfor %}{{ foo }}',
-        {
-          foo: 2
-        },
+        { foo: 2 },
         '2');
 
       equal('{% include "set.njk" %}{{ foo }}',
-        {
-          foo: 'bar'
-        },
+        { foo: 'bar' },
         'bar');
 
       equal('{% set username = username + "pasta" %}{{ username }}',
-        {
-          username: 'basta'
-        },
+        { username: 'basta' },
         'bastapasta');
 
       // `set` should only set within its current scope
@@ -1720,11 +1588,7 @@ import { Template } from '../nunjucks/src/environment/template';
 
     it('should compile set with frame references', (done: Done): void => {
       equal('{% set username = user.name %}{{ username }}',
-        {
-          user: {
-            name: 'james'
-          }
-        },
+        { user: { name: 'james' } },
         'james');
 
       finish(done);
@@ -1826,9 +1690,7 @@ import { Template } from '../nunjucks/src/environment/template';
     it('should throw errors', (done: Done): void => {
       render('{% from "import.njk" import boozle %}',
         {},
-        {
-          noThrow: true
-        },
+        { noThrow: true },
           (err): void => {
           expect(err).to.match(/cannot import 'boozle'/);
         });
@@ -1849,7 +1711,7 @@ import { Template } from '../nunjucks/src/environment/template';
     it('should allow custom tag compilation without content', (done: Done): void => {
       function TestExtension(): void {
         // jshint validthis: true
-        this.tags = ['test'];
+        this.tags = [ 'test' ];
 
         this.parse = function(parser, nodes) {
           const tok = parser.parserTokenStream.nextToken();
@@ -1888,14 +1750,7 @@ import { Template } from '../nunjucks/src/environment/template';
 
 
     it('should allow custom tag with args compilation', (done: Done): void => {
-      let opts;
-
-      opts = {
-        extensions: {
-          TestExtension: new ShouldAllowCustomTagWithArgsCompilationExtension()
-        }
-      };
-
+      let opts = { extensions: { TestExtension: new ShouldAllowCustomTagWithArgsCompilationExtension() } };
       equal(
         '{% test %}foobar{% endtest %}', null, opts,
         'raboof');
@@ -1913,9 +1768,7 @@ import { Template } from '../nunjucks/src/environment/template';
 
 
     it('should autoescape by default', (done: Done): void => {
-      equal('{{ foo }}', {
-        foo: '"\'<>&'
-      }, '&quot;&#39;&lt;&gt;&amp;');
+      equal('{{ foo }}', { foo: '"\'<>&' }, '&quot;&#39;&lt;&gt;&amp;');
       finish(done);
     });
 
@@ -1946,13 +1799,13 @@ import { Template } from '../nunjucks/src/environment/template';
 
       equal(
         '{{ foo }}',
-        { foo: ['<p>foo</p>'] },
+        { foo: [ '<p>foo</p>' ] },
         { autoescape: true },
         '&lt;p&gt;foo&lt;/p&gt;');
 
       equal(
         '{{ foo }}',
-        { foo: { toString: (): string => '<p>foo</p>'} },
+        { foo: { toString: (): string => '<p>foo</p>' } },
         { autoescape: true },
         '&lt;p&gt;foo&lt;/p&gt;');
 
@@ -1969,13 +1822,13 @@ import { Template } from '../nunjucks/src/environment/template';
 
       equal(
         '{{ foo | safe }}',
-        { foo: ['<p>foo</p>'] },
+        { foo: [ '<p>foo</p>' ] },
         { autoescape: true },
         '<p>foo</p>');
 
       equal(
         '{{ foo | safe }}',
-        { foo: { toString: (): string => '<p>foo</p>'} },
+        { foo: { toString: (): string => '<p>foo</p>' } },
         { autoescape: true },
         '<p>foo</p>');
 
@@ -1999,9 +1852,7 @@ import { Template } from '../nunjucks/src/environment/template';
         '{% macro foo(x, y) %}{{ x }} and {{ y }}{% endmacro %}' +
         '{{ foo("<>&", "<>") }}',
         null,
-        {
-          autoescape: true
-        },
+        { autoescape: true },
           (err, res): void => {
           expect(res).to.be('&lt;&gt;&amp; and &lt;&gt;');
         }
@@ -2011,9 +1862,7 @@ import { Template } from '../nunjucks/src/environment/template';
         '{% macro foo(x, y) %}{{ x|safe }} and {{ y }}{% endmacro %}' +
         '{{ foo("<>&", "<>") }}',
         null,
-        {
-          autoescape: true
-        },
+        { autoescape: true },
           (err, res): void => {
           expect(res).to.be('<>& and &lt;&gt;');
         }
@@ -2028,9 +1877,7 @@ import { Template } from '../nunjucks/src/environment/template';
         '{% extends "base3.njk" %}' +
         '{% block block1 %}{{ super() }}{% endblock %}',
         null,
-        {
-          autoescape: true
-        },
+        { autoescape: true },
           (err, res): void => {
           expect(res).to.be('<b>Foo</b>');
         }
@@ -2043,7 +1890,7 @@ import { Template } from '../nunjucks/src/environment/template';
     it('should not autoescape when extension set false', (done: Done): void => {
       function TestExtension(): void {
         // jshint validthis: true
-        this.tags = ['test'];
+        this.tags = [ 'test' ];
 
         this.autoescape = false;
 
@@ -2110,8 +1957,8 @@ import { Template } from '../nunjucks/src/environment/template';
     it('should throw an error when {% call %} is passed an object that is not a function', (done: Done): void => {
       render(
         '{% call foo() %}{% endcall %}',
-        {foo: 'bar'},
-        {noThrow: true},
+        { foo: 'bar' },
+        { noThrow: true },
           (err, res): void => {
           expect(res).to.be(undefined);
           expect(err).to.match(/Unable to call `\w+`, which is not a function/);
@@ -2125,9 +1972,7 @@ import { Template } from '../nunjucks/src/environment/template';
       render(
         '{% include "undefined-macro.njk" %}',
         {},
-        {
-          noThrow: true
-        },
+        { noThrow: true },
           (err, res): void => {
           expect(res).to.be(undefined);
           expect(err).to.match(/Unable to call `\w+`, which is undefined or falsey/);
@@ -2142,9 +1987,7 @@ import { Template } from '../nunjucks/src/environment/template';
       render(
         '{% if true %}{% include "undefined-macro.njk" %}{% endif %}',
         {},
-        {
-          noThrow: true
-        },
+        { noThrow: true },
           (err, res): void => {
           expect(res).to.be(undefined);
           expect(err).to.match(/Unable to call `\w+`, which is undefined or falsey/);
@@ -2158,7 +2001,7 @@ import { Template } from '../nunjucks/src/environment/template';
     it('should throw an error when including a file that imports macro that calls an undefined macro', (done: Done): void => {
       render(
         '{% include "import-macro-call-undefined-macro.njk" %}',
-        { list: [1, 2, 3] },
+        { list: [ 1, 2, 3 ] },
         { noThrow: true },
           (err, res): void => {
           expect(res).to.be(undefined);
@@ -2285,7 +2128,6 @@ import { Template } from '../nunjucks/src/environment/template';
 
 
     if (!isSlim) {
-
       it('should import template objects', (done: Done): void => {
         const tmpl = new Template('{% macro foo() %}Inside a macro{% endmacro %}' +
             '{% set bar = "BAZ" %}');
@@ -2293,17 +2135,13 @@ import { Template } from '../nunjucks/src/environment/template';
         equal(
           '{% import tmpl as imp %}' +
           '{{ imp.foo() }} {{ imp.bar }}',
-          {
-            tmpl: tmpl
-          },
+          { tmpl: tmpl },
           'Inside a macro BAZ');
 
         equal(
           '{% from tmpl import foo as baz, bar %}' +
           '{{ bar }} {{ baz() }}',
-          {
-            tmpl: tmpl
-          },
+          { tmpl: tmpl },
           'BAZ Inside a macro');
 
         finish(done);
@@ -2315,18 +2153,14 @@ import { Template } from '../nunjucks/src/environment/template';
             '{% block block2 %}Baz{% endblock %}Whizzle');
 
         equal('hola {% extends tmpl %} fizzle mumble',
-          {
-            tmpl: tmpl
-          },
+          { tmpl: tmpl },
           'FooBarBazWhizzle');
 
         equal(
           '{% extends tmpl %}' +
           '{% block block1 %}BAR{% endblock %}' +
           '{% block block2 %}BAZ{% endblock %}',
-          {
-            tmpl: tmpl
-          },
+          { tmpl: tmpl },
           'FooBARBAZWhizzle');
 
         finish(done);
@@ -2351,9 +2185,7 @@ import { Template } from '../nunjucks/src/environment/template';
         render(
           ' {{ 2 + 2- }}',
           {},
-          {
-            noThrow: true
-          },
+          { noThrow: true },
             (err, res): void => {
             expect(res).to.be(undefined);
             expect(err).to.match(/unexpected token: }}/);
@@ -2401,28 +2233,25 @@ import { Template } from '../nunjucks/src/environment/template';
 
 
 class ShouldAllowCustomTagWithArgsCompilationExtension implements IExtension {
-  readonly tags: string[] = ['test'];
+  readonly tags: string[] = [ 'test' ];
   readonly _name: Function = this.constructor;
 
 
   public parse(parser: Parser, nodes) {
-    let body;
-    let args;
     const tok = parser.parserTokenStream.nextToken();
 
     // passing true makes it tolerate when no args exist
-    args = parser.parseSignature(true);
+    let args = parser.parseSignature(true);
     parser.advanceAfterBlockEnd(tok.value);
 
-    body = parser.parseUntilBlocks('endtest');
+    let body = parser.parseUntilBlocks('endtest');
     parser.advanceAfterBlockEnd();
 
-    return new CallExtension(this, 'run', args, [body]);
+    return new CallExtension(this, 'run', args, [ body ]);
   }
 
 
   public run(context: any, prefix: string | (() => string), kwargs: { cutoff?: any; } | (() => string), body: () => string): string {
-    let output;
     if (typeof prefix === 'function') {
       body = prefix;
       kwargs = {};
@@ -2432,7 +2261,7 @@ class ShouldAllowCustomTagWithArgsCompilationExtension implements IExtension {
       kwargs = {};
     }
 
-    output = prefix + body().split('').reverse().join('');
+    let output = prefix + body().split('').reverse().join('');
     if (kwargs.cutoff) {
       output = output.slice(0, kwargs.cutoff);
     }
@@ -2444,18 +2273,16 @@ class ShouldAllowCustomTagWithArgsCompilationExtension implements IExtension {
 
 
 class ShouldAllowComplicatedCustomTagCompilationExtension implements IExtension {
-  readonly tags: string[] = ['test'];
+  readonly tags: string[] = [ 'test' ];
   readonly _name: Function = this.constructor;
 
 
-  public parse(parser, nodes, lexer): CallExtension {
-    let body;
+  public parse(parser, nodes): CallExtension {
     let intermediate = null;
 
     parser.advanceAfterBlockEnd();
 
-    body = parser.parseUntilBlocks('intermediate', 'endtest');
-
+    let body = parser.parseUntilBlocks('intermediate', 'endtest');
     if (parser.skipSymbol('intermediate')) {
       parser.skip(TokenType.TOKEN_BLOCK_END);
       intermediate = parser.parseUntilBlocks('endtest');
@@ -2463,7 +2290,7 @@ class ShouldAllowComplicatedCustomTagCompilationExtension implements IExtension 
 
     parser.advanceAfterBlockEnd();
 
-    return new CallExtension(this, 'run', null, [body, intermediate]);
+    return new CallExtension(this, 'run', null, [ body, intermediate ]);
   }
 
 
@@ -2480,16 +2307,14 @@ class ShouldAllowComplicatedCustomTagCompilationExtension implements IExtension 
 
 
 class ShouldAllowCustomTagCompilationExtension implements IExtension {
-  readonly tags: string[] = ['test'];
+  readonly tags: string[] = [ 'test' ];
 
 
   public parse(parser, nodes): CallExtension {
-    let content;
-    let tag: CallExtension;
     parser.advanceAfterBlockEnd();
 
-    content = parser.parseUntilBlocks('endtest');
-    tag = new CallExtension(this, 'run', null, [content]);
+    let content = parser.parseUntilBlocks('endtest');
+    let tag: CallExtension = new CallExtension(this, 'run', null, [ content ]);
     parser.advanceAfterBlockEnd();
 
     return tag;

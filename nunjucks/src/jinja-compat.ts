@@ -7,10 +7,10 @@ import { Dict } from './nodes/dict';
 import { Group } from './nodes/group';
 import { TokenType } from './compiler/lexer/tokenType';
 import { Token } from './compiler/lexer/token';
-import { Tokenizer } from './compiler/lexer/tokenizer';
-import { ISavedTokensState } from './compiler/lexer/ISavedTokensState';
-import { CodeGenerator } from './compiler/codeGenerator';
+import { ISavedTokensState } from './interfaces/ISavedTokensState';
+import { CodeGenerator } from './compiler/codeGenerator/codeGenerator';
 import { Context } from './environment/context';
+import { ITokenizer } from './interfaces/ITokenizer';
 
 
 function addCompileSliceToCodeGenerator(): void {
@@ -26,7 +26,7 @@ function addCompileSliceToCodeGenerator(): void {
 }
 
 
-function addContextOrFrameLookupToRuntime<T, V, IHasKeywords>(orig_contextOrFrameLookup: (context: Context, frame: Frame, name: string) => unknown, ...args): void {
+function addContextOrFrameLookupToRuntime(orig_contextOrFrameLookup: (context: Context, frame: Frame, name: string) => unknown, ...args): void {
   // @ts-ignore
   contextOrFrameLookup = function contextOrFrameLookup(context: Context, frame: Frame, key: string): boolean | null {
     const val = orig_contextOrFrameLookup.apply(this, [ context, frame, key ]);
@@ -56,7 +56,6 @@ export function installCompat() {
   // references the nunjucks instance
   // Handle slim case where these 'modules' are excluded from the built source
 
-  const nunjucks = this;
   const orig_contextOrFrameLookup = contextOrFrameLookup;
   const orig_memberLookup = memberLookup;
   let orig_CodeGenerator_assertType: { (node: any, ...types: any[]): void; (node: any, ...types: any[]): void; apply?: any; };
@@ -84,7 +83,7 @@ export function installCompat() {
 
   addContextOrFrameLookupToRuntime(orig_contextOrFrameLookup, arguments);
 
-  function getTokensState(tokens: Tokenizer): ISavedTokensState {
+  function getTokensState(tokens: ITokenizer): ISavedTokensState {
     return {
       index: tokens.index,
       lineno: tokens.lineno,
@@ -301,7 +300,7 @@ export function installCompat() {
       const k = keys1[0];
       const val = this[k];
       delete this[k];
-      return [k, val];
+      return [ k, val ];
     },
     setdefault(key, def = null) {
       if (!(key in this)) {

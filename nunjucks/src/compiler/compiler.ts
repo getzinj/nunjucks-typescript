@@ -1,11 +1,11 @@
 'use strict';
 
-import { IExtension } from './parser/IExtension';
-import { IPreprocessor } from './IPreprocessor';
-import { ICompilerOptions } from './ICompilerOptions';
+import { IExtension } from '../interfaces/IExtension';
+import { IPreprocessor } from '../interfaces/IPreprocessor';
+import { ICompilerOptions } from '../interfaces/ICompilerOptions';
 import { Transformer } from './transformer';
 import { Parser } from './parser/parser';
-import { CodeGenerator } from './codeGenerator';
+import { CodeGenerator } from './codeGenerator/codeGenerator';
 import { NunjucksNode } from '../nodes/nunjucksNode';
 import { Root } from '../nodes/root';
 

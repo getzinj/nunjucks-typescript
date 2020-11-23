@@ -1,7 +1,7 @@
 import { Loader } from './loader';
-import { ISource } from './ISource';
-import { ILoaderOptions } from './ILoaderOptions';
-import { ILoader } from '../environment/ILoader';
+import { ISource } from '../interfaces/ISource';
+import { ILoaderOptions } from '../interfaces/ILoaderOptions';
+import { ILoader } from '../interfaces/ILoader';
 export { PrecompiledLoader } from './precompiled-loader';
 
 
@@ -37,10 +37,10 @@ export class WebLoader extends Loader implements ILoader {
   }
 
 
-  getSource(name: string, cb): ISource | null {
+  getSource(name: string, cb: (err, src?) => void): ISource | null {
     const useCache: boolean = this.useCache;
     let result: ISource;
-    this.fetch(this.baseURL + '/' + name, (err, src) => {
+    this.fetch(this.baseURL + '/' + name, (err, src): void => {
       if (err) {
         if (cb) {
           cb(err.content);
@@ -78,7 +78,7 @@ export class WebLoader extends Loader implements ILoader {
     const ajax: XMLHttpRequest = new XMLHttpRequest();
     let loading: boolean = true;
 
-    ajax.onreadystatechange = () => {
+    ajax.onreadystatechange = (): void => {
       if (ajax.readyState === 4 && loading) {
         loading = false;
         if (ajax.status === 0 || ajax.status === 200) {

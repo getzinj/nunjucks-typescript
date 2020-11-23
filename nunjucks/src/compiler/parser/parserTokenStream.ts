@@ -1,6 +1,6 @@
 import { Token } from '../lexer/token';
-import { Tokenizer } from '../lexer/tokenizer';
 import { TokenType } from '../lexer/tokenType';
+import { ITokenizer } from '../../interfaces/ITokenizer';
 
 
 
@@ -10,7 +10,7 @@ export class ParserTokenStream {
   get currentLine(): string { return this.tokens.currentLine; }
 
 
-  constructor(public tokens: Tokenizer) { }
+  constructor(public tokens: ITokenizer) { }
 
 
   nextToken(withWhitespace?: boolean): Token<any> | null {

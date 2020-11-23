@@ -11,7 +11,7 @@ export abstract class Value<T extends string | number> extends NunjucksNode {
     return [ 'value' ];
   }
 
-  constructor(lineno: number, colno: number, public readonly value: T) {
+  protected constructor(lineno: number, colno: number, public readonly value: T) {
     super(lineno, colno, value);
   }
 }

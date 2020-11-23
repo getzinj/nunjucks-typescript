@@ -1,23 +1,12 @@
 ((() => {
   'use strict';
 
-  let expect;
-  let nunjucks;
-  let fs;
-  let os;
-  let path;
 
-  if (typeof require !== 'undefined') {
-    expect = require('expect.js');
-    nunjucks = require('../nunjucks');
-    fs = require('fs-extra');
-    path = require('path');
-    os = require('os');
-  } else {
-    expect = window['expect'];
-    nunjucks = window['nunjucks'];
-  }
-
+  const expect = require('expect.js');
+  const nunjucks = require('../nunjucks');
+  const fs = require('fs-extra');
+  const path = require('path');
+  const os = require('os');
 
   function rmdir(dirPath) {
     fs.emptyDirSync(dirPath);
@@ -72,7 +61,7 @@
         nunjucks.configure(tempdir, { noCache: true });
 
         fs.writeFileSync(tempdir + '/test.html', '{{ name }}', 'utf-8');
-        expect(nunjucks.render('test.html', {name: 'foo'})).to.be('foo');
+        expect(nunjucks.render('test.html', { name: 'foo' })).to.be('foo');
 
         fs.writeFileSync(tempdir + '/test.html', '{{ name }}-changed', 'utf-8');
         expect(nunjucks.render('test.html', { name: 'foo' })).to.be('foo-changed');

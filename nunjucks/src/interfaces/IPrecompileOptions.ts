@@ -1,4 +1,4 @@
-import { IEnvironment } from '../../environment/IEnvironment';
+import { IEnvironment } from './IEnvironment';
 
 
 

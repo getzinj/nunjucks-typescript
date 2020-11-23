@@ -13,17 +13,10 @@ declare var nunjucks;
   let equal;
   let finish;
 
-  if (typeof require !== 'undefined') {
     expect = require('expect.js');
     util = require('./util.spec');
     lib = require('../nunjucks/src/lib');
     r = require('../nunjucks/src/runtime/runtime');
-  } else {
-    expect = window['expect'];
-    util = window['util'];
-    lib = nunjucks.lib;
-    r = nunjucks.runtime;
-  }
 
   render = util.render;
   equal = util.equal;
@@ -31,7 +24,6 @@ declare var nunjucks;
 
 
   describe('filter', () => {
-
     it('abs', (done: Done) => {
       equal('{{ -3|abs }}', '3');
       equal('{{ -3.456|abs }}', '3.456');
@@ -46,7 +38,7 @@ declare var nunjucks;
           '-{% for b in a %}',
           '{{ b }}',
           '{% endfor %}-',
-          '{% endfor %}'].join(''),
+          '{% endfor %}' ].join(''),
         '-12--34--56-');
 
       finish(done);
@@ -55,9 +47,7 @@ declare var nunjucks;
 
     it('capitalize', (done: Done) => {
       equal('{{ "foo" | capitalize }}', 'Foo');
-      equal('{{ str | capitalize }}', {
-        str: r.markSafe('foo')
-      }, 'Foo');
+      equal('{{ str | capitalize }}', { str: r.markSafe('foo') }, 'Foo');
       equal('{{ undefined | capitalize }}', '');
       equal('{{ null | capitalize }}', '');
       equal('{{ nothing | capitalize }}', '');
@@ -71,7 +61,7 @@ declare var nunjucks;
         lib.repeat(' ', 38));
 
       equal('{{ str | center }}',
-        {str: r.markSafe('fooo')},
+        { str: r.markSafe('fooo') },
         lib.repeat(' ', 38) + 'fooo' + lib.repeat(' ', 38));
 
       equal('{{ undefined | center }}',
@@ -95,9 +85,7 @@ declare var nunjucks;
 
     it('default', (done: Done) => {
       equal('{{ undefined | default("foo") }}', 'foo');
-      equal('{{ bar | default("foo") }}', {
-        bar: null
-      }, '');
+      equal('{{ bar | default("foo") }}', { bar: null }, '');
       equal('{{ false | default("foo") }}', 'false');
       equal('{{ false | default("foo", true) }}', 'foo');
       equal('{{ bar | default("foo") }}', 'foo');
@@ -150,13 +138,13 @@ declare var nunjucks;
     it('should work with non-string values', () => {
       equal(
         '{{ foo | escape }}',
-        { foo: ['<html>'] },
+        { foo: [ '<html>' ] },
         { autoescape: false },
         '&lt;html&gt;');
 
       equal(
         '{{ foo | escape }}',
-        { foo: { toString: () => '<html>'} },
+        { foo: { toString: () => '<html>' } },
         { autoescape: false },
         '&lt;html&gt;');
 
@@ -251,7 +239,7 @@ declare var nunjucks;
 
 
     it('forceescape', (done: Done) => {
-      equal('{{ str | forceescape }}', { str: r.markSafe('<html>')}, '&lt;html&gt;');
+      equal('{{ str | forceescape }}', { str: r.markSafe('<html>') }, '&lt;html&gt;');
       equal('{{ "<html>" | safe | forceescape }}', '&lt;html&gt;');
       finish(done);
     });
@@ -278,7 +266,7 @@ declare var nunjucks;
 
     it('groupby', (done: Done) => {
       const namesContext = {
-        items: [{
+        items: [ {
           name: 'james',
           type: 'green'
         },
@@ -293,7 +281,7 @@ declare var nunjucks;
         {
           name: 'jessie',
           type: 'green'
-        }]
+        } ]
       };
       equal(
         '{% for type, items in items | groupby("type") %}' +
@@ -313,7 +301,7 @@ declare var nunjucks;
         '{% endfor %}' +
         '{% endfor %}',
         {
-          items: [{
+          items: [ {
             name: 'james',
             type: 'green'
           },
@@ -328,7 +316,7 @@ declare var nunjucks;
           {
             name: 'jessie',
             color: 'green'
-          }]
+          } ]
         },
         ':green:james:blue:johnjim:undefined:jessie');
 
@@ -342,21 +330,15 @@ declare var nunjucks;
         {
           posts: [
             {
-              date: {
-                year: 2019
-              },
+              date: { year: 2019 },
               title: 'Post 1'
             },
             {
-              date: {
-                year: 2018
-              },
+              date: { year: 2018 },
               title: 'Post 2'
             },
             {
-              date: {
-                year: 2019
-              },
+              date: { year: 2019 },
               title: 'Post 3'
             }
           ]
@@ -373,21 +355,15 @@ declare var nunjucks;
         {
           posts: [
             {
-              date: {
-                year: 2019
-              },
+              date: { year: 2019 },
               title: 'Post 1'
             },
             {
-              date: {
-                year: 2018
-              },
+              date: { year: 2018 },
               title: 'Post 2'
             },
             {
-              meta: {
-                month: 2
-              },
+              meta: { month: 2 },
               title: 'Post 3'
             }
           ]
@@ -423,9 +399,7 @@ declare var nunjucks;
         render(
           undefinedTemplate,
           namesContext,
-          {
-            throwOnUndefined: true
-          }
+          { throwOnUndefined: true }
         );
       }).to.throwError(/groupby: attribute "a\.b\.c" resolved to undefined/);
 
@@ -441,9 +415,7 @@ declare var nunjucks;
       equal('{{ "one\ntwo\nthree" | indent(2, true) }}',
         '  one\n  two\n  three');
 
-      equal('{{ str | indent }}', {
-        str: r.markSafe('one\ntwo\nthree')
-      }, 'one\n    two\n    three');
+      equal('{{ str | indent }}', { str: r.markSafe('one\ntwo\nthree') }, 'one\n    two\n    three');
 
       equal('{{ "" | indent }}', '');
       equal('{{ undefined | indent }}', '');
@@ -463,28 +435,18 @@ declare var nunjucks;
 
     it('join', (done: Done) => {
       equal('{{ items | join }}',
-        {
-          items: [1, 2, 3]
-        },
+        { items: [ 1, 2, 3 ] },
         '123');
 
       equal('{{ items | join(",") }}',
-        {
-          items: ['foo', 'bar', 'bear']
-        },
+        { items: [ 'foo', 'bar', 'bear' ] },
         'foo,bar,bear');
 
       equal('{{ items | join(",", "name") }}',
         {
-          items: [{
-            name: 'foo'
-          },
-          {
-            name: 'bar'
-          },
-          {
-            name: 'bear'
-          }]
+          items: [ { name: 'foo' },
+          { name: 'bar' },
+          { name: 'bear' } ]
         },
         'foo,bar,bear');
       finish(done);
@@ -507,20 +469,15 @@ declare var nunjucks;
       });
 
       it('should output string length for string variables', () => {
-        equal('{{ str | length }}', {
-          str: 'blah'
-        }, '4');
+        equal('{{ str | length }}', { str: 'blah' }, '4');
       });
 
       it('should output string length for a SafeString variable', () => {
-        equal('{{ str | length }}', {
-          str: r.markSafe('<blah>')
-        }, '6');
+        equal('{{ str | length }}', { str: r.markSafe('<blah>') }, '6');
       });
 
       it('should output the correct length of a string created with new String()', () => {
-        equal('{{ str | length }}', {
-          str: new String('blah') // eslint-disable-line no-new-wrappers
+        equal('{{ str | length }}', { str: new String('blah') // eslint-disable-line no-new-wrappers
         }, '4');
       });
 
@@ -533,17 +490,11 @@ declare var nunjucks;
       });
 
       it('should output 0 for an Object with no properties', () => {
-        equal('{{ obj | length }}', {
-          obj: {}
-        }, '0');
+        equal('{{ obj | length }}', { obj: {} }, '0');
       });
 
       it('should output 1 for an Object with 1 property', () => {
-        equal('{{ obj | length }}', {
-          obj: {
-            key: 'value'
-          }
-        }, '1');
+        equal('{{ obj | length }}', { obj: { key: 'value' } }, '1');
       });
 
       it('should output the number of properties for a plain Object, not the value of its length property', () => {
@@ -556,20 +507,16 @@ declare var nunjucks;
       });
 
       it('should output the length of an array', () => {
-        equal('{{ arr | length }}', {
-          arr: [0, 1]
-        }, '2');
+        equal('{{ arr | length }}', { arr: [ 0, 1 ] }, '2');
       });
 
       it('should output the full length of a sparse array', () => {
-        equal('{{ arr | length }}', {
-          arr: [0,, 2]  // eslint-disable-line
+        equal('{{ arr | length }}', {arr: [0,, 2]  // eslint-disable-line
         }, '3');
       });
 
       it('should output the length of an array created with "new Array"', () => {
-        equal('{{ arr | length }}', {
-          arr: new Array(0, 1) // eslint-disable-line no-array-constructor
+        equal('{{ arr | length }}', { arr: new Array(0, 1) // eslint-disable-line no-array-constructor
         }, '2');
       });
 
@@ -577,9 +524,7 @@ declare var nunjucks;
         const arr = new Array(0, 1); // eslint-disable-line no-array-constructor
         // @ts-ignore
         arr.key = 'value'; // TODO: Is this right??
-        equal('{{ arr | length }}', {
-          arr: arr
-        }, '2');
+        equal('{{ arr | length }}', { arr: arr }, '2');
       });
 
       it('should output the length of a Map', function test() {
@@ -588,11 +533,9 @@ declare var nunjucks;
         if (typeof Map === 'undefined') {
           this.skip();
         } else {
-          map = new Map([['key1', 'value1'], ['key2', 'value2']]);
+          map = new Map([ [ 'key1', 'value1' ], [ 'key2', 'value2' ] ]);
           map.set('key3', 'value3');
-          equal('{{ map | length }}', {
-            map: map
-          }, '3');
+          equal('{{ map | length }}', { map: map }, '3');
         }
       });
 
@@ -602,7 +545,7 @@ declare var nunjucks;
         if (typeof Set === 'undefined') {
           this.skip();
         } else {
-          set = new Set(['value1']);
+          set = new Set([ 'value1' ]);
           set.add('value2');
           equal('{{ set | length }}', { set: set }, '2');
         }
@@ -618,9 +561,7 @@ declare var nunjucks;
       equal('{% for i in "foobar" | list %}{{ i }},{% endfor %}',
         'f,o,o,b,a,r,');
       equal('{% for pair in person | list %}{{ pair.key }}: {{ pair.value }} - {% endfor %}',
-        {
-          person: person
-        }, 'name: Joe - age: 83 - ');
+        { person: person }, 'name: Joe - age: 83 - ');
       equal('{% for i in [1, 2] | list %}{{ i }}{% endfor %}', '12');
       finish(done);
     });
@@ -628,9 +569,7 @@ declare var nunjucks;
 
     it('lower', (done: Done) => {
       equal('{{ "fOObAr" | lower }}', 'foobar');
-      equal('{{ str | lower }}', {
-        str: r.markSafe('fOObAr')
-      }, 'foobar');
+      equal('{{ str | lower }}', { str: r.markSafe('fOObAr') }, 'foobar');
       equal('{{ null | lower }}', '');
       equal('{{ undefined | lower }}', '');
       equal('{{ nothing | lower }}', '');
@@ -642,15 +581,9 @@ declare var nunjucks;
       equal('{{ null | nl2br }}', '');
       equal('{{ undefined | nl2br }}', '');
       equal('{{ nothing | nl2br }}', '');
-      equal('{{ str | nl2br }}', {
-        str: r.markSafe('foo\r\nbar')
-      }, 'foo<br />\nbar');
-      equal('{{ str | nl2br }}', {
-        str: r.markSafe('foo\nbar')
-      }, 'foo<br />\nbar');
-      equal('{{ str | nl2br }}', {
-        str: r.markSafe('foo\n\nbar')
-      }, 'foo<br />\n<br />\nbar');
+      equal('{{ str | nl2br }}', { str: r.markSafe('foo\r\nbar') }, 'foo<br />\nbar');
+      equal('{{ str | nl2br }}', { str: r.markSafe('foo\nbar') }, 'foo<br />\nbar');
+      equal('{{ str | nl2br }}', { str: r.markSafe('foo\n\nbar') }, 'foo<br />\n<br />\nbar');
       equal('{{ "foo\nbar" | nl2br }}', 'foo&lt;br /&gt;\nbar');
       finish(done);
     });
@@ -670,9 +603,7 @@ declare var nunjucks;
 
 
     it('reject', (done: Done) => {
-      const context = {
-        numbers: [0, 1, 2, 3, 4, 5]
-      };
+      const context = { numbers: [ 0, 1, 2, 3, 4, 5 ] };
 
       equal('{{ numbers | reject("odd") | join }}', context, '024');
 
@@ -687,24 +618,14 @@ declare var nunjucks;
 
 
     it('rejectattr', (done: Done) => {
-      const foods = [{
-        tasty: true
-      }, {
-        tasty: false
-      }, {
-        tasty: true
-      }];
-      equal('{{ foods | rejectattr("tasty") | length }}', {
-        foods: foods
-      }, '1');
+      const foods = [ { tasty: true }, { tasty: false }, { tasty: true } ];
+      equal('{{ foods | rejectattr("tasty") | length }}', { foods: foods }, '1');
       finish(done);
     });
 
 
     it('select', (done: Done) => {
-      const context = {
-        numbers: [0, 1, 2, 3, 4, 5]
-      };
+      const context = { numbers: [ 0, 1, 2, 3, 4, 5 ] };
 
       equal('{{ numbers | select("odd") | join }}', context, '135');
 
@@ -719,16 +640,8 @@ declare var nunjucks;
 
 
     it('selectattr', (done: Done) => {
-      const foods = [{
-        tasty: true
-      }, {
-        tasty: false
-      }, {
-        tasty: true
-      }];
-      equal('{{ foods | selectattr("tasty") | length }}', {
-        foods: foods
-      }, '2');
+      const foods = [ { tasty: true }, { tasty: false }, { tasty: true } ];
+      equal('{{ foods | selectattr("tasty") | length }}', { foods: foods }, '2');
       finish(done);
     });
 
@@ -779,9 +692,7 @@ declare var nunjucks;
       equal('{{ "aaaAAA" | replace(r/a/i, "z") }}', 'zaaAAA');
       equal('{{ "aaaAAA" | replace(r/a/g, "z") }}', 'zzzAAA');
       equal('{{ "aaaAAA" | replace(r/a/gi, "z") }}', 'zzzzzz');
-      equal('{{ str | replace("a", "x") }}', {
-        str: r.markSafe('aaabbbccc')
-      }, 'xxxbbbccc');
+      equal('{{ str | replace("a", "x") }}', { str: r.markSafe('aaabbbccc') }, 'xxxbbbccc');
       finish(done);
     });
 
@@ -812,15 +723,11 @@ declare var nunjucks;
           '{% endfor %}';
 
       equal(tmpl,
-        {
-          arr: [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        },
+        { arr: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ] },
         '--123----456----789--');
 
       equal(tmpl,
-        {
-          arr: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        },
+        { arr: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ] },
         '--1234----567----8910--');
 
       finish(done);
@@ -829,31 +736,23 @@ declare var nunjucks;
 
     it('sum', (done: Done) => {
       equal('{{ items | sum }}',
-        {
-          items: [1, 2, 3]
-        },
+        { items: [ 1, 2, 3 ] },
         '6');
 
       equal('{{ items | sum("value") }}',
         {
-          items: [{
-            value: 1
-          },
-          {
-            value: 2
-          },
-          {
-            value: 3
-          }]
+          items: [ { value: 1 },
+          { value: 2 },
+          { value: 3 } ]
         },
         '6');
 
       equal('{{ items | sum("value", 10) }}',
         {
           items: [
-            {value: 1},
-            {value: 2},
-            {value: 3}
+            { value: 1 },
+            { value: 2 },
+            { value: 3 }
           ]
         },
         '16');
@@ -878,9 +777,9 @@ declare var nunjucks;
       equal('{% for item in items | sort(false, false, "name") %}{{ item.name }}{% endfor %}',
         {
           items: [
-            {name: 'james'},
-            {name: 'fred'},
-            {name: 'john'}
+            { name: 'james' },
+            { name: 'fred' },
+            { name: 'john' }
           ]
         },
         'fredjamesjohn');
@@ -893,9 +792,9 @@ declare var nunjucks;
         nestedAttributeSortTemplate,
         {
           items: [
-            {name: 'james', meta: {age: 25}},
-            {name: 'fred', meta: {age: 18}},
-            {name: 'john', meta: {age: 19}}
+            { name: 'james', meta: { age: 25 } },
+            { name: 'fred', meta: { age: 18 } },
+            { name: 'john', meta: { age: 19 } }
           ]
         },
         'fredjohnjames'
@@ -906,14 +805,12 @@ declare var nunjucks;
           nestedAttributeSortTemplate,
           {
             items: [
-              {name: 'james', meta: {age: 25}},
-              {name: 'fred', meta: {age: 18}},
-              {name: 'john', meta: {title: 'Developer'}}
+              { name: 'james', meta: { age: 25 } },
+              { name: 'fred', meta: { age: 18 } },
+              { name: 'john', meta: { title: 'Developer' } }
             ]
           },
-          {
-            throwOnUndefined: true
-          }
+          { throwOnUndefined: true }
         );
       }).to.throwError(/sort: attribute "meta\.age" resolved to undefined/);
 
@@ -929,9 +826,7 @@ declare var nunjucks;
 
 
     it('striptags', (done: Done) => {
-      equal('{{ html | striptags }}', {
-        html: '<foo>bar'
-      }, 'bar');
+      equal('{{ html | striptags }}', { html: '<foo>bar' }, 'bar');
       equal('{{ html | striptags }}',
         {
           html: '  <p>an  \n <a href="#">example</a> link</p>\n<p>to a webpage</p> ' +
@@ -953,9 +848,7 @@ declare var nunjucks;
 
     it('title', (done: Done) => {
       equal('{{ "foo bar baz" | title }}', 'Foo Bar Baz');
-      equal('{{ str | title }}', {
-        str: r.markSafe('foo bar baz')
-      }, 'Foo Bar Baz');
+      equal('{{ str | title }}', { str: r.markSafe('foo bar baz') }, 'Foo Bar Baz');
       equal('{{ undefined | title }}', '');
       equal('{{ null | title }}', '');
       equal('{{ nothing | title }}', '');
@@ -965,9 +858,7 @@ declare var nunjucks;
 
     it('trim', (done: Done) => {
       equal('{{ "  foo " | trim }}', 'foo');
-      equal('{{ str | trim }}', {
-        str: r.markSafe('  foo ')
-      }, 'foo');
+      equal('{{ str | trim }}', { str: r.markSafe('  foo ') }, 'foo');
       finish(done);
     });
 
@@ -978,9 +869,7 @@ declare var nunjucks;
       equal('{{ "foo bar baz" | truncate(7) }}', 'foo bar...');
       equal('{{ "foo bar baz" | truncate(5, true) }}', 'foo b...');
       equal('{{ "foo bar baz" | truncate(6, true, "?") }}', 'foo ba?');
-      equal('{{ "foo bar" | truncate(3) }}', {
-        str: r.markSafe('foo bar')
-      }, 'foo...');
+      equal('{{ "foo bar" | truncate(3) }}', { str: r.markSafe('foo bar') }, 'foo...');
 
       equal('{{ undefined | truncate(3) }}', '');
       equal('{{ undefined | truncate(6) }}', '');
@@ -1006,9 +895,7 @@ declare var nunjucks;
 
     it('upper', (done: Done) => {
       equal('{{ "foo" | upper }}', 'FOO');
-      equal('{{ str | upper }}', {
-        str: r.markSafe('foo')
-      }, 'FOO');
+      equal('{{ str | upper }}', { str: r.markSafe('foo') }, 'FOO');
       equal('{{ null | upper }}', '');
       equal('{{ undefined | upper }}', '');
       equal('{{ nothing | upper }}', '');
@@ -1019,9 +906,7 @@ declare var nunjucks;
     describe('urlencode()', () => {
       it('urlencode', (done: Done) => {
         equal('{{ "&" | urlencode }}', '%26');
-        equal('{{ arr | urlencode | safe }}', {
-          arr: [[1, 2], ['&1', '&2']]
-        }, '1=2&%261=%262');
+        equal('{{ arr | urlencode | safe }}', { arr: [ [ 1, 2 ], [ '&1', '&2' ] ] }, '1=2&%261=%262');
         equal('{{ obj | urlencode | safe }}', {
           obj: {
             1: 2,
@@ -1037,9 +922,7 @@ declare var nunjucks;
         obj['1'] = 2;
         obj['&1'] = '&2';
 
-        equal('{{ obj | urlencode | safe }}', {
-          obj: obj
-        }, '1=2&%261=%262');
+        equal('{{ obj | urlencode | safe }}', { obj: obj }, '1=2&%261=%262');
         finish(done);
       });
     });
@@ -1053,9 +936,7 @@ declare var nunjucks;
 
 
       it('array', (done: Done) => {
-        equal('{{ arr | entities | safe }}', {
-          arr: [[1, 2], ['&1', '&2']]
-        }, '1=2,&amp;1=&amp;2');
+        equal('{{ arr | entities | safe }}', { arr: [ [ 1, 2 ], [ '&1', '&2' ] ] }, '1=2,&amp;1=&amp;2');
         finish(done);
       });
 
@@ -1076,9 +957,7 @@ declare var nunjucks;
         obj['1'] = 2;
         obj['&1'] = '&2';
 
-        equal('{{ obj | entities | safe }}', {
-          obj: obj
-        }, '1=2,&amp;1=&amp;2');
+        equal('{{ obj | entities | safe }}', { obj: obj }, '1=2,&amp;1=&amp;2');
         finish(done);
       });
     });

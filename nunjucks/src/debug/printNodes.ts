@@ -6,7 +6,7 @@ import { NunjucksNode, NunjucksNodeList, CallExtension } from '../nodes/nunjucks
 function print(str: string, indent?: number, inline?: boolean): void {
   const lines: string[] = str.split('\n');
 
-  lines.forEach((line: string, i: number) => {
+  lines.forEach((line: string, i: number): void => {
     if (line && ((inline && i > 0) || !inline)) {
       process.stdout.write((' ').repeat(indent));
     }

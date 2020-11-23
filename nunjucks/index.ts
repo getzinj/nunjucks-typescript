@@ -2,14 +2,14 @@
 
 import { WebLoader, PrecompiledLoader } from './src/loaders/web-loaders';
 import { NodeResolveLoader } from './src/loaders/node-resolve-loader';
-import { FileSystemLoader } from './src/loaders/file-system-loader';
+import { FileSystemLoader } from './src/loaders/FileSystemLoader';
 import { Loader } from './src/loaders/loader';
 import { Compiler } from './src/compiler/compiler';
 import { precompile, precompileString } from './src/compiler/precompile/precompile';
 import { Parser } from './src/compiler/parser/parser';
 import { isObject } from './src/lib';
 import { installCompat } from './src/jinja-compat';
-import { INunjucksOptions } from './INunjucksOptions';
+import { INunjucksOptions } from './src/interfaces/INunjucksOptions';
 import { Context } from './src/environment/context';
 
 const {Environment, Template} = require('./src/environment/environment');

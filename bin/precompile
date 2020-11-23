@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 var {program} = require('commander');
-var precompile = require('../src/precompile').precompile;
+var precompile = require('../src/compiler/precompile/precompile').precompile;
 var Environment = require('../src/environment/environment').Environment;
 var lib = require('../src/lib');
 

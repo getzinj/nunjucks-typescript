@@ -3,9 +3,9 @@ import * as fs from 'fs';
 import { Loader } from './loader';
 import { globalchokidar } from '../environment/globals';
 import { URL } from 'url';
-import { ISource } from './ISource';
-import { ILoaderOptions } from './ILoaderOptions';
-import { ILoader } from '../environment/ILoader';
+import { ISource } from '../interfaces/ISource';
+import { ILoaderOptions } from '../interfaces/ILoaderOptions';
+import { ILoader } from '../interfaces/ILoader';
 
 
 export class NodeResolveLoader extends Loader implements ILoader {
@@ -28,22 +28,22 @@ export class NodeResolveLoader extends Loader implements ILoader {
       }
       this.watcher = globalchokidar.chokidar.watch();
 
-      this.watcher.on('change', (fullname: string | number) => {
+      this.watcher.on('change', (fullname: string | number): void => {
         this.emit('update', this.pathsToNames[fullname], fullname);
       });
 
-      this.watcher.on('error', (error) => {
+      this.watcher.on('error', (error): void => {
         console.log('Watcher error: ' + error);
       });
 
-      this.on('load', (name, source) => {
+      this.on('load', (name: string, source): void => {
         this.watcher.add(source.path);
       });
     }
   }
 
 
-  getSource(name: string) {
+  getSource(name: string): null | ISource {
     // Don't allow file-system traversal
     if ((/^\.?\.?(\/|\\)/).test(name)) {
       return null;

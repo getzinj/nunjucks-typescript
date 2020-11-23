@@ -3,23 +3,15 @@
 
   let expect, util, finish, render;
 
-  if (typeof require !== 'undefined') {
-    expect = require('expect.js');
-    util = require('./util.spec');
-  } else {
-    expect = window['expect'];
-    util = window['util'];
-  }
-
+  expect = require('expect.js');
+  util = require('./util.spec');
   finish = util.finish;
   render = util.render;
 
 
   describe('runtime', function() {
     it('should report the failed function calls to symbols', function(done) {
-      render('{{ foo("cvan") }}', {}, {
-        noThrow: true
-      }, function(err) {
+      render('{{ foo("cvan") }}', {}, { noThrow: true }, function(err) {
         expect(err).to.match(/Unable to call `foo`, which is undefined/);
       });
 
@@ -28,9 +20,7 @@
 
 
     it('should report the failed function calls to lookups', function(done) {
-      render('{{ foo["bar"]("cvan") }}', {}, {
-        noThrow: true
-      }, function(err) {
+      render('{{ foo["bar"]("cvan") }}', {}, { noThrow: true }, function(err) {
         expect(err).to.match(/foo\["bar"\]/);
       });
 
@@ -39,9 +29,7 @@
 
 
     it('should report the failed function calls to calls', function(done) {
-      render('{{ foo.bar("second call") }}', {}, {
-        noThrow: true
-      }, function(err) {
+      render('{{ foo.bar("second call") }}', {}, { noThrow: true }, function(err) {
         expect(err).to.match(/foo\["bar"\]/);
       });
 
@@ -50,9 +38,7 @@
 
 
     it('should report full function name in error', function(done) {
-      render('{{ foo.barThatIsLongerThanTen() }}', {}, {
-        noThrow: true
-      }, function(err) {
+      render('{{ foo.barThatIsLongerThanTen() }}', {}, { noThrow: true }, function(err) {
         expect(err).to.match(/foo\["barThatIsLongerThanTen"\]/);
       });
 
@@ -61,17 +47,13 @@
 
 
     it('should report the failed function calls w/multiple args', function(done) {
-      render('{{ foo.bar("multiple", "args") }}', {}, {
-        noThrow: true
-      }, function(err) {
+      render('{{ foo.bar("multiple", "args") }}', {}, { noThrow: true }, function(err) {
         expect(err).to.match(/foo\["bar"\]/);
       });
 
       render('{{ foo["bar"]["zip"]("multiple", "args") }}',
         {},
-        {
-          noThrow: true
-        },
+        { noThrow: true },
         function(err) {
           expect(err).to.match(/foo\["bar"\]\["zip"\]/);
         });
@@ -85,9 +67,7 @@
         '{{ bar }} {{ baz }}{% endmacro %}' +
         '{{ foo("hello", nosuchvar) }}',
       {},
-      {
-        noThrow: true
-      },
+      { noThrow: true },
       function(err, res) {
         expect(err).to.equal(null);
         expect(typeof res).to.be('string');
@@ -104,12 +84,8 @@
       render('{% macro foo(bar, baz) %}' +
       '{{ bar }} {{ baz.qux }}{% endmacro %}' +
       '{{ foo("hello", noProto) }}',
-      {
-        noProto: noProto
-      },
-      {
-        noThrow: true
-      },
+      { noProto: noProto },
+      { noThrow: true },
       function(err, res) {
         expect(err).to.equal(null);
         expect(res).to.equal('hello world');

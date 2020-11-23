@@ -1,6 +1,6 @@
 'use strict';
 
-import * as lib from '../lib';
+import { indexOf } from '../lib';
 import { Block } from '../nodes/block';
 import { IfAsync } from '../nodes/ifAsync';
 import { Set } from '../nodes/set';
@@ -54,10 +54,7 @@ export class Transformer {
 
 
   private walk(ast: NunjucksNode, func: (ast: NunjucksNode) => NunjucksNode | undefined, depthFirst?: boolean): NunjucksNode {
-    if (!(ast instanceof NunjucksNode)) {
-      return ast;
-    } else {
-
+    if (ast instanceof NunjucksNode) {
       if (!depthFirst) {
         const astT: NunjucksNode | undefined = func(ast);
 
@@ -67,14 +64,14 @@ export class Transformer {
       }
 
       if (ast instanceof NunjucksNodeList) {
-        const children: NunjucksNode[] = this.mapCOW(ast.children, (node: NunjucksNode) => this.walk(node, func, depthFirst));
+        const children: NunjucksNode[] = this.mapCOW(ast.children, (node: NunjucksNode): NunjucksNode => this.walk(node, func, depthFirst));
 
         if (children !== ast.children) {
           ast = this.nodeFactory.createDynamicNode(ast.typename, ast.lineno, ast.colno, children);
         }
       } else if (ast instanceof CallExtension) {
         const args: NunjucksNodeList = this.walk(ast.args, func, depthFirst) as NunjucksNodeList;
-        const contentArgs: NunjucksNode[] = this.mapCOW(ast.contentArgs, (node: NunjucksNode) => this.walk(node, func, depthFirst));
+        const contentArgs: NunjucksNode[] = this.mapCOW(ast.contentArgs, (node: NunjucksNode): NunjucksNode => this.walk(node, func, depthFirst));
 
         if (args !== ast.args || contentArgs !== ast.contentArgs) {
           ast = this.nodeFactory.createDynamicNode(ast.typename, ast.extName, ast.prop, args, contentArgs);
@@ -92,6 +89,8 @@ export class Transformer {
       }
 
       return depthFirst ? (func(ast) || ast) : ast;
+    } else {
+      return ast;
     }
   }
 
@@ -109,7 +108,7 @@ export class Transformer {
       if (descNode instanceof Block) {
         return descNode;
       } else if ((descNode instanceof Filter &&
-          lib.indexOf(asyncFilters, descNode.name.value) !== -1) ||
+          indexOf(asyncFilters, descNode.name.value) !== -1) ||
           descNode instanceof CallExtensionAsync) {
         symbol = new NunjucksSymbol(descNode.lineno,
             descNode.colno,

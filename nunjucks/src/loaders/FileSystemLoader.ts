@@ -3,9 +3,9 @@ import * as path from 'path';
 
 import { globalchokidar } from '../environment/globals';
 import { Loader } from './loader';
-import { ILoaderOptions } from './ILoaderOptions';
-import { ISource } from './ISource';
-import { ILoader } from '../environment/ILoader';
+import { ILoaderOptions } from '../interfaces/ILoaderOptions';
+import { ISource } from '../interfaces/ISource';
+import { ILoader } from '../interfaces/ILoader';
 
 
 export class FileSystemLoader extends Loader implements ILoader {
@@ -46,13 +46,13 @@ export class FileSystemLoader extends Loader implements ILoader {
       }
       const paths = this.searchPaths.filter(fs.existsSync);
       const watcher = globalchokidar.chokidar.watch(paths);
-      watcher.on('all', (event, fullname) => {
+      watcher.on('all', (event: string, fullname: string): void => {
         fullname = path.resolve(fullname);
         if (event === 'change' && fullname in this.pathsToNames) {
           this.emit('update', this.pathsToNames[fullname], fullname);
         }
       });
-      watcher.on('error', (error) => {
+      watcher.on('error', (error: string): void => {
         console.log('Watcher error: ' + error);
       });
     }

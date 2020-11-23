@@ -1,4 +1,4 @@
-import { IParserOptions } from './parser/IParserOptions';
+import { IParserOptions } from './IParserOptions';
 
 
 

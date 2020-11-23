@@ -4,36 +4,29 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var web_loaders_1 = require("./src/web-loaders");
+var web_loaders_1 = require("./src/loaders/web-loaders");
 
-var node_resolve_loader_1 = require("./src/node-resolve-loader");
+var node_resolve_loader_1 = require("./src/loaders/node-resolve-loader");
 
-var file_system_loader_1 = require("./src/file-system-loader");
+var FileSystemLoader_1 = require("./src/loaders/FileSystemLoader");
 
-var loader_1 = require("./src/loader");
+var loader_1 = require("./src/loaders/loader");
 
 var compiler_1 = require("./src/compiler/compiler");
 
-var precompile_1 = require("./src/precompile");
+var precompile_1 = require("./src/compiler/precompile/precompile");
 
-var parser_1 = require("./src/parser/parser");
+var parser_1 = require("./src/compiler/parser/parser");
 
 var lib_1 = require("./src/lib");
 
-var jinja_compat_1 = require("./src/jinja-compat"); // const lib = require('./src/lib');
+var jinja_compat_1 = require("./src/jinja-compat");
 
+var context_1 = require("./src/environment/context");
 
 var _require = require('./src/environment/environment'),
     Environment = _require.Environment,
-    Template = _require.Template; //const loaders = require('./src/loaders');
-//const precompile = require('./src/precompile');
-//const compiler = require('./src/compiler');
-//const parser = require('./src/parser');
-//const lexer = require('./src/lexer');
-// const runtime = require('./src/runtime');
-// const nodes = require('./src/nodes');
-// const installJinjaCompat = require('./src/jinja-compat');
-// A single instance of an environment, since this is so commonly used
+    Template = _require.Template; // A single instance of an environment, since this is so commonly used
 
 
 var e;
@@ -48,8 +41,8 @@ function configure(templatesPath, opts) {
 
   var TemplateLoader;
 
-  if (file_system_loader_1.FileSystemLoader) {
-    TemplateLoader = new file_system_loader_1.FileSystemLoader(templatesPath, {
+  if (FileSystemLoader_1.FileSystemLoader) {
+    TemplateLoader = new FileSystemLoader_1.FileSystemLoader(templatesPath, {
       watch: opts.watch,
       noCache: opts.noCache
     });
@@ -70,10 +63,11 @@ function configure(templatesPath, opts) {
 }
 
 module.exports = {
+  Context: context_1.Context,
   Environment: Environment,
   Template: Template,
   Loader: loader_1.Loader,
-  FileSystemLoader: file_system_loader_1.FileSystemLoader,
+  FileSystemLoader: FileSystemLoader_1.FileSystemLoader,
   NodeResolveLoader: node_resolve_loader_1.NodeResolveLoader,
   PrecompiledLoader: web_loaders_1.PrecompiledLoader,
   WebLoader: web_loaders_1.WebLoader,

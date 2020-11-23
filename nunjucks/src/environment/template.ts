@@ -1,14 +1,15 @@
-import { ITemplateClass } from './ITemplateClass';
-import { IEnvironment } from './IEnvironment';
-import { IBlockFunction } from './IBlockFunction';
+import { ITemplateClass } from '../interfaces/ITemplateClass';
+import { IEnvironment } from '../interfaces/IEnvironment';
+import { IBlockFunction } from '../interfaces/IBlockFunction';
 import { Frame } from '../runtime/frame';
 import * as globalRuntime from '../runtime/runtime';
 import * as lib from '../lib';
 import { callbackAsap } from './callbackAsap';
 import { Compiler } from '../compiler/compiler';
-import { IContext } from './IContext';
+import { IContext } from '../interfaces/IContext';
 import { Environment } from './environment';
 import { Context } from './context';
+import { TemplateError } from '../runtime/runtime';
 
 
 
@@ -84,7 +85,7 @@ export class Template implements ITemplateClass {
     try {
       this.compile();
     } catch (e) {
-      const err = lib._prettifyError(this.path, this.env.opts.dev, e);
+      const err: TemplateError = lib._prettifyError(this.path, this.env.opts.dev, e);
       if (cb) {
         return callbackAsap(cb, err);
       } else {
@@ -131,7 +132,7 @@ export class Template implements ITemplateClass {
   }
 
 
-  getExported(ctx, parentFrame, cb) { // eslint-disable-line consistent-return
+  getExported(ctx: IContext, parentFrame: Frame, cb) { // eslint-disable-line consistent-return
     if (typeof ctx === 'function') {
       cb = ctx;
       ctx = {};

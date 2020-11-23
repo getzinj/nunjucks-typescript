@@ -1,4 +1,4 @@
-import { ITokenizerOptions } from '../lexer/ITokenizerOptions';
+import { ITokenizerOptions } from './ITokenizerOptions';
 
 
 

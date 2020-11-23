@@ -1,14 +1,14 @@
 'use strict';
 
 
-import { ITemplate } from './ITemplate';
-import { IPrecompileGlobalOptions } from './IPrecompileGlobalOptions';
+import { ITemplate } from '../../interfaces/ITemplate';
+import { IPrecompileGlobalOptions } from '../../interfaces/IPrecompileGlobalOptions';
 import { Template } from '../../environment/template';
 
 
 export function precompileGlobal(templates: ITemplate[], opts?: IPrecompileGlobalOptions): string {
   let out: string = '';
-  opts = opts || {};
+  opts = opts ?? { };
 
   for (let i: number = 0; i < templates.length; i++) {
     const name: string = JSON.stringify(templates[i].name);

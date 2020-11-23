@@ -16,13 +16,13 @@ import { Done } from 'mocha';
 
 
   function execPrecompile(args, cb) {
-    execFile(precompileBin, args, {cwd: rootDir}, cb);
+    execFile(precompileBin, args, { cwd: rootDir }, cb);
   }
 
 
   describe('precompile cli', () => {
     it('should echo a compiled template to stdout', function(done) {
-      execPrecompile(['tests/templates/item.njk'], function(err, stdout, stderr) {
+      execPrecompile([ 'tests/templates/item.njk' ], function(err, stdout, stderr) {
         if (err) {
           done(err);
           return;

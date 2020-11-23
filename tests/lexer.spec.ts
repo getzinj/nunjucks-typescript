@@ -1,24 +1,12 @@
-declare var nunjucks;
 
 ((() => {
   'use strict';
 
-  let expect;
-  let lib;
-  let Tokenizer;
-  let tokenType;
 
-  if (typeof require !== 'undefined') {
-    expect = require('expect.js');
-    lib = require('../nunjucks/src/lib');
-    Tokenizer = require('../nunjucks/src/compiler/lexer/tokenizer').Tokenizer;
-    tokenType = require('../nunjucks/src/compiler/lexer/tokenType');
-  } else {
-    expect = window['expect'];
-    lib = nunjucks.lib;
-    tokenType = nunjucks.tokenType;
-  }
-
+  const expect = require('expect.js');
+  const lib = require('../nunjucks/src/lib');
+  const Tokenizer = require('../nunjucks/src/compiler/lexer/tokenizer').Tokenizer;
+  const tokenType = require('../nunjucks/src/compiler/lexer/tokenType');
 
   function lex(src, opts?) {
     return new Tokenizer(src, opts);
@@ -26,13 +14,9 @@ declare var nunjucks;
 
 
   function _hasTokens(ws, tokens, types): void {
-    let i;
-    let type;
-    let tok;
-    for (i = 0; i < types.length; i++) {
-      type = types[i];
-      tok = tokens.nextToken();
-
+    for (let i = 0; i < types.length; i++) {
+      let type = types[i];
+      let tok = tokens.nextToken();
       if (!ws) {
         while (tok && tok.type === tokenType.TokenType.TOKEN_WHITESPACE) {
           tok = tokens.nextToken();
@@ -72,7 +56,6 @@ declare var nunjucks;
 
   describe('lexer', () => {
     let tok;
-    let tmpl;
     let tokens;
 
 
@@ -81,7 +64,7 @@ declare var nunjucks;
       expect(tok.type).to.be(tokenType.TokenType.TOKEN_DATA);
       expect(tok.value).to.be('3');
 
-      tmpl = 'foo bar bizzle 3 [1,2] !@#$%^&*()<>?:"{}|';
+      let tmpl = 'foo bar bizzle 3 [1,2] !@#$%^&*()<>?:"{}|';
       tok = lex(tmpl).nextToken();
       expect(tok.type).to.be(tokenType.TokenType.TOKEN_DATA);
       expect(tok.value).to.be(tmpl);
@@ -93,29 +76,27 @@ declare var nunjucks;
       hasTokensWithWS(tokens,
         tokenType.TokenType.TOKEN_DATA,
         tokenType.TokenType.TOKEN_BLOCK_START,
-        [tokenType.TokenType.TOKEN_WHITESPACE, ' '],
+        [ tokenType.TokenType.TOKEN_WHITESPACE, ' ' ],
         tokenType.TokenType.TOKEN_INT,
-        [tokenType.TokenType.TOKEN_WHITESPACE, ' '],
+        [ tokenType.TokenType.TOKEN_WHITESPACE, ' ' ],
         tokenType.TokenType.TOKEN_INT,
-        [tokenType.TokenType.TOKEN_WHITESPACE, '\n   '],
+        [ tokenType.TokenType.TOKEN_WHITESPACE, '\n   ' ],
         tokenType.TokenType.TOKEN_INT,
-        [tokenType.TokenType.TOKEN_WHITESPACE, '  '],
+        [ tokenType.TokenType.TOKEN_WHITESPACE, '  ' ],
         tokenType.TokenType.TOKEN_BLOCK_END,
         tokenType.TokenType.TOKEN_DATA);
     });
 
 
     it('should trim blocks', () => {
-      tokens = lex('  {% if true %}\n    foo\n  {% endif %}\n', {
-        trimBlocks: true
-      });
+      tokens = lex('  {% if true %}\n    foo\n  {% endif %}\n', { trimBlocks: true });
       hasTokens(tokens,
-        [tokenType.TokenType.TOKEN_DATA, '  '],
+        [ tokenType.TokenType.TOKEN_DATA, '  ' ],
         tokenType.TokenType.TOKEN_BLOCK_START,
         tokenType.TokenType.TOKEN_SYMBOL,
         tokenType.TokenType.TOKEN_BOOLEAN,
         tokenType.TokenType.TOKEN_BLOCK_END,
-        [tokenType.TokenType.TOKEN_DATA, '    foo\n  '],
+        [ tokenType.TokenType.TOKEN_DATA, '    foo\n  ' ],
         tokenType.TokenType.TOKEN_BLOCK_START,
         tokenType.TokenType.TOKEN_SYMBOL,
         tokenType.TokenType.TOKEN_BLOCK_END);
@@ -123,16 +104,14 @@ declare var nunjucks;
 
 
     it('should trim windows-style CRLF line endings after blocks', () => {
-      tokens = lex('  {% if true %}\r\n    foo\r\n  {% endif %}\r\n', {
-        trimBlocks: true
-      });
+      tokens = lex('  {% if true %}\r\n    foo\r\n  {% endif %}\r\n', { trimBlocks: true });
       hasTokens(tokens,
-        [tokenType.TokenType.TOKEN_DATA, '  '],
+        [ tokenType.TokenType.TOKEN_DATA, '  ' ],
         tokenType.TokenType.TOKEN_BLOCK_START,
         tokenType.TokenType.TOKEN_SYMBOL,
         tokenType.TokenType.TOKEN_BOOLEAN,
         tokenType.TokenType.TOKEN_BLOCK_END,
-        [tokenType.TokenType.TOKEN_DATA, '    foo\r\n  '],
+        [ tokenType.TokenType.TOKEN_DATA, '    foo\r\n  ' ],
         tokenType.TokenType.TOKEN_BLOCK_START,
         tokenType.TokenType.TOKEN_SYMBOL,
         tokenType.TokenType.TOKEN_BLOCK_END);
@@ -140,20 +119,18 @@ declare var nunjucks;
 
 
     it('should not trim CR after blocks', () => {
-      tokens = lex('  {% if true %}\r    foo\r\n  {% endif %}\r', {
-        trimBlocks: true
-      });
+      tokens = lex('  {% if true %}\r    foo\r\n  {% endif %}\r', { trimBlocks: true });
       hasTokens(tokens,
-        [tokenType.TokenType.TOKEN_DATA, '  '],
+        [ tokenType.TokenType.TOKEN_DATA, '  ' ],
         tokenType.TokenType.TOKEN_BLOCK_START,
         tokenType.TokenType.TOKEN_SYMBOL,
         tokenType.TokenType.TOKEN_BOOLEAN,
         tokenType.TokenType.TOKEN_BLOCK_END,
-        [tokenType.TokenType.TOKEN_DATA, '\r    foo\r\n  '],
+        [ tokenType.TokenType.TOKEN_DATA, '\r    foo\r\n  ' ],
         tokenType.TokenType.TOKEN_BLOCK_START,
         tokenType.TokenType.TOKEN_SYMBOL,
         tokenType.TokenType.TOKEN_BLOCK_END,
-        [tokenType.TokenType.TOKEN_DATA, '\r']);
+        [ tokenType.TokenType.TOKEN_DATA, '\r' ]);
     });
 
 
@@ -163,28 +140,26 @@ declare var nunjucks;
         trimBlocks: true
       });
       hasTokens(tokens,
-        [tokenType.TokenType.TOKEN_DATA, 'test\n'],
+        [ tokenType.TokenType.TOKEN_DATA, 'test\n' ],
         tokenType.TokenType.TOKEN_BLOCK_START,
         tokenType.TokenType.TOKEN_SYMBOL,
         tokenType.TokenType.TOKEN_BOOLEAN,
         tokenType.TokenType.TOKEN_BLOCK_END,
-        [tokenType.TokenType.TOKEN_DATA, '  foo\n'],
+        [ tokenType.TokenType.TOKEN_DATA, '  foo\n' ],
         tokenType.TokenType.TOKEN_BLOCK_START,
         tokenType.TokenType.TOKEN_SYMBOL,
         tokenType.TokenType.TOKEN_BLOCK_END,
-        [tokenType.TokenType.TOKEN_DATA, '</div>']);
+        [ tokenType.TokenType.TOKEN_DATA, '</div>' ]);
     });
 
 
     it('should lstrip and not collapse whitespace between blocks', () => {
-      tokens = lex('   {% t %} {% t %}', {
-        lstripBlocks: true
-      });
+      tokens = lex('   {% t %} {% t %}', { lstripBlocks: true });
       hasTokens(tokens,
         tokenType.TokenType.TOKEN_BLOCK_START,
         tokenType.TokenType.TOKEN_SYMBOL,
         tokenType.TokenType.TOKEN_BLOCK_END,
-        [tokenType.TokenType.TOKEN_DATA, ' '],
+        [ tokenType.TokenType.TOKEN_DATA, ' ' ],
         tokenType.TokenType.TOKEN_BLOCK_START,
         tokenType.TokenType.TOKEN_SYMBOL,
         tokenType.TokenType.TOKEN_BLOCK_END);
@@ -245,9 +220,9 @@ declare var nunjucks;
       tokens = lex('{{ foo(bar) }}');
       hasTokens(tokens,
         tokenType.TokenType.TOKEN_VARIABLE_START,
-        [tokenType.TokenType.TOKEN_SYMBOL, 'foo'],
+        [ tokenType.TokenType.TOKEN_SYMBOL, 'foo' ],
         tokenType.TokenType.TOKEN_LEFT_PAREN,
-        [tokenType.TokenType.TOKEN_SYMBOL, 'bar'],
+        [ tokenType.TokenType.TOKEN_SYMBOL, 'bar' ],
         tokenType.TokenType.TOKEN_RIGHT_PAREN,
         tokenType.TokenType.TOKEN_VARIABLE_END);
     });
@@ -288,13 +263,13 @@ declare var nunjucks;
       hasTokens(tokens,
         tokenType.TokenType.TOKEN_VARIABLE_START,
         tokenType.TokenType.TOKEN_LEFT_CURLY,
-        [tokenType.TokenType.TOKEN_SYMBOL, 'one'],
+        [ tokenType.TokenType.TOKEN_SYMBOL, 'one' ],
         tokenType.TokenType.TOKEN_COLON,
-        [tokenType.TokenType.TOKEN_INT, '1'],
+        [ tokenType.TokenType.TOKEN_INT, '1' ],
         tokenType.TokenType.TOKEN_COMMA,
-        [tokenType.TokenType.TOKEN_STRING, 'two'],
+        [ tokenType.TokenType.TOKEN_STRING, 'two' ],
         tokenType.TokenType.TOKEN_COLON,
-        [tokenType.TokenType.TOKEN_INT, '2'],
+        [ tokenType.TokenType.TOKEN_INT, '2' ],
         tokenType.TokenType.TOKEN_RIGHT_CURLY,
         tokenType.TokenType.TOKEN_VARIABLE_END);
     });
@@ -305,10 +280,10 @@ declare var nunjucks;
       hasTokens(tokens,
         tokenType.TokenType.TOKEN_DATA,
         tokenType.TokenType.TOKEN_VARIABLE_START,
-        [tokenType.TokenType.TOKEN_SYMBOL, 'hello'],
+        [ tokenType.TokenType.TOKEN_SYMBOL, 'hello' ],
         tokenType.TokenType.TOKEN_VARIABLE_END,
         tokenType.TokenType.TOKEN_BLOCK_START,
-        [tokenType.TokenType.TOKEN_SYMBOL, 'if'],
+        [ tokenType.TokenType.TOKEN_SYMBOL, 'if' ],
         tokenType.TokenType.TOKEN_BLOCK_END,
         tokenType.TokenType.TOKEN_DATA);
     });
@@ -317,9 +292,9 @@ declare var nunjucks;
     it('should parse filters', () => {
       hasTokens(lex('{{ foo|bar }}'),
         tokenType.TokenType.TOKEN_VARIABLE_START,
-        [tokenType.TokenType.TOKEN_SYMBOL, 'foo'],
+        [ tokenType.TokenType.TOKEN_SYMBOL, 'foo' ],
         tokenType.TokenType.TOKEN_PIPE,
-        [tokenType.TokenType.TOKEN_SYMBOL, 'bar'],
+        [ tokenType.TokenType.TOKEN_SYMBOL, 'bar' ],
         tokenType.TokenType.TOKEN_VARIABLE_END);
     });
 
@@ -434,21 +409,13 @@ declare var nunjucks;
      */
 
     it('should have individual lexer tag settings for each environment', () => {
-      tokens = lex('{=', {
-        tags: {
-          variableStart: '{='
-        }
-      });
+      tokens = lex('{=', { tags: { variableStart: '{=' } });
       hasTokens(tokens, tokenType.TokenType.TOKEN_VARIABLE_START);
 
       tokens = lex('{{');
       hasTokens(tokens, tokenType.TokenType.TOKEN_VARIABLE_START);
 
-      tokens = lex('{{', {
-        tags: {
-          variableStart: '<<<'
-        }
-      });
+      tokens = lex('{{', { tags: { variableStart: '<<<' } });
       hasTokens(tokens, tokenType.TokenType.TOKEN_DATA);
 
       tokens = lex('{{');

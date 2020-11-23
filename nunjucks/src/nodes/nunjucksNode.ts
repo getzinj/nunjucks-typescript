@@ -7,7 +7,7 @@ export abstract class NunjucksNode {
   get fields(): string[] { return [ ]; }
 
 
-  constructor(lineno: number, colno: number,  ...args: any[]) {
+  protected constructor(lineno: number, colno: number, ...args: any[]) {
     this.lineno = lineno;
     this.colno = colno;
     this.assignValuesToFields(args);
@@ -65,7 +65,7 @@ export class NunjucksNodeList extends NunjucksNode {
   findAll<T>(type, results?: T[]): T[] {
     results = results || [];
 
-    this.children.forEach((child: NunjucksNode) => traverseAndCheck(child, type, results));
+    this.children.forEach((child: NunjucksNode): void => traverseAndCheck(child, type, results));
 
     return results;
   }

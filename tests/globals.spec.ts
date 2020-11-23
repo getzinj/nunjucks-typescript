@@ -1,31 +1,16 @@
 import { Done } from 'mocha';
 
-declare var nunjucks;
 
 (function() {
   'use strict';
 
-  let expect;
-  let util;
-  let Environment;
-  let equal;
-  let render;
-  let finish;
 
-  if (typeof require !== 'undefined') {
-    expect = require('expect.js');
-    util = require('./util.spec');
-    Environment = require('../nunjucks/src/environment/environment').Environment;
-  } else {
-    expect = window['expect'];
-    util = window['util'];
-    Environment = nunjucks.Environment;
-  }
-
-  equal = util.equal;
-  render = util.render;
-  finish = util.finish;
-
+  const expect = require('expect.js');
+  const util = require('./util.spec');
+  const Environment = require('../nunjucks/src/environment/environment').Environment;
+  const equal = util.equal;
+  const render = util.render;
+  const finish = util.finish;
 
   describe('global', () => {
     it('should have range', (done: Done) => {
@@ -159,21 +144,16 @@ declare var nunjucks;
         return 'Hello ' + this.lookup('user');
       });
 
-      equal('{{ hello() }}', {
-        user: 'James'
-      }, 'Hello James', env);
+      equal('{{ hello() }}', { user: 'James' }, 'Hello James', env);
       finish(done);
     });
 
 
     it('should be exclusive to each environment', function(done) {
       const env = new Environment();
-      let env2;
 
       env.addGlobal('hello', 'konichiwa');
-      env2 = new Environment();
-
-      // Using this format instead of .withArgs since env2.getGlobal uses 'this'
+      let env2 = new Environment(); // Using this format instead of .withArgs since env2.getGlobal uses 'this'
       expect(function() {
         env2.getGlobal('hello');
       }).to.throwError();

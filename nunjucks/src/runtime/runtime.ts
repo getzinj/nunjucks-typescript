@@ -6,7 +6,7 @@ import { Frame } from './frame';
 import { SafeString } from './SafeString';
 import { TemplateError } from '../templateError';
 import { NunjucksSymbol } from '../nodes/nunjucksSymbol';
-import { IHasKeywords } from './IHasKeywords';
+import { IHasKeywords } from '../interfaces/IHasKeywords';
 import { Context } from '../environment/context';
 
 export { Frame } from './frame';

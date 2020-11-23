@@ -3,13 +3,8 @@
 
   let expect, util, render, equal;
 
-  if (typeof require !== 'undefined') {
     expect = require('expect.js');
     util = require('./util.spec');
-  } else {
-    expect = window['expect'];
-    util = window['util'];
-  }
 
   render = util.render;
   equal = util.equal;
@@ -22,9 +17,7 @@
           return '!!!';
         }
       });
-      const uncallable = render('{{ foo is not callable }}', {
-        foo: '!!!'
-      });
+      const uncallable = render('{{ foo is not callable }}', { foo: '!!!' });
       expect(callable).to.be('true');
       expect(uncallable).to.be('true');
     });
@@ -33,12 +26,8 @@
     it('defined should detect definedness', function() {
       expect(render('{{ foo is defined }}')).to.be('false');
       expect(render('{{ foo is not defined }}')).to.be('true');
-      expect(render('{{ foo is defined }}', {
-        foo: null
-      })).to.be('true');
-      expect(render('{{ foo is not defined }}', {
-        foo: null
-      })).to.be('false');
+      expect(render('{{ foo is defined }}', { foo: null })).to.be('true');
+      expect(render('{{ foo is not defined }}', { foo: null })).to.be('false');
     });
 
 
@@ -49,7 +38,7 @@
       ).to.be('undefined');
       expect(
         render('{% if foo is defined %}defined{% else %}undefined{% endif %}',
-          {foo: null})
+          { foo: null })
       ).to.be('defined');
     });
 
@@ -61,7 +50,7 @@
       ).to.be('undefined');
       expect(
         render('{% if foo is not defined %}undefined{% else %}defined{% endif %}',
-          {foo: null})
+          { foo: null })
       ).to.be('defined');
     });
 
@@ -69,12 +58,8 @@
     it('undefined should detect undefinedness', function() {
       expect(render('{{ foo is undefined }}')).to.be('true');
       expect(render('{{ foo is not undefined }}')).to.be('false');
-      expect(render('{{ foo is undefined }}', {
-        foo: null
-      })).to.be('false');
-      expect(render('{{ foo is not undefined }}', {
-        foo: null
-      })).to.be('true');
+      expect(render('{{ foo is undefined }}', { foo: null })).to.be('false');
+      expect(render('{{ foo is not undefined }}', { foo: null })).to.be('true');
     });
 
 
@@ -84,9 +69,7 @@
       expect(render('{{ none is none }}')).to.be('true');
       expect(render('{{ none is null }}')).to.be('true');
       expect(render('{{ foo is null }}')).to.be('false');
-      expect(render('{{ foo is not null }}', {
-        foo: null
-      })).to.be('false');
+      expect(render('{{ foo is not null }}', { foo: null })).to.be('false');
     });
 
 
@@ -99,12 +82,8 @@
 
 
     it('escaped should test whether or not something is escaped', function() {
-      const escaped = render('{{ (foo | safe) is escaped }}', {
-        foo: 'foobarbaz'
-      });
-      const notEscaped = render('{{ foo is escaped }}', {
-        foo: 'foobarbaz'
-      });
+      const escaped = render('{{ (foo | safe) is escaped }}', { foo: 'foobarbaz' });
+      const notEscaped = render('{{ foo is escaped }}', { foo: 'foobarbaz' });
       expect(escaped).to.be('true');
       expect(notEscaped).to.be('false');
     });
@@ -134,12 +113,8 @@
       } else {
         map1 = new Map();
         map2 = {};
-        mapOneIsMapping = render('{{ map is mapping }}', {
-          map: map1
-        });
-        mapTwoIsMapping = render('{{ map is mapping }}', {
-          map: map2
-        });
+        mapOneIsMapping = render('{{ map is mapping }}', { map: map1 });
+        mapTwoIsMapping = render('{{ map is mapping }}', { map: map2 });
         expect(mapOneIsMapping).to.be('true');
         expect(mapTwoIsMapping).to.be('true');
       }

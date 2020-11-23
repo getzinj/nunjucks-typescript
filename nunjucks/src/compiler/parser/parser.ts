@@ -1,7 +1,6 @@
 'use strict';
 
 import { indexOf } from '../../lib';
-import * as lexer from '../lexer/characters';
 import { TemplateError } from '../../templateError';
 import { Root } from '../../nodes/root';
 import { Literal } from '../../nodes/literal';
@@ -32,8 +31,7 @@ import { Case } from '../../nodes/case';
 import { FromImport } from '../../nodes/fromImport';
 import { Output } from '../../nodes/output';
 import { Capture } from '../../nodes/capture';
-import {
-  In,
+import { In,
   Add,
   And,
   Concat,
@@ -47,8 +45,7 @@ import {
   Or,
   Pos,
   Pow,
-  Sub
-} from '../../nodes/operators/operators';
+  Sub } from '../../nodes/operators/operators';
 import { Compare } from '../../nodes/compare';
 import { CompareOperand } from '../../nodes/compareOperand';
 import { Tokenizer } from '../lexer/tokenizer';
@@ -57,9 +54,10 @@ import { TokenType } from '../lexer/tokenType';
 import { TemplateData } from '../../nodes/templateData';
 import { NunjucksNode, NunjucksNodeList } from '../../nodes/nunjucksNode';
 import { ParserTokenStream } from './parserTokenStream';
-import { IParser } from './IParser';
-import { IExtension } from './IExtension';
-import { IParserOptions } from './IParserOptions';
+import { IParser } from '../../interfaces/IParser';
+import { IExtension } from '../../interfaces/IExtension';
+import { IParserOptions } from '../../interfaces/IParserOptions';
+import { ITokenizer } from '../../interfaces/ITokenizer';
 
 
 
@@ -68,11 +66,11 @@ export class Parser implements IParser {
   private dropLeadingWhitespace: boolean = false;
   private breakOnBlocks: string[] | undefined | null = null;
   parserTokenStream: ParserTokenStream;
-  public tokens: Tokenizer;
+  public tokens: ITokenizer;
 
 
   public parseSource(src: string, extensions?: IExtension[], opts?: IParserOptions): Root {
-    this.tokens = new Tokenizer(src, opts)
+    this.tokens = new Tokenizer(src, opts);
     this.parserTokenStream = new ParserTokenStream(this.tokens);
     if (extensions !== undefined) {
       this.extensions = extensions;
@@ -691,9 +689,9 @@ export class Parser implements IParser {
       default:
         if (this.extensions.length) {
           for (let i: number = 0; i < this.extensions.length; i++) {
-            const ext = this.extensions[i];
+            const ext: IExtension = this.extensions[i];
             if (indexOf(ext.tags || [], tok.value) !== -1) {
-              return ext.parse(this, undefined, lexer); // TODO: Handle missing nodes declaration
+              return ext.parse(this, undefined); // TODO: Handle missing nodes declaration
             }
           }
         }
@@ -745,7 +743,7 @@ export class Parser implements IParser {
     return new Output(
         begun.lineno,
         begun.colno,
-        [new TemplateData(begun.lineno, begun.colno, str)]
+        [ new TemplateData(begun.lineno, begun.colno, str) ]
     );
   }
 
@@ -922,7 +920,7 @@ export class Parser implements IParser {
 
 
   private parseCompare(): NunjucksNode {
-    const compareOps: string[] = ['==', '===', '!=', '!==', '<', '>', '<=', '>='];
+    const compareOps: string[] = [ '==', '===', '!=', '!==', '<', '>', '<=', '>=' ];
     const expr: NunjucksNode = this.parseConcat();
     const ops: NunjucksNode[] = [];
 
@@ -1138,7 +1136,7 @@ export class Parser implements IParser {
   }
 
 
-  private parseSelf(tok): FunCall {
+  private parseSelf(tok: Token<any>): FunCall | undefined {
     if (this.skipValue(TokenType.TOKEN_OPERATOR, '.')) {
       const nextToken: Token<any> = this.parserTokenStream.nextToken();
       if (nextToken.type === TokenType.TOKEN_SYMBOL) {
@@ -1161,6 +1159,7 @@ export class Parser implements IParser {
     } else {
       this.fail('parsePrimary: expected dot operator after self keyword', tok.lineno, tok.colno);
     }
+    return undefined;
   }
 
 
@@ -1172,7 +1171,7 @@ export class Parser implements IParser {
       name += '.' + this.expect(TokenType.TOKEN_SYMBOL).value;
     }
 
-    return new NunjucksSymbol(tok.lineno, tok.colno, tok.value);
+    return new NunjucksSymbol(tok.lineno, tok.colno, name);
   }
 
 
@@ -1227,7 +1226,7 @@ export class Parser implements IParser {
         new NunjucksNodeList(
             name.lineno,
             name.colno,
-            [body, ...args]
+            [ body, ...args ]
         )
     );
 
@@ -1405,7 +1404,7 @@ export class Parser implements IParser {
 
         buf.push(new Output(tok.lineno,
             tok.colno,
-            [ new TemplateData(tok.lineno, tok.colno, data)]));
+            [ new TemplateData(tok.lineno, tok.colno, data) ]));
       } else if (tok.type === TokenType.TOKEN_BLOCK_START) {
         this.dropLeadingWhitespace = false;
         const n: NunjucksNode = this.parseStatement();

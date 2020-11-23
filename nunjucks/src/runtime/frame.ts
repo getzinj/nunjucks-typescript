@@ -1,4 +1,4 @@
-import { IVariables } from './IVariables';
+import { IVariables } from '../interfaces/IVariables';
 
 
 

@@ -1,60 +1,38 @@
 import { Done } from 'mocha';
 import { Loader } from '../nunjucks/src/loaders/loader';
 
-declare var nunjucks;
 
 (((): void => {
   'use strict';
 
-  let expect,
-      Environment,
-      WebLoader,
-      FileSystemLoader,
-      NodeResolveLoader,
-      templatesPath;
-
-  if (typeof require !== 'undefined') {
-    expect = require('expect.js');
-    Environment = require('../nunjucks/src/environment/environment').Environment;
-    WebLoader = require('../nunjucks/src/loaders/web-loaders').WebLoader;
-    FileSystemLoader = require('../nunjucks/src/loaders/file-system-loader').FileSystemLoader;
-    NodeResolveLoader = require('../nunjucks/src/loaders/node-resolve-loader').NodeResolveLoader;
-    templatesPath = 'tests/templates';
-  } else {
-    expect = window['expect'];
-    Environment = nunjucks.Environment;
-    WebLoader = nunjucks.WebLoader;
-    FileSystemLoader = nunjucks.FileSystemLoader;
-    NodeResolveLoader = nunjucks.NodeResolveLoader;
-    templatesPath = '../templates';
-  }
+  const expect = require('expect.js');
+  const Environment = require('../nunjucks/src/environment/environment').Environment;
+  const WebLoader = require('../nunjucks/src/loaders/web-loaders').WebLoader;
+  const FileSystemLoader = require('../nunjucks/src/loaders/FileSystemLoader').FileSystemLoader;
+  const NodeResolveLoader = require('../nunjucks/src/loaders/node-resolve-loader').NodeResolveLoader;
+  const templatesPath = 'tests/templates';
 
   describe('loader', (): void => {
     it('should allow a simple loader to be created', (): void => {
-      // From Docs: http://mozilla.github.io/nunjucks/api.html#writing-a-loader
-      // We should be able to create a loader that only exposes getSource
-      let env, parent;
-
       function MyLoader(arg?): void {
         // configuration
       }
 
-      MyLoader.prototype.getSource = (): { path: "/tmp/somewhere"; src: "Hello World" } => ({
+      MyLoader.prototype.getSource = (): { path: '/tmp/somewhere'; src: 'Hello World' } => ({
         src: 'Hello World',
         path: '/tmp/somewhere'
       });
 
-      env = new Environment(new MyLoader(templatesPath));
-      parent = env.getTemplate('fake.njk');
+
+      // From Docs: http://mozilla.github.io/nunjucks/api.html#writing-a-loader
+      // We should be able to create a loader that only exposes getSource
+      let env = new Environment(new MyLoader(templatesPath));
+      let parent = env.getTemplate('fake.njk');
       expect(parent.render()).to.be('Hello World');
     });
 
 
     it('should catch loader error', (done): void => {
-      // From Docs: http://mozilla.github.io/nunjucks/api.html#writing-a-loader
-      // We should be able to create a loader that only exposes getSource
-      let env;
-
       function MyLoader(arg?): void {
         // configuration
         this.async = true;
@@ -66,7 +44,10 @@ declare var nunjucks;
         }, 1);
       };
 
-      env = new Environment(new MyLoader(templatesPath));
+
+      // From Docs: http://mozilla.github.io/nunjucks/api.html#writing-a-loader
+      // We should be able to create a loader that only exposes getSource
+      let env = new Environment(new MyLoader(templatesPath));
       env.getTemplate('fake.njk', (err, parent): void => {
         expect(err).to.be.a(Error);
         expect(parent).to.be(undefined);
@@ -146,7 +127,7 @@ declare var nunjucks;
         it('should render templates', (): void => {
           const env = new Environment(new NodeResolveLoader());
           const tmpl = env.getTemplate('dummy-pkg/simple-template.html');
-          expect(tmpl.render({foo: 'foo'})).to.be('foo');
+          expect(tmpl.render({ foo: 'foo' })).to.be('foo');
         });
 
 

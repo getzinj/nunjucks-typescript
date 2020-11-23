@@ -11,24 +11,25 @@ import { WebLoader, PrecompiledLoader } from '../loaders/web-loaders';
 import { globals } from './globals';
 import { noopTmplSrc } from './noopTmplSrc';
 import { callbackAsap } from './callbackAsap';
-import { EmitterObj } from '../object/emitterObj';
-import { FileSystemLoader } from '../loaders/file-system-loader';
-import { IExtension } from '../compiler/parser/IExtension';
-import { IEnvironmentOptions } from './IEnvironmentOptions';
-import { IFilterFunction } from './IFilterFunction';
-import { ILoader } from './ILoader';
-import { IEnvironment } from './IEnvironment';
+import { FileSystemLoader } from '../loaders/FileSystemLoader';
+import { IExtension } from '../interfaces/IExtension';
+import { IEnvironmentOptions } from '../interfaces/IEnvironmentOptions';
+import { IFilterFunction } from '../interfaces/IFilterFunction';
+import { ILoader } from '../interfaces/ILoader';
+import { IEnvironment } from '../interfaces/IEnvironment';
 import { Template } from './template';
+import { EventEmitter } from 'events';
+import { ITemplateClass } from '../interfaces/ITemplateClass';
+import { ITest } from '../interfaces/ITest';
 
 
-
-export class Environment extends EmitterObj implements IEnvironment {
+export class Environment extends EventEmitter implements IEnvironment {
   opts: IEnvironmentOptions;
-  loaders: ILoader[ ];
-  private readonly extensions;
+  loaders: ILoader[];
+  private readonly extensions: Record<string, IExtension>;
   extensionsList: IExtension[];
   asyncFilters: string[];
-  private readonly tests: Record<string, any>;
+  private readonly tests: Record<string, ITest>;
   private readonly filters: Record<string, IFilterFunction>;
   globals;
 
@@ -117,7 +118,7 @@ export class Environment extends EmitterObj implements IEnvironment {
   }
 
 
-  addExtension(name, extension: IExtension): Environment {
+  addExtension(name: string, extension: IExtension): Environment {
     extension.__name = name;
     this.extensions[name] = extension;
     this.extensionsList.push(extension);
@@ -125,8 +126,8 @@ export class Environment extends EmitterObj implements IEnvironment {
   }
 
 
-  removeExtension(name): void {
-    const extension = this.getExtension(name);
+  removeExtension(name: string): void {
+    const extension: IExtension | undefined = this.getExtension(name);
     if (!extension) {
       return;
     }
@@ -136,12 +137,12 @@ export class Environment extends EmitterObj implements IEnvironment {
   }
 
 
-  getExtension(name) {
+  getExtension(name: string): IExtension | undefined {
     return this.extensions[name];
   }
 
 
-  hasExtension(name): boolean {
+  hasExtension(name: string): boolean {
     return !!this.extensions[name];
   }
 
@@ -152,7 +153,7 @@ export class Environment extends EmitterObj implements IEnvironment {
   }
 
 
-  getGlobal(name) {
+  getGlobal(name: string) {
     if (typeof this.globals[name] === 'undefined') {
       throw new Error('global not found: ' + name);
     }
@@ -171,7 +172,7 @@ export class Environment extends EmitterObj implements IEnvironment {
   }
 
 
-  getFilter(name) {
+  getFilter(name: string): IFilterFunction {
     if (!this.filters[name]) {
       throw new Error('filter not found: ' + name);
     }
@@ -179,13 +180,13 @@ export class Environment extends EmitterObj implements IEnvironment {
   }
 
 
-  addTest(name: string, func: Function): Environment {
+  addTest(name: string, func: ITest): Environment {
     this.tests[name] = func;
     return this;
   }
 
 
-  getTest(name: string): Function {
+  getTest(name: string): ITest {
     if (!this.tests[name]) {
       throw new Error('test not found: ' + name);
     }
@@ -203,7 +204,7 @@ export class Environment extends EmitterObj implements IEnvironment {
               eagerCompile?: boolean | ((param1, param2?) => void),
               parentName?: (param1, param2?) => void,
               ignoreMissing?: boolean,
-              cb?: (param1, param2?) => void) {
+              cb?: (param1, param2?) => void): ITemplateClass {
     const that: Environment = this;
     let tmpl = null;
     if (name && name.raw) {
@@ -248,7 +249,7 @@ export class Environment extends EmitterObj implements IEnvironment {
         return tmpl;
       }
     }
-    let syncResult: Template;
+    let syncResult: ITemplateClass;
 
     const createTemplate: (err, info) => void = (err, info): void => {
       if (!info && !err && !ignoreMissing) {
@@ -263,7 +264,7 @@ export class Environment extends EmitterObj implements IEnvironment {
           throw err;
         }
       }
-      let newTmpl: Template;
+      let newTmpl: ITemplateClass;
       if (!info) {
         newTmpl = new Template(noopTmplSrc, this, '', eagerCompile as boolean);
       } else {

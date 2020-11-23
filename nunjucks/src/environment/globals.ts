@@ -1,6 +1,6 @@
 'use strict';
 
-import { ICyclerObj } from './ICyclerObj';
+import { ICyclerObj } from '../interfaces/ICyclerObj';
 
 
 export function cycler<T>(items: T[]): ICyclerObj<T> {
