@@ -4,7 +4,14 @@ import { Done } from 'mocha';
   'use strict';
 
 
-  const util = require('./util.spec');
+  let util;
+
+  if (typeof require !== 'undefined') {
+    util = require('./util.spec');
+  } else {
+    util = window['util'];
+  }
+
   const equal = util.jinjaEqual;
   const finish = util.finish;
 

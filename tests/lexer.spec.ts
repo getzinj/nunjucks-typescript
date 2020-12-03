@@ -4,10 +4,23 @@ declare var nunjucks;
   'use strict';
 
 
-  const expect = require('expect.js');
-  const lib = require('../nunjucks/src/lib');
-  const Tokenizer = require('../nunjucks/src/compiler/lexer/tokenizer').Tokenizer;
-  const tokenType = require('../nunjucks/src/compiler/lexer/tokenType');
+  let expect;
+  let lib;
+  let Tokenizer;
+  let tokenType;
+
+  if (typeof require !== 'undefined') {
+    expect = require('expect.js');
+    lib = require('../nunjucks/src/lib');
+    Tokenizer = require('../nunjucks/src/compiler/lexer/tokenizer').Tokenizer;
+    tokenType = require('../nunjucks/src/compiler/lexer/tokenType');
+  } else {
+    expect = window['expect'];
+    lib = nunjucks.lib;
+    Tokenizer = nunjucks.Tokenizer;
+    tokenType = nunjucks.tokenType;
+  }
+
 
   function lex(src, opts?) {
     return new Tokenizer(src, opts);

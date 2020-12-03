@@ -1,7 +1,8 @@
 // Print the AST in a nicely formatted tree format for debugging
-import { NunjucksNode} from '../nodes/nunjucksNode';
+import { NunjucksNode } from '../nodes/nunjucksNode';
 import { CallExtension } from '../nodes/callExtension';
 import { NunjucksNodeList } from '../nodes/nunjucksNodeList';
+import { INunjucksNode } from '../nodes/INunjucksNode';
 
 
 // This is hacky, but this is just a debugging function anyway
@@ -18,7 +19,7 @@ function print(str: string, indent?: number, inline?: boolean): void {
 }
 
 
-export function printNodes(node: NunjucksNode, indent: number): void {
+export function printNodes(node: INunjucksNode, indent: number): void {
   indent = indent || 0;
 
   print(node.typename + ': ', indent);
@@ -46,7 +47,7 @@ export function printNodes(node: NunjucksNode, indent: number): void {
 
     node.iterFields((val, fieldName: string | number): void => {
       if (val instanceof NunjucksNode) {
-        nodes.push([fieldName, val]);
+        nodes.push([ fieldName, val ]);
       } else {
         props = props ?? {};
         props[fieldName] = val;
@@ -59,7 +60,7 @@ export function printNodes(node: NunjucksNode, indent: number): void {
       print('\n');
     }
 
-    nodes.forEach(([fieldName, n]): void => {
+    nodes.forEach(([ fieldName, n ]): void => {
       print(`[${fieldName}] =>`, indent + 2);
       printNodes(n, indent + 4);
     });

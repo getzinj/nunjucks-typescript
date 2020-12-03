@@ -5,10 +5,20 @@ declare var nunjucks;
 (function() {
   'use strict';
 
+  let expect;
+  let util;
+  let Environment;
 
-  const expect = require('expect.js');
-  const util = require('./util.spec');
-  const Environment = require('../nunjucks/src/environment/environment').Environment;
+  if (typeof require !== 'undefined') {
+    expect = require('expect.js');
+    util = require('./util.spec.js');
+    Environment = require('../nunjucks/src/environment').Environment;
+  } else {
+    expect = window['expect'];
+    util = window['util'];
+    Environment = nunjucks.Environment;
+  }
+
   const equal = util.equal;
   const render = util.render;
   const finish = util.finish;

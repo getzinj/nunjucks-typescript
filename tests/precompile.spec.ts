@@ -4,10 +4,21 @@ declare var nunjucks;
 ((() => {
   'use strict';
 
+  let expect;
+  let precompile;
+  let precompileString;
 
-  const expect = require('expect.js');
-  const precompile = require('../nunjucks/src/compiler/precompile/precompile').precompile;
-  const precompileString = require('../nunjucks/src/compiler/precompile/precompile').precompileString;
+  if (typeof require !== 'undefined') {
+    expect = require('expect.js');
+    precompile = require('../nunjucks/src/precompile/precompile').precompile;
+    precompileString = require('../nunjucks/src/precompile/precompile').precompileString;
+  } else {
+    expect = window['expect'];
+    precompile = nunjucks.precompile;
+    precompileString = nunjucks.precompileString;
+  }
+
+
   describe('precompile', () => {
     it('should return a string', () => {
       expect(precompileString('{{ test }}', { name: 'test.njk' })).to.be.an('string');

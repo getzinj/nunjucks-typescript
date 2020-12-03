@@ -6,11 +6,23 @@ declare var nunjucks;
 (function(): void {
   'use strict';
 
-  const expect = require('expect.js');
-  const util = require('./util.spec');
-  const Loader = require('../nunjucks/src/loaders/FileSystemLoader').FileSystemLoader;
-  const templatesPath = 'tests/templates';
-  const path = require('path');
+  let expect;
+  let util;
+  let Loader;
+  let templatesPath;
+  let path;
+
+  if (typeof require !== 'undefined') {
+    expect = require('expect.js');
+    util = require('./util.spec');
+    Loader = require('../nunjucks/src/loaders/FileSystemLoader').FileSystemLoader;
+    templatesPath = fixPath(path.join(__dirname, '\templates'), '');
+    path = require('path');
+  } else {
+    expect = window['expect'];
+    Loader = nunjucks.WebLoader;
+    templatesPath = '../templates';
+  }
 
 
   describe('api', function(): void {

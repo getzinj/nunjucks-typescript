@@ -6,12 +6,30 @@ declare var nunjucks;
 (((): void => {
   'use strict';
 
-  const expect = require('expect.js');
-  const Environment = require('../nunjucks/src/environment/environment').Environment;
-  const WebLoader = require('../nunjucks/src/loaders/web-loaders').WebLoader;
-  const FileSystemLoader = require('../nunjucks/src/loaders/FileSystemLoader').FileSystemLoader;
-  const NodeResolveLoader = require('../nunjucks/src/loaders/node-resolve-loader').NodeResolveLoader;
-  const templatesPath = 'tests/templates';
+  let expect;
+  let Environment;
+  let WebLoader;
+  let FileSystemLoader;
+  let NodeResolveLoader;
+  let templatesPath;
+
+
+  if (typeof require !== 'undefined') {
+    expect = require('expect.js');
+    Environment = require('../nunjucks/src/environment/environment').Environment;
+    WebLoader = require('../nunjucks/src/loaders/web-loaders').WebLoader;
+    FileSystemLoader = require('../nunjucks/src/loaders/FileSystemLoader').FileSystemLoader;
+    NodeResolveLoader = require('../nunjucks/src/loaders/node-resolve-loader').NodeResolveLoader;
+    templatesPath = 'tests/templates';
+  } else {
+    expect = window['expect'];
+    Environment = nunjucks.Environment;
+    WebLoader = nunjucks.WebLoader;
+    FileSystemLoader = nunjucks.FileSystemLoader;
+    NodeResolveLoader = nunjucks.NodeResolveLoader;
+    templatesPath = '../templates';
+  }
+
 
   describe('loader', (): void => {
     it('should allow a simple loader to be created', (): void => {

@@ -13,10 +13,17 @@ declare var nunjucks;
   let equal;
   let finish;
 
+  if (typeof require !== 'undefined') {
     expect = require('expect.js');
     util = require('./util.spec');
     lib = require('../nunjucks/src/lib');
     r = require('../nunjucks/src/runtime/runtime');
+  } else {
+    expect = window['expect'];
+    util = window['util'];
+    lib = nunjucks.lib;
+    r = nunjucks.runtime;
+  }
 
   render = util.render;
   equal = util.equal;

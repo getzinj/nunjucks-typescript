@@ -3,8 +3,13 @@
 
   let expect, util, render, equal;
 
+  if (typeof require !== 'undefined') {
     expect = require('expect.js');
     util = require('./util.spec');
+  } else {
+    expect = window['expect'];
+    util = window['util'];
+  }
 
   render = util.render;
   equal = util.equal;

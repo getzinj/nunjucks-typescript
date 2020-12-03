@@ -1,17 +1,16 @@
-import { Parser } from '../nunjucks/src/compiler/parser/parser';
+import { INunjucksNode } from '../nunjucks/src/nodes/INunjucksNode';
 import { NunjucksNode } from '../nunjucks/src/nodes/nunjucksNode';
 import { IExtension } from '../nunjucks/src/interfaces/IExtension';
 import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
-import { INunjucksNode } from '../nunjucks/src/nodes/INunjucksNode';
 
 
 (function(): void {
   'use strict';
 
-  let parser: Parser = new Parser();
-  let expect,
-      lib;
-
+  let Parser;
+  let parser;
+  let expect;
+  let lib;
   let Root;
   let Group;
   let Or;
@@ -42,8 +41,12 @@ import { INunjucksNode } from '../nunjucks/src/nodes/INunjucksNode';
   let ArrayNode;
   let Dict;
 
+
+
+  if (typeof require !== 'undefined') {
     expect = require('expect.js');
     lib = require('../nunjucks/src/lib');
+    Parser = require('../nunjucks/src/compiler/parser/parser').Parser;
     Root = require('../nunjucks/src/nodes/root').Root;
     Group = require('../nunjucks/src/nodes/group').Group;
     Or = require('../nunjucks/src/nodes/operators/or').Or;
@@ -73,6 +76,42 @@ import { INunjucksNode } from '../nunjucks/src/nodes/INunjucksNode';
     NunjucksSymbol = require('../nunjucks/src/nodes/nunjucksSymbol').NunjucksSymbol;
     ArrayNode = require('../nunjucks/src/nodes/arrayNode').ArrayNode;
     Dict = require('../nunjucks/src/nodes/dict').Dict;
+  } else {
+    expect = window['expect'];
+    lib = nunjucks.lib;
+    Parser = nunjucks.Parser;
+    Root = nunjucks.Root;
+    Group = nunjucks.Group;
+    Or = nunjucks.Or;
+    Import = nunjucks.Import;
+    In = nunjucks.In;
+    Macro = nunjucks.Macro;
+    Is = nunjucks.Is;
+    Case = nunjucks.Case;
+    Concat = nunjucks.Concat;
+    FunCall = nunjucks.FunCall;
+    Output = nunjucks.Output;
+    Literal = nunjucks.Literal;
+    Compare = nunjucks.Compare;
+    Pair = nunjucks.Pair;
+    CallExtension = nunjucks.CallExtension;
+    CompareOperand = nunjucks.CompareOperand;
+    For = nunjucks.For;
+    FromImport = nunjucks.FromImport;
+    Not = nunjucks.Not;
+    TemplateData = nunjucks.TemplateData;
+    Switch = nunjucks.Switch;
+    Filter = nunjucks.Filter;
+    Caller = nunjucks.Caller;
+    And = nunjucks.And;
+    KeywordArgs = nunjucks.KeywordArgs;
+    If = nunjucks.If;
+    NunjucksSymbol = nunjucks.NunjucksSymbol;
+    ArrayNode = nunjucks.ArrayNode;
+    Dict = nunjucks.Dict;
+  }
+  parser = new Parser();
+
 
   function _isAST(node1: INunjucksNode, node2: INunjucksNode): void {
     // Compare ASTs

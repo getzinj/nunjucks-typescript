@@ -1,23 +1,49 @@
-import { Environment } from '../nunjucks/src/environment/environment';
-import { Template } from '../nunjucks/src/environment/template';
-import { Context } from '../nunjucks/src/environment/context';
 import { ILoader } from '../nunjucks/src/interfaces/ILoader';
 import { IEnvironment } from '../nunjucks/src/interfaces/IEnvironment';
 import { IContext } from '../nunjucks/src/interfaces/IContext';
 import { IExtensionOption } from '../nunjucks/src/interfaces/IExtensionOption';
+import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
 
 
 
 ((() => {
   /* eslint-disable vars-on-top */
+  let nunjucks;
+  let nunjucksFull;
   let isSlim = false;
+  let Environment;
+  let Template;
+  let Loader;
+  let precompileString;
+  let templatesPath;
+  let expect;
 
-  let nunjucksFull = require('../nunjucks');
-  let nunjucks = nunjucksFull;
-  let Loader = nunjucks.FileSystemLoader;
-  let templatesPath = 'tests/templates';
-  let expect = require('expect.js');
-  let precompileString = nunjucksFull.precompileString;
+
+
+  if (typeof window === 'undefined') {
+    nunjucks = nunjucksFull = require('../nunjucks/index.js');
+    Loader = nunjucks.FileSystemLoader;
+    templatesPath = 'tests/templates';
+    expect = require('expect.js');
+  } else {
+    nunjucks = window.nunjucks;
+    if (window['nunjucksFull']) {
+      isSlim = true;
+      nunjucksFull = window['nunjucksFull'];
+      // These must be the same for instanceof checks to succeed
+      nunjucksFull.runtime.SafeString.prototype = nunjucks.runtime.SafeString.prototype;
+    } else {
+      nunjucksFull = window['nunjucksFull'] = nunjucks;
+    }
+    Loader = nunjucksFull.WebLoader;
+    templatesPath = '../templates';
+    expect = window['expect'];
+  }
+
+  precompileString = nunjucksFull.precompileString;
+  Environment = nunjucks.Environment;
+  Template = nunjucks.Template;
+
 
   let numAsyncs: number;
   let doneHandler: (arg?) => void;
@@ -255,6 +281,7 @@ import { IExtensionOption } from '../nunjucks/src/interfaces/IExtensionOption';
   }
 
 
+  if (typeof window === 'undefined') {
     module.exports.render = render;
     module.exports.equal = equal;
     module.exports.jinjaEqual = jinjaEqual;
@@ -262,4 +289,15 @@ import { IExtensionOption } from '../nunjucks/src/interfaces/IExtensionOption';
     module.exports.normEOL = normEOL;
     module.exports.isSlim = isSlim;
     module.exports.Loader = Loader;
+  } else {
+    window['util'] = {
+      render: render,
+      equal: equal,
+      jinjaEqual: jinjaEqual,
+      finish: finish,
+      normEOL: normEOL,
+      isSlim: isSlim,
+      Loader: Loader,
+    };
+  }
 })());

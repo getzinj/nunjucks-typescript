@@ -2,11 +2,24 @@
   'use strict';
 
 
-  const expect = require('expect.js');
-  const nunjucks = require('../nunjucks');
-  const fs = require('fs-extra');
-  const path = require('path');
-  const os = require('os');
+  let expect;
+  let nunjucks;
+  let fs;
+  let path;
+  let os;
+
+
+  if (typeof require !== 'undefined') {
+    expect = require('expect.js');
+    nunjucks = require('../nunjucks/index');
+    fs = require('fs-extra');
+    path = require('path');
+    os = require('os');
+  } else {
+    expect = window['expect'];
+    nunjucks = window['nunjucks'];
+  }
+
 
   function rmdir(dirPath) {
     fs.emptyDirSync(dirPath);

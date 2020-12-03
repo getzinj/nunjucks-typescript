@@ -12,9 +12,19 @@ import path from 'path';
 (((): void => {
   'use strict';
 
-  const expect = require('expect.js');
-  const util = require('./util.spec');
-  const fs = require('fs');
+  let expect;
+  let util;
+  let fs;
+
+  if (typeof require !== 'undefined') {
+    expect = require('expect.js');
+    util = require('./util');
+    fs = require('fs');
+  } else {
+    expect = window['expect'];
+    util = window['util'];
+  }
+
   const render = util.render;
   const equal = util.equal;
   const finish = util.finish;
