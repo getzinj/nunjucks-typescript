@@ -1,4 +1,5 @@
-import { NunjucksNode, NunjucksNodeList } from './nunjucksNode';
+import { NunjucksNode} from './nunjucksNode';
+import { NunjucksNodeList } from './nunjucksNodeList';
 
 
 
@@ -17,6 +18,6 @@ export class Case extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['cond', 'body'];
+    return [ 'cond', 'body' ];
   }
 }

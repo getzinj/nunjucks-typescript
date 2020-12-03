@@ -16,6 +16,6 @@ export class Import extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['template', 'target', 'withContext'];
+    return [ 'template', 'target', 'withContext' ];
   }
 }

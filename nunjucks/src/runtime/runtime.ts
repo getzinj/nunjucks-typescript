@@ -1,20 +1,18 @@
 'use strict';
 
 
-import { ArrayLike, escape, asyncFor, isArray, asyncIter, keys as keys_, inOperator, keys } from '../lib';
+import { ArrayLike, escape, asyncFor, isArray, asyncIter, keys as keys_ } from '../lib';
 import { Frame } from './frame';
 import { SafeString } from './SafeString';
 import { TemplateError } from '../templateError';
-import { NunjucksSymbol } from '../nodes/nunjucksSymbol';
 import { IHasKeywords } from '../interfaces/IHasKeywords';
 import { Context } from '../environment/context';
-
 export { Frame } from './frame';
-export { SafeString} from './SafeString';
-export { asyncFor, isArray, asyncIter, keys as keys_, inOperator, keys } from '../lib';
+export { SafeString } from './SafeString';
 export { TemplateError } from '../templateError';
 export { NunjucksSymbol } from '../nodes/nunjucksSymbol';
 
+export { asyncFor, isArray, asyncIter, keys as keys_, inOperator, keys } from '../lib';
 
 export const supportsIterators: boolean = (
     typeof Symbol === 'function' && Symbol['iterator'] && typeof Array.from === 'function'
@@ -144,18 +142,19 @@ export function ensureDefined<T>(val: T | undefined, lineno: number, colno: numb
 }
 
 
-export var memberLookup: <O, K extends keyof O>(obj: O, val: K, autoescape?: boolean) => any  = <O, K extends keyof O>(obj: O, val: K): O[K] | ((...args) => any) | undefined => {
-  if (obj === undefined || obj === null) {
-    return undefined;
-  } else {
-    const element: O[K] = obj[val];
-    if (typeof element === 'function') {
-        return (...args) => element.apply(obj, args);
-      } else {
-        return element;
-      }
-  }
-}
+export let memberLookup: <O, K extends keyof O>(obj: O, val: K, autoescape?: boolean) => any
+    = <O, K extends keyof O>(obj: O, val: K): O[K] | ((...args) => any) | undefined => {
+        if (obj === undefined || obj === null) {
+          return undefined;
+        } else {
+          const element: O[K] = obj[val];
+          if (typeof element === 'function') {
+              return (...args) => element.apply(obj, args);
+            } else {
+              return element;
+            }
+        }
+      };
 
 
 export function callWrap<T>(obj: (... args) => T, name: string, context, args): T {
@@ -169,16 +168,18 @@ export function callWrap<T>(obj: (... args) => T, name: string, context, args): 
 }
 
 
-export var contextOrFrameLookup: <T>(context: Context, frame: Frame, name: string) => T  = function contextOrFrameLookup<T>(context: Context, frame: Frame, name: string): T {
-  const val: T = frame.lookup<T>(name);
-  return (val === undefined)
-      ? context.lookup(name)
-      : val
-  ;
-};
+export let contextOrFrameLookup: <T>(context: Context, frame: Frame, name: string) => T
+    = function contextOrFrameLookup<T>(context: Context, frame: Frame, name: string): T {
+        const val: T = frame.lookup<T>(name);
+        return (val === undefined)
+            ? context.lookup(name)
+            : val;
+      };
 
 
-export function handleError<T, V extends T & { lineno }>(error: T | V, lineno: number, colno: number): V | TemplateError {
+export function handleError<T, V extends T & { lineno }>(error: T | V,
+                                                         lineno: number,
+                                                         colno: number): V | TemplateError {
   if ('lineno' in error) { // TODO: Probably a TemplateError but can we assume that's what the author originally intended?
     return error;
   } else {
@@ -208,7 +209,7 @@ export function asyncEach<T>(arr: T[], dimen: number, iter: (...args) => void, c
       }
     }, cb);
   } else {
-    asyncFor(arr, function iterCallback(key: string | number, val, i: number, len: number, next: (i?: number) => void): void {
+    asyncFor(arr, (key: string | number, val, i: number, len: number, next: (i?: number) => void): void => {
       iter(key, val, i, len, next);
     }, cb);
   }

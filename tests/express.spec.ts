@@ -2,13 +2,13 @@
 
 import { Done } from 'mocha';
 
-const path = require('path');
-const express = require('express');
-const expect = require('expect.js');
-const request = require('supertest');
 const nunjucks = require('../nunjucks');
+var path = require('path');
+var express = require('express');
+var expect = require('expect.js');
+var request = require('supertest');
 
-const VIEWS = path.join(__dirname, '../samples/express/views');
+var VIEWS = path.join(__dirname, '../samples/express/views');
 
 
 describe('express', () => {

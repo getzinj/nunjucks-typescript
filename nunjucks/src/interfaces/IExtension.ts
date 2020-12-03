@@ -1,7 +1,7 @@
 import { IParser } from './IParser';
-import { CallExtension } from '../nodes/nunjucksNode';
 import { IPreprocessor } from './IPreprocessor';
 import { IContext } from './IContext';
+import { CallExtension } from '../nodes/callExtension';
 
 
 

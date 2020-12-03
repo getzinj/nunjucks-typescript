@@ -2,7 +2,7 @@ export class SafeString extends String {
   val: string;
   length_: number;
 
-  get length(): number { return this.length_; };
+  get length(): number { return this.length_; }
   set length(value: number) { this.length_ = value; }
 
 

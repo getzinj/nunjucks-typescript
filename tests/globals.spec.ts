@@ -1,5 +1,6 @@
 import { Done } from 'mocha';
 
+declare var nunjucks;
 
 (function() {
   'use strict';

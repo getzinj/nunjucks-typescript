@@ -20,6 +20,6 @@ export class Slice extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['start', 'stop', 'step'];
+    return [ 'start', 'stop', 'step' ];
   }
 }

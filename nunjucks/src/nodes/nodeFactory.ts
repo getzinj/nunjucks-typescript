@@ -1,4 +1,4 @@
-import { NunjucksNode, NunjucksNodeList, CallExtension } from './nunjucksNode';
+import { NunjucksNode} from './nunjucksNode';
 import { Root } from './root';
 import { Value } from './value';
 import { Literal } from './literal';
@@ -52,6 +52,8 @@ import { Pos } from './operators/pos';
 import { Compare } from './compare';
 import { CompareOperand } from './compareOperand';
 import { CallExtensionAsync } from './callExtensionAsync';
+import { CallExtension } from './callExtension';
+import { NunjucksNodeList } from './nunjucksNodeList';
 
 
 

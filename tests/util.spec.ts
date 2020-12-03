@@ -181,7 +181,7 @@ import { IExtensionOption } from '../nunjucks/src/interfaces/IExtensionOption';
   }
 
 
-  function loadTemplate(str: string, e: IEnvironment, ctx: Record<string, any>, loader: ILoader): { t: Template; ctx: any } {
+  function loadTemplate(str: string, e: IEnvironment, ctx: Record<string, any>, loader: ILoader): { t: ITemplate; ctx: IContext } {
     let tmplName: string;
     if (isSlim) {
       tmplName = randomTemplateName();
@@ -195,7 +195,7 @@ import { IExtensionOption } from '../nunjucks/src/interfaces/IExtensionOption';
 
     ctx = ctx || {};
 
-    let t: Template;
+    let t: ITemplate;
 
     if (isSlim) {
       const tmplSource = loader.getSource(tmplName);
@@ -207,7 +207,7 @@ import { IExtensionOption } from '../nunjucks/src/interfaces/IExtensionOption';
   }
 
 
-  function doRender(cb, t: Template, ctx: Context, opts): string | undefined {
+  function doRender(cb, t: ITemplate, ctx: IContext, opts): string | undefined {
     if (cb) {
       numAsyncs++;
       t.render(ctx, function(err, res): void {
@@ -240,7 +240,7 @@ import { IExtensionOption } from '../nunjucks/src/interfaces/IExtensionOption';
 
 
 // eslint-disable-next-line consistent-return
-  function render(str: string, ctx: Context, opts, env, cb?) {
+  function render(str: string, ctx: IContext, opts, env, cb?) {
     const environmentConfig: { ctx; cb; opts; loader: ILoader; e: IEnvironment } = configureEnvironment(ctx, cb, opts, env);
     ctx = environmentConfig.ctx;
 
@@ -248,7 +248,7 @@ import { IExtensionOption } from '../nunjucks/src/interfaces/IExtensionOption';
     loadAsyncFilters(environmentConfig.opts, environmentConfig.e);
     loadExtensions(environmentConfig.opts, environmentConfig.e);
 
-    const __ret: { t: Template; ctx: Context } = loadTemplate(str, environmentConfig.e, ctx, environmentConfig.loader);
+    const __ret: { t: ITemplate; ctx: IContext } = loadTemplate(str, environmentConfig.e, ctx, environmentConfig.loader);
     ctx = __ret.ctx;
 
     return doRender(environmentConfig.cb, __ret.t, ctx, environmentConfig.opts);

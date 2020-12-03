@@ -33,7 +33,7 @@ export class Tokenizer implements ITokenizer {
   public get currentLine(): string { return this.currentLine_; }
 
 
-  constructor(str: string, opts?: ITokenizerOptions) {
+  constructor(str: string, opts: ITokenizerOptions = { }) {
     this.str = str;
     this.index = 0;
     this.len = str.length;
@@ -41,8 +41,6 @@ export class Tokenizer implements ITokenizer {
     this.colno = 0;
 
     this.in_code = false;
-
-    opts = opts ?? {};
 
     const tags: ITags = opts.tags || {};
     this.tags = {
@@ -110,38 +108,7 @@ export class Tokenizer implements ITokenizer {
         this.in_code = false;
         return new Token(TokenType.TOKEN_VARIABLE_END, tok, lineno, colno);
       } else if (cur === 'r' && this.str.charAt(this.index + 1) === '/') {
-        // Skip past 'r/'.
-        this.forwardN(2);
-
-        // Extract until the end of the regex -- / ends it, \/ does not.
-        let regexBody: string = '';
-        while (!this.isFinished()) {
-          if (this.current() === '/' && this.previous() !== '\\') {
-            this.forward();
-            break;
-          } else {
-            regexBody += this.current();
-            this.forward();
-          }
-        }
-
-        // Check for flags.
-        const POSSIBLE_FLAGS: string[] = Tokenizer.regexFlags;
-        let regexFlags: string = '';
-        while (!this.isFinished()) {
-          const isCurrentAFlag: boolean = POSSIBLE_FLAGS.indexOf(this.current()) !== -1;
-          if (isCurrentAFlag) {
-            regexFlags += this.current();
-            this.forward();
-          } else {
-            break;
-          }
-        }
-
-        return new Token<IRegexTokenValue>(TokenType.TOKEN_REGEX, {
-          body: regexBody,
-          flags: regexFlags
-        }, lineno, colno);
+        return this.getRegex(lineno, colno);
       } else if (this.delimChars.indexOf(cur) !== -1) {
         // We've hit a delimiter (a special char like a bracket)
         this.forward();
@@ -202,13 +169,7 @@ export class Tokenizer implements ITokenizer {
         tok = this._extractUntil(this.whitespaceChars + this.delimChars);
 
         if (tok.match(/^[-+]?[0-9]+$/)) {
-          if (this.current() === '.') {
-            this.forward();
-            const dec: string = this._extract(this.intChars);
-            return new Token(TokenType.TOKEN_FLOAT, tok + '.' + dec, lineno, colno);
-          } else {
-            return new Token(TokenType.TOKEN_INT, tok, lineno, colno);
-          }
+          return this.getNumber(tok, lineno, colno);
         } else if (tok.match(/^(true|false)$/)) {
           return new Token(TokenType.TOKEN_BOOLEAN, tok, lineno, colno);
         } else if (tok === 'none') {
@@ -311,6 +272,53 @@ export class Tokenizer implements ITokenizer {
   }
 
 
+  private getNumber(tok: string, lineno: number, colno: number): Token<any> {
+    if (this.current() === '.') {
+      this.forward();
+      const dec: string = this._extract(this.intChars);
+      return new Token(TokenType.TOKEN_FLOAT, tok + '.' + dec, lineno, colno);
+    } else {
+      return new Token(TokenType.TOKEN_INT, tok, lineno, colno);
+    }
+  }
+
+
+  private getRegex(lineno: number, colno: number): Token<IRegexTokenValue> {
+    // Skip past 'r/'.
+    this.forwardN(2);
+
+    // Extract until the end of the regex -- / ends it, \/ does not.
+    let regexBody: string = '';
+    while (!this.isFinished()) {
+      if (this.current() === '/' && this.previous() !== '\\') {
+        this.forward();
+        break;
+      } else {
+        regexBody += this.current();
+        this.forward();
+      }
+    }
+
+    // Check for flags.
+    const POSSIBLE_FLAGS: string[] = Tokenizer.regexFlags;
+    let regexFlags: string = '';
+    while (!this.isFinished()) {
+      const isCurrentAFlag: boolean = POSSIBLE_FLAGS.indexOf(this.current()) !== -1;
+      if (isCurrentAFlag) {
+        regexFlags += this.current();
+        this.forward();
+      } else {
+        break;
+      }
+    }
+
+    return new Token<IRegexTokenValue>(TokenType.TOKEN_REGEX, {
+      body: regexBody,
+      flags: regexFlags
+    }, lineno, colno);
+  }
+
+  
   _parseString(delimiter: string): string {
     this.forward();
 

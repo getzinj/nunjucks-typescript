@@ -1,6 +1,6 @@
 import { Filter } from './filter';
-import { NunjucksNodeList } from './nunjucksNode';
 import { NunjucksSymbol } from './nunjucksSymbol';
+import { NunjucksNodeList } from './nunjucksNodeList';
 
 
 
@@ -16,6 +16,6 @@ export class FilterAsync extends Filter {
 
 
   get fields(): string[] {
-    return ['name', 'args', 'symbol'];
+    return [ 'name', 'args', 'symbol' ];
   }
 }

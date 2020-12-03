@@ -17,6 +17,6 @@ export class Switch extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['expr', 'cases', 'default'];
+    return [ 'expr', 'cases', 'default' ];
   }
 }

@@ -1,4 +1,5 @@
-import { NunjucksNode, NunjucksNodeList } from './nunjucksNode';
+import { NunjucksNode} from './nunjucksNode';
+import { NunjucksNodeList } from './nunjucksNodeList';
 
 
 
@@ -16,6 +17,6 @@ export class FromImport extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['template', 'names', 'withContext'];
+    return [ 'template', 'names', 'withContext' ];
   }
 }

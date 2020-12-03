@@ -15,6 +15,7 @@ module.exports = {
   },
   rules: {
     'array-bracket-spacing': [ 'error', 'always' ],
+    'dot-notation': [ 'off' ],
     // The one assertion of personal preference: no spaces before parentheses
     // of anonymous functions
     'space-before-function-paren': [ 'error', {
@@ -25,7 +26,7 @@ module.exports = {
 
     'space-in-parens': [ 'off' ],
     indent: [ 'off' ],
-    'linebreak-style': [ 'error', 'windows' ],
+    'linebreak-style': [ 'off' ],
     // Temporarily disabled rules
     //
     // no-use-before-define is a good rule, but it would make the diff for
@@ -41,7 +42,7 @@ module.exports = {
     'class-methods-use-this': 'off',
     'function-paren-newline': 'off',
     'no-plusplus': 'off',
-    'object-curly-newline': [ 'error', {
+    'object-curly-newline': [ 'off', {
       ObjectExpression: {
         multiline: true,
         minProperties: 3
@@ -62,7 +63,9 @@ module.exports = {
       comments: 180,
       tabWidth: 4
     } ],
+    'no-shadow': 'off',
     'no-multi-assign': 'error',
+    'no-empty-function': [ 'warn', { allow: [ 'constructors' ] } ],
     'no-else-return': 'off',
     'no-redeclare': [ 'warn' ],
     // While technically useless from the point of view of the regex parser,

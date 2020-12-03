@@ -1,5 +1,7 @@
 // Print the AST in a nicely formatted tree format for debugging
-import { NunjucksNode, NunjucksNodeList, CallExtension } from '../nodes/nunjucksNode';
+import { NunjucksNode} from '../nodes/nunjucksNode';
+import { CallExtension } from '../nodes/callExtension';
+import { NunjucksNodeList } from '../nodes/nunjucksNodeList';
 
 
 // This is hacky, but this is just a debugging function anyway

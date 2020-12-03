@@ -1,6 +1,8 @@
-import { NunjucksNode, NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNode';
 import { Parser } from '../nunjucks/src/compiler/parser/parser';
+import { NunjucksNode } from '../nunjucks/src/nodes/nunjucksNode';
 import { IExtension } from '../nunjucks/src/interfaces/IExtension';
+import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
+import { INunjucksNode } from '../nunjucks/src/nodes/INunjucksNode';
 
 
 (function(): void {
@@ -56,7 +58,7 @@ import { IExtension } from '../nunjucks/src/interfaces/IExtension';
     Literal = require('../nunjucks/src/nodes/literal').Literal;
     Compare = require('../nunjucks/src/nodes/compare').Compare;
     Pair = require('../nunjucks/src/nodes/pair').Pair;
-    CallExtension = require('../nunjucks/src/nodes/nunjucksNode').CallExtension;
+    CallExtension = require('../nunjucks/src/nodes/callExtension').CallExtension;
     CompareOperand = require('../nunjucks/src/nodes/compareOperand').CompareOperand;
     For = require('../nunjucks/src/nodes/for').For;
     FromImport = require('../nunjucks/src/nodes/fromImport').FromImport;
@@ -72,7 +74,7 @@ import { IExtension } from '../nunjucks/src/interfaces/IExtension';
     ArrayNode = require('../nunjucks/src/nodes/arrayNode').ArrayNode;
     Dict = require('../nunjucks/src/nodes/dict').Dict;
 
-  function _isAST(node1: NunjucksNode, node2: NunjucksNode): void {
+  function _isAST(node1: INunjucksNode, node2: INunjucksNode): void {
     // Compare ASTs
     // TODO: Clean this up (seriously, really)
     /* eslint-disable vars-on-top */
@@ -1043,7 +1045,7 @@ import { IExtension } from '../nunjucks/src/interfaces/IExtension';
         this.tags = [ 'testblocktag' ];
         this._name = 'testblocktagExtension';
 
-        this.parse = function(parser: Parser, nodes) {
+        this.parse = function(parser, nodes) {
           parser.parserTokenStream.peekToken();
           parser.advanceAfterBlockEnd();
 

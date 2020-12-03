@@ -17,6 +17,6 @@ export class For extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['arr', 'name', 'body', 'else_'];
+    return [ 'arr', 'name', 'body', 'else_' ];
   }
 }

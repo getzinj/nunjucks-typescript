@@ -15,6 +15,6 @@ export class Self extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['blockName', 'symbol'];
+    return [ 'blockName', 'symbol' ];
   }
 }

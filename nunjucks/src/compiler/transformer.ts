@@ -15,10 +15,12 @@ import { Output } from '../nodes/output';
 import { If } from '../nodes/if';
 import { AsyncEach } from '../nodes/asyncEach';
 import { CallExtensionAsync } from '../nodes/callExtensionAsync';
-import { NunjucksNode, NunjucksNodeList, CallExtension } from '../nodes/nunjucksNode';
+import { NunjucksNode} from '../nodes/nunjucksNode';
 import { Root } from '../nodes/root';
 import { Self } from '../nodes/self';
 import { NodeFactory } from '../nodes/nodeFactory';
+import { CallExtension } from '../nodes/callExtension';
+import { NunjucksNodeList } from '../nodes/nunjucksNodeList';
 
 
 export class Transformer {

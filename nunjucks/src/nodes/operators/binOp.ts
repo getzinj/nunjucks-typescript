@@ -12,6 +12,6 @@ export class BinOp extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['left', 'right'];
+    return [ 'left', 'right' ];
   }
 }

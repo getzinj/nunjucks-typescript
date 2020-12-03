@@ -15,6 +15,6 @@ export class Include extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['template', 'ignoreMissing'];
+    return [ 'template', 'ignoreMissing' ];
   }
 }

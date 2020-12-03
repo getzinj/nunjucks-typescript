@@ -1,5 +1,5 @@
 import { repeat } from '../../lib';
-import { NunjucksNode, NunjucksNodeList, CallExtension } from '../../nodes/nunjucksNode';
+import { NunjucksNode} from '../../nodes/nunjucksNode';
 import { Frame } from '../../runtime/frame';
 import { Literal } from '../../nodes/literal';
 import { NunjucksSymbol } from '../../nodes/nunjucksSymbol';
@@ -49,6 +49,8 @@ import { Switch } from '../../nodes/switch';
 import { Case } from '../../nodes/case';
 import { KeywordArgs } from '../../nodes/keywordArgs';
 import { CallExtensionAsync } from '../../nodes/callExtensionAsync';
+import { CallExtension } from '../../nodes/callExtension';
+import { NunjucksNodeList } from '../../nodes/nunjucksNodeList';
 
 
 
@@ -356,8 +358,11 @@ export class CodeGenerator {
   }
 
 
-  public readonly compileNunjucksSymbol: (node: NunjucksSymbol, frame: Frame) => void = this.compileSymbol; // Alias for TypeScript project renaming of Symbol -> NunjucksSymbol
-  public readonly compileArrayNode: (node: ArrayNode, frame: Frame) => void = this.compileArray;  // Alias for TypeScript project renaming of Array -> ArrayNode
+  // Alias for TypeScript project renaming of Symbol -> NunjucksSymbol
+  public readonly compileNunjucksSymbol: (node: NunjucksSymbol, frame: Frame) => void = this.compileSymbol;
+
+  // Alias for TypeScript project renaming of Array -> ArrayNode
+  public readonly compileArrayNode: (node: ArrayNode, frame: Frame) => void = this.compileArray;
 
 
   private compileGroup(node: Group, frame: Frame): void {
@@ -381,11 +386,8 @@ export class CodeGenerator {
 
     if (key instanceof NunjucksSymbol) {
       key = new Literal(key.lineno, key.colno, key.value);
-    } else if (!(key instanceof Literal &&
-        typeof key.value === 'string')) {
-      this.fail('compilePair: Dict keys must be strings or names',
-          key.lineno,
-          key.colno);
+    } else if (!(key instanceof Literal && typeof key.value === 'string')) {
+      this.fail('compilePair: Dict keys must be strings or names', key.lineno, key.colno);
     }
 
     this.compile(key, frame);
@@ -744,13 +746,13 @@ export class CodeGenerator {
 
   private _emitLoopBindings(node, arr: string, i: string, len: string): void {
     const bindings: ({ val; name: string })[] = [
-      {name: 'index', val: `${i} + 1`},
-      {name: 'index0', val: i},
-      {name: 'revindex', val: `${len} - ${i}`},
-      {name: 'revindex0', val: `${len} - ${i} - 1`},
-      {name: 'first', val: `${i} === 0`},
-      {name: 'last', val: `${i} === ${len} - 1`},
-      {name: 'length', val: len},
+      { name: 'index', val: `${i} + 1` },
+      { name: 'index0', val: i },
+      { name: 'revindex', val: `${len} - ${i}` },
+      { name: 'revindex0', val: `${len} - ${i} - 1` },
+      { name: 'first', val: `${i} === 0` },
+      { name: 'last', val: `${i} === ${len} - 1` },
+      { name: 'length', val: len },
     ];
 
     bindings.forEach((b: { val; name: string }): void => {
@@ -791,7 +793,7 @@ export class CodeGenerator {
       this._emitLine(`for(${i}=0; ${i} < ${arr}.length; ${i}++) {`);
 
       // Bind each declared var
-      node.name.children.forEach((child, u): void => {
+      node.name.children.forEach((child: NunjucksNode, u: string | number): void => {
         const tid: string = this._tmpid();
         this._emitLine(`var ${tid} = ${arr}[${i}][${u}];`);
         this._emitLine(`frame.set("${child}", ${arr}[${i}][${u}]);`);
@@ -809,7 +811,7 @@ export class CodeGenerator {
       {
         this.currentIndentLevel++;
         // Iterate over the key/values of an object
-        const [key, val] = node.name.children;
+        const [ key, val ] = node.name.children;
         const k: string = this._tmpid();
         const v: string = this._tmpid();
         frame.set(key.value, k);
@@ -875,7 +877,7 @@ export class CodeGenerator {
     const i: string = this._tmpid();
     const len: string = this._tmpid();
     const arr: string = this._tmpid();
-    const asyncMethod: string = parallel ? 'asyncAll' : 'asyncEach';
+    const asyncMethod: 'asyncAll' | 'asyncEach' = parallel ? 'asyncAll' : 'asyncEach';
     frame = frame.push();
 
     this._emitLine('frame = frame.push();');
@@ -886,7 +888,7 @@ export class CodeGenerator {
 
     if (node.name instanceof ArrayNode) {
       const arrayLen: number = node.name.children.length;
-      this._emit(`runtime.${asyncMethod}(${arr}, ${arrayLen}, function(`);
+      this._emit(`runtime.${ asyncMethod }(${ arr }, ${ arrayLen }, function(`);
 
       node.name.children.forEach((name): void => {
         this._emit(`${name.value},`);
@@ -953,14 +955,14 @@ export class CodeGenerator {
   }
 
 
-  private _compileMacro(node: Macro, frame?): string {
+  private _compileMacro(node: Macro, frame?: Frame): string {
     const args = [];
     let kwargs = null;
     const funcId: string = 'macro_' + this._tmpid();
     const keepFrame: boolean = (frame !== undefined);
 
     // Type check the definition of the args
-    node.args.children.forEach((arg: NunjucksNode, i: number): void => {
+    node.args.children.forEach((arg: Dict | NunjucksSymbol, i: number): void => {
       if (i === node.args.children.length - 1 && arg instanceof Dict) {
         kwargs = arg;
       } else {
@@ -969,7 +971,7 @@ export class CodeGenerator {
       }
     });
 
-    const realNames: string[] = [...args.map((n): string => `l_${n.value}`), 'kwargs'];
+    const realNames: string[] = [ ...args.map((n): string => `l_${n.value}`), 'kwargs' ];
 
     // Quoted argument names
     const argNames: string[] = args.map((n): string => `"${n.value}"`);
@@ -979,12 +981,7 @@ export class CodeGenerator {
     // arguments so support setting positional args with keywords
     // args and passing keyword args as positional args
     // (essentially default values). See runtime.js.
-    let currFrame: Frame;
-    if (keepFrame) {
-      currFrame = frame.push(true);
-    } else {
-      currFrame = new Frame();
-    }
+    let currFrame: Frame = keepFrame ? frame.push(true) : new Frame();
     this._emitLines(
         `var ${funcId} = runtime.makeMacro(`,
         `[${argNames.join(', ')}], `,
@@ -992,7 +989,7 @@ export class CodeGenerator {
         `function (${realNames.join(', ')}) {`,
         'var callerFrame = frame;',
         'frame = ' + ((keepFrame) ? 'frame.push(true);' : 'new runtime.Frame();'),
-        'kwargs = kwargs || {};',
+        'kwargs = kwargs || { };',
         'if (Object.prototype.hasOwnProperty.call(kwargs, "caller")) {',
         'frame.set("caller", kwargs.caller); }');
 
@@ -1399,57 +1396,57 @@ export class CodeGenerator {
 
 
   private readonly lookupTable: Readonly<Record< string, (node, frame: Frame, async?: boolean) => void>> = {
-    'Add': this.compileAdd,
-    'And': this.compileAnd,
-    'ArrayNode': this.compileArrayNode,
-    'AsyncAll': this.compileAsyncAll,
-    'AsyncEach': this.compileAsyncEach,
-    'Block': this.compileBlock,
-    'Caller': this.compileCaller,
-    'CallExtension': this.compileCallExtension,
-    'CallExtensionAsync': this.compileCallExtensionAsync,
-    'Capture': this.compileCapture,
-    'Compare': this.compileCompare,
-    'Concat': this.compileConcat,
-    'Dict': this.compileDict,
-    'Div': this.compileDiv,
-    'Extends': this.compileExtends,
-    'Filter': this.compileFilter,
-    'FilterAsync': this.compileFilterAsync,
-    'FloorDiv': this.compileFloorDiv,
-    'For': this.compileFor,
-    'FromImport': this.compileFromImport,
-    'FunCall': this.compileFunCall,
-    'Group': this.compileGroup,
-    'If': this.compileIf,
-    'IfAsync': this.compileIfAsync,
-    'Import': this.compileImport,
-    'In': this.compileIn,
-    'InlineIf': this.compileInlineIf,
-    'Include': this.compileInclude,
-    'Is': this.compileIs,
-    'KeywordArgs': this.compileKeywordArgs,
-    'Literal': this.compileLiteral,
-    'LookupVal': this.compileLookupVal,
-    'Macro': this.compileMacro,
-    'Mod': this.compileMod,
-    'Mul': this.compileMul,
-    'Neg': this.compileNeg,
-    'Not': this.compileNot,
-    'Or': this.compileOr,
-    'Output': this.compileOutput,
-    'Pair': this.compilePair,
-    'Pos': this.compilePos,
-    'Pow': this.compilePow,
-    'NunjucksNodeList': this.compileNodeList,
-    'NunjucksSymbol': this.compileNunjucksSymbol,
-    'Root': this.compileRoot,
-    'Self': this.compileSelf,
-    'Set': this.compileSet,
-    'Slice': CodeGenerator.prototype['compileSlice'] ?? undefined,
-    'Switch': this.compileSwitch,
-    'Sub': this.compileSub,
-    'Super': this.compileSuper,
-    'TemplateData': this.compileTemplateData
+    Add: this.compileAdd,
+    And: this.compileAnd,
+    ArrayNode: this.compileArrayNode,
+    AsyncAll: this.compileAsyncAll,
+    AsyncEach: this.compileAsyncEach,
+    Block: this.compileBlock,
+    Caller: this.compileCaller,
+    CallExtension: this.compileCallExtension,
+    CallExtensionAsync: this.compileCallExtensionAsync,
+    Capture: this.compileCapture,
+    Compare: this.compileCompare,
+    Concat: this.compileConcat,
+    Dict: this.compileDict,
+    Div: this.compileDiv,
+    Extends: this.compileExtends,
+    Filter: this.compileFilter,
+    FilterAsync: this.compileFilterAsync,
+    FloorDiv: this.compileFloorDiv,
+    For: this.compileFor,
+    FromImport: this.compileFromImport,
+    FunCall: this.compileFunCall,
+    Group: this.compileGroup,
+    If: this.compileIf,
+    IfAsync: this.compileIfAsync,
+    Import: this.compileImport,
+    In: this.compileIn,
+    InlineIf: this.compileInlineIf,
+    Include: this.compileInclude,
+    Is: this.compileIs,
+    KeywordArgs: this.compileKeywordArgs,
+    Literal: this.compileLiteral,
+    LookupVal: this.compileLookupVal,
+    Macro: this.compileMacro,
+    Mod: this.compileMod,
+    Mul: this.compileMul,
+    Neg: this.compileNeg,
+    Not: this.compileNot,
+    Or: this.compileOr,
+    Output: this.compileOutput,
+    Pair: this.compilePair,
+    Pos: this.compilePos,
+    Pow: this.compilePow,
+    NunjucksNodeList: this.compileNodeList,
+    NunjucksSymbol: this.compileNunjucksSymbol,
+    Root: this.compileRoot,
+    Self: this.compileSelf,
+    Set: this.compileSet,
+    Slice: CodeGenerator.prototype.compileSlice ?? undefined,
+    Switch: this.compileSwitch,
+    Sub: this.compileSub,
+    Super: this.compileSuper,
+    TemplateData: this.compileTemplateData
   };
 }

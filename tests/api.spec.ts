@@ -1,6 +1,7 @@
 import { Environment } from '../nunjucks/src/environment/environment';
 
 
+declare var nunjucks;
 
 (function(): void {
   'use strict';

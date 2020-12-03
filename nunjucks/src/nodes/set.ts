@@ -17,6 +17,6 @@ export class Set extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['targets', 'value', 'body'];
+    return [ 'targets', 'value', 'body' ];
   }
 }

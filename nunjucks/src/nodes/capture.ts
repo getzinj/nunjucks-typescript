@@ -1,4 +1,5 @@
-import { NunjucksNode, NunjucksNodeList } from './nunjucksNode';
+import { NunjucksNode} from './nunjucksNode';
+import { NunjucksNodeList } from './nunjucksNodeList';
 
 
 
@@ -16,6 +17,6 @@ export class Capture extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['body'];
+    return [ 'body' ];
   }
 }

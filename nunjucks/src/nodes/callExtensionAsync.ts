@@ -1,4 +1,4 @@
-import { CallExtension } from './nunjucksNode';
+import { CallExtension } from './callExtension';
 
 
 

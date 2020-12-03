@@ -16,6 +16,6 @@ export class If extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['cond', 'body', 'else_'];
+    return [ 'cond', 'body', 'else_' ];
   }
 }

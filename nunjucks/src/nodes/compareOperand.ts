@@ -14,6 +14,6 @@ export class CompareOperand extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['expr', 'type'];
+    return [ 'expr', 'type' ];
   }
 }

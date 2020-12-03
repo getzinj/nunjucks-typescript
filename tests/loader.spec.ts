@@ -1,6 +1,7 @@
 import { Done } from 'mocha';
 import { Loader } from '../nunjucks/src/loaders/loader';
 
+declare var nunjucks;
 
 (((): void => {
   'use strict';

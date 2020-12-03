@@ -15,6 +15,6 @@ export class TemplateRef extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['template'];
+    return [ 'template' ];
   }
 }

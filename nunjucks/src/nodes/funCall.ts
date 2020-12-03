@@ -1,5 +1,6 @@
-import { NunjucksNode, NunjucksNodeList } from './nunjucksNode';
+import { NunjucksNode} from './nunjucksNode';
 import { NunjucksSymbol } from './nunjucksSymbol';
+import { NunjucksNodeList } from './nunjucksNodeList';
 
 
 
@@ -16,6 +17,6 @@ export class FunCall extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['name', 'args'];
+    return [ 'name', 'args' ];
   }
 }

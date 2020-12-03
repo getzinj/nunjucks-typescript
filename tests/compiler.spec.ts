@@ -1,10 +1,11 @@
 import { Parser } from '../nunjucks/src/compiler/parser/parser';
-import { CallExtension } from '../nunjucks/src/nodes/nunjucksNode';
 import { TokenType } from '../nunjucks/src/compiler/lexer/tokenType';
 import { IExtension } from '../nunjucks/src/interfaces/IExtension';
 import { Environment } from '../nunjucks/src/environment/environment';
 import { Done } from 'mocha';
 import { Template } from '../nunjucks/src/environment/template';
+import { CallExtension } from '../nunjucks/src/nodes/callExtension';
+import path from 'path';
 
 
 
@@ -17,7 +18,7 @@ import { Template } from '../nunjucks/src/environment/template';
   const render = util.render;
   const equal = util.equal;
   const finish = util.finish;
-  const isSlim = util.isSlim;
+  const isSlim: boolean = util.isSlim;
   const Loader = util.Loader;
 
   describe('compiler', (): void => {

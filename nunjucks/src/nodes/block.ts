@@ -16,6 +16,6 @@ export class Block extends NunjucksNode {
 
 
   get fields(): string[] {
-    return ['name', 'body'];
+    return [ 'name', 'body' ];
   }
 }

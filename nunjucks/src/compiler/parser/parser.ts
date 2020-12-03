@@ -31,7 +31,8 @@ import { Case } from '../../nodes/case';
 import { FromImport } from '../../nodes/fromImport';
 import { Output } from '../../nodes/output';
 import { Capture } from '../../nodes/capture';
-import { In,
+import {
+  In,
   Add,
   And,
   Concat,
@@ -45,19 +46,21 @@ import { In,
   Or,
   Pos,
   Pow,
-  Sub } from '../../nodes/operators/operators';
+  Sub
+} from '../../nodes/operators/operators';
 import { Compare } from '../../nodes/compare';
 import { CompareOperand } from '../../nodes/compareOperand';
 import { Tokenizer } from '../lexer/tokenizer';
 import { Token } from '../lexer/token';
 import { TokenType } from '../lexer/tokenType';
 import { TemplateData } from '../../nodes/templateData';
-import { NunjucksNode, NunjucksNodeList } from '../../nodes/nunjucksNode';
+import { NunjucksNode} from '../../nodes/nunjucksNode';
 import { ParserTokenStream } from './parserTokenStream';
 import { IParser } from '../../interfaces/IParser';
 import { IExtension } from '../../interfaces/IExtension';
 import { IParserOptions } from '../../interfaces/IParserOptions';
 import { ITokenizer } from '../../interfaces/ITokenizer';
+import { NunjucksNodeList } from '../../nodes/nunjucksNodeList';
 
 
 
@@ -86,7 +89,8 @@ export class Parser implements IParser {
 
   private error(msg: string, lineno, colno): TemplateError {
     if (lineno === undefined || colno === undefined) {
-      const tok: Token<any> | { lineno: undefined; colno: undefined } = this.parserTokenStream.peekToken() || { lineno: undefined, colno: undefined };
+      const tok: Token<any> | { lineno: undefined; colno: undefined }
+          = this.parserTokenStream.peekToken() || { lineno: undefined, colno: undefined };
       lineno = tok.lineno;
       colno = tok.colno;
     }
@@ -96,8 +100,7 @@ export class Parser implements IParser {
     if (colno !== undefined) {
       colno += 1;
     }
-    const line: string = this.parserTokenStream.currentLine;
-    return new TemplateError(msg, lineno, colno, line);
+    return new TemplateError(msg, lineno, colno, this.parserTokenStream.currentLine);
   }
 
 
@@ -119,9 +122,7 @@ export class Parser implements IParser {
   private expect(type: string): Token<any> {
     const tok: Token<any> = this.parserTokenStream.nextToken();
     if (tok.type !== type) {
-      this.fail('expected ' + type + ', got ' + tok.type,
-        tok.lineno,
-        tok.colno);
+      this.fail(`expected ${ type }, got ${ tok.type }`, tok.lineno, tok.colno);
     }
     return tok;
   }
@@ -274,7 +275,8 @@ export class Parser implements IParser {
       this.fail('expected call');
     }
 
-    const callerArgs: NunjucksNodeList = this.parseSignature(true) || new NunjucksNodeList(callTok.lineno, callTok.colno);
+    const callerArgs: NunjucksNodeList =
+        this.parseSignature(true) || new NunjucksNodeList(callTok.lineno, callTok.colno);
     const macroCall: Macro = this.parsePrimary() as Macro;
 
     this.advanceAfterBlockEnd(callTok.value);
@@ -315,9 +317,7 @@ export class Parser implements IParser {
 
     if (withContext !== null) {
       if (!this.skipSymbol('context')) {
-        this.fail('parseFrom: expected context after with/without',
-          tok.lineno,
-          tok.colno);
+        this.fail('parseFrom: expected context after with/without', tok.lineno, tok.colno);
       }
     }
 
@@ -336,9 +336,7 @@ export class Parser implements IParser {
     const template: NunjucksNode = this.parseExpression();
 
     if (!this.skipSymbol('as')) {
-      this.fail('parseImport: expected "as" keyword',
-        importTok.lineno,
-        importTok.colno);
+      this.fail('parseImport: expected "as" keyword', importTok.lineno, importTok.colno);
     }
 
     const target: NunjucksNode = this.parseExpression();
