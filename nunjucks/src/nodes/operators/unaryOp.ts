@@ -1,14 +1,13 @@
 import { NunjucksNode } from '../nunjucksNode';
+import { INunjucksNode } from '../INunjucksNode';
 
 
 
 export abstract class UnaryOp extends NunjucksNode {
   get typename(): string { return 'UnaryOp'; }
 
-  public target;
 
-
-  protected constructor(lineno: number, colno: number, target: NunjucksNode) {
+  protected constructor(lineno: number, colno: number, public readonly target: INunjucksNode) {
     super(lineno, colno, target);
   }
 

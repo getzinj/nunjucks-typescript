@@ -1,4 +1,6 @@
 export interface INunjucksNode {
+  colno: number;
+  lineno: number;
   children: INunjucksNode[] | undefined;
   typename: string;
 

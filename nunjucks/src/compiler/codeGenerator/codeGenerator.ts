@@ -1,5 +1,5 @@
 import { repeat } from '../../lib';
-import { NunjucksNode} from '../../nodes/nunjucksNode';
+import { NunjucksNode } from '../../nodes/nunjucksNode';
 import { Frame } from '../../runtime/frame';
 import { Literal } from '../../nodes/literal';
 import { NunjucksSymbol } from '../../nodes/nunjucksSymbol';
@@ -51,6 +51,8 @@ import { KeywordArgs } from '../../nodes/keywordArgs';
 import { CallExtensionAsync } from '../../nodes/callExtensionAsync';
 import { CallExtension } from '../../nodes/callExtension';
 import { NunjucksNodeList } from '../../nodes/nunjucksNodeList';
+import { INunjucksNodeList } from '../../nodes/INunjucksNodeList';
+import { INunjucksNode } from '../../nodes/INunjucksNode';
 
 
 
@@ -243,7 +245,7 @@ export class CodeGenerator {
 
 
   private compileCallExtension(node: CallExtension, frame: Frame, async?: boolean): void {
-    const args: NunjucksNodeList = node.args;
+    const args: INunjucksNodeList = node.args;
     const contentArgs: NunjucksNode[] = node.contentArgs;
     const autoescape: boolean = typeof node.autoescape === 'boolean' ? node.autoescape : true;
 
@@ -1272,7 +1274,7 @@ export class CodeGenerator {
 
 
   private compileOutput(node: Output, frame: Frame): void {
-    const children: NunjucksNode[] = node.children;
+    const children: INunjucksNode[] = node.children;
     children.forEach((child: NunjucksNode): void => {
       // TemplateData is a special case because it is never
       // autoescaped, so simply output it for optimization
@@ -1365,7 +1367,6 @@ export class CodeGenerator {
     if (_compile) {
       _compile.call(this, node, frame);
     } else {
-      debugger;
       this.fail(`compile: Cannot compile node: ${node.typename}`, node.lineno, node.colno);
     }
     return this;
@@ -1378,6 +1379,8 @@ export class CodeGenerator {
 
 
   private fail(msg, lineno?: number, colno?: number): void {
+    console.error(`msg = "${ msg }".`);
+    console.error(`Type of msg = ${ typeof msg }.`);
     if (lineno !== undefined) {
       lineno += 1;
     }
@@ -1443,7 +1446,7 @@ export class CodeGenerator {
     Root: this.compileRoot,
     Self: this.compileSelf,
     Set: this.compileSet,
-    Slice: CodeGenerator.prototype.compileSlice ?? undefined,
+    Slice: CodeGenerator.prototype['compileSlice'] ?? undefined,
     Switch: this.compileSwitch,
     Sub: this.compileSub,
     Super: this.compileSuper,

@@ -1,5 +1,5 @@
-import { NunjucksNode } from 'nunjucks/src/nodes/nunjucksNode';
 import { UnaryOp } from './unaryOp';
+import { INunjucksNode } from '../INunjucksNode';
 
 
 
@@ -9,7 +9,7 @@ export class Pos extends UnaryOp {
   }
 
 
-  constructor(lineno: number, colno: number, target: NunjucksNode) {
+  constructor(lineno: number, colno: number, target: INunjucksNode) {
     super(lineno, colno, target);
   }
 }

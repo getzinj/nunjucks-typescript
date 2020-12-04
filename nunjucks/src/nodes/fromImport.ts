@@ -1,5 +1,6 @@
-import { NunjucksNode} from './nunjucksNode';
+import { NunjucksNode } from './nunjucksNode';
 import { NunjucksNodeList } from './nunjucksNodeList';
+import { INunjucksNode } from './INunjucksNode';
 
 
 
@@ -11,7 +12,7 @@ export class FromImport extends NunjucksNode {
   public withContext: boolean;
 
 
-  constructor(lineno: number, colno: number, template: NunjucksNode, names: NunjucksNodeList, withContext: boolean) {
+  constructor(lineno: number, colno: number, template: INunjucksNode, names: NunjucksNodeList, withContext: boolean) {
     super(lineno, colno, template, names || new NunjucksNodeList(lineno, colno, undefined), withContext);
   }
 

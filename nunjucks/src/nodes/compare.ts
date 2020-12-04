@@ -1,4 +1,5 @@
 import { NunjucksNode } from './nunjucksNode';
+import { INunjucksNode } from './INunjucksNode';
 
 
 
@@ -9,7 +10,7 @@ export class Compare extends NunjucksNode {
   public ops: NunjucksNode[];
 
 
-  constructor(lineno: number, colno: number, expr: NunjucksNode, ops: NunjucksNode[]) {
+  constructor(lineno: number, colno: number, expr: INunjucksNode, ops: INunjucksNode[]) {
     super(lineno, colno, expr, ops);
   }
 

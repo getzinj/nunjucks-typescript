@@ -1,15 +1,16 @@
 import { NunjucksNode } from './nunjucksNode';
+import { INunjucksNode } from './INunjucksNode';
 
 
 
 export class Pair extends NunjucksNode {
   get typename(): string { return 'Pair'; }
 
-  public key: NunjucksNode;
-  public value: NunjucksNode;
+  public key: INunjucksNode;
+  public value: INunjucksNode;
 
 
-  constructor(lineno: number, colno: number, key: NunjucksNode, value: NunjucksNode) {
+  constructor(lineno: number, colno: number, key: INunjucksNode, value: INunjucksNode) {
     super(lineno, colno, key, value);
   }
 

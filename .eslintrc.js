@@ -35,6 +35,7 @@ module.exports = {
     // Relax some rules
     'no-cond-assign': [ 'error', 'except-parens' ],
     'no-unused-vars': [ 'error', { args: 'none', } ],
+    'no-lone-blocks': 'off',
     'no-multiple-empty-lines': 'off',
     // Disable some overly-strict airbnb style rules
     'no-underscore-dangle': 'off',

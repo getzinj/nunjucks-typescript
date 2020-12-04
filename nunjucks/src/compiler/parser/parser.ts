@@ -54,13 +54,14 @@ import { Tokenizer } from '../lexer/tokenizer';
 import { Token } from '../lexer/token';
 import { TokenType } from '../lexer/tokenType';
 import { TemplateData } from '../../nodes/templateData';
-import { NunjucksNode} from '../../nodes/nunjucksNode';
+import { NunjucksNode } from '../../nodes/nunjucksNode';
 import { ParserTokenStream } from './parserTokenStream';
 import { IParser } from '../../interfaces/IParser';
 import { IExtension } from '../../interfaces/IExtension';
 import { IParserOptions } from '../../interfaces/IParserOptions';
 import { ITokenizer } from '../../interfaces/ITokenizer';
 import { NunjucksNodeList } from '../../nodes/nunjucksNodeList';
+import { INunjucksNode } from '../../nodes/INunjucksNode';
 
 
 
@@ -222,7 +223,7 @@ export class Parser implements IParser {
       (node.name as ArrayNode).addChild(key);
 
       while (this.skip(TokenType.TOKEN_COMMA)) {
-        const prim: NunjucksNode = this.parsePrimary();
+        const prim: INunjucksNode = this.parsePrimary();
         (node.name as ArrayNode).addChild(prim);
       }
     }
@@ -291,7 +292,7 @@ export class Parser implements IParser {
       body);
 
     // add the additional caller kwarg, adding kwargs if necessary
-    const args: NunjucksNode[] | undefined = macroCall.args.children;
+    const args: INunjucksNode[] | undefined = macroCall.args.children;
     if (!(args[args.length - 1] instanceof KeywordArgs)) {
       args.push(new KeywordArgs(callTok.lineno, callTok.colno));
     }
@@ -333,13 +334,13 @@ export class Parser implements IParser {
         importTok.colno);
     }
 
-    const template: NunjucksNode = this.parseExpression();
+    const template: INunjucksNode = this.parseExpression();
 
     if (!this.skipSymbol('as')) {
       this.fail('parseImport: expected "as" keyword', importTok.lineno, importTok.colno);
     }
 
-    const target: NunjucksNode = this.parseExpression();
+    const target: INunjucksNode = this.parseExpression();
     const withContext: boolean = this.parseWithContext();
     const node: Import = new Import(importTok.lineno,
       importTok.colno,
@@ -359,7 +360,7 @@ export class Parser implements IParser {
       this.fail('parseFrom: expected from');
     }
 
-    const template: NunjucksNode = this.parseExpression();
+    const template: INunjucksNode = this.parseExpression();
 
     if (!this.skipSymbol('import')) {
       this.fail('parseFrom: expected import',
@@ -404,7 +405,7 @@ export class Parser implements IParser {
       }
 
       if (this.skipSymbol('as')) {
-        const alias: NunjucksNode = this.parsePrimary();
+        const alias: INunjucksNode = this.parsePrimary();
         names.addChild(new Pair(name.lineno,
           name.colno,
           name,
@@ -595,7 +596,7 @@ export class Parser implements IParser {
     }
 
     // parse the switch expression
-    const expr: NunjucksNode = this.parseExpression();
+    const expr: INunjucksNode = this.parseExpression();
 
     // advance until a start of a case, a default case or an endswitch.
     this.advanceAfterBlockEnd(switchStart);
@@ -612,7 +613,7 @@ export class Parser implements IParser {
     do {
       // skip the start symbol and get the case expression
       this.skipSymbol(caseStart);
-      const cond: NunjucksNode = this.parseExpression();
+      const cond: INunjucksNode = this.parseExpression();
       this.advanceAfterBlockEnd(switchStart);
       // get the body of the case node and add it to the array of cases.
       const body: NunjucksNodeList = this.parseUntilBlocks(caseStart, caseDefault, switchEnd);
@@ -746,7 +747,7 @@ export class Parser implements IParser {
   }
 
 
-  private parsePostfix(node: NunjucksNode): NunjucksNode {
+  private parsePostfix(node: INunjucksNode): INunjucksNode {
     let lookup: Group | ArrayNode | Dict | Literal;
     let tok: Token<any> = this.parserTokenStream.peekToken();
 
@@ -798,16 +799,16 @@ export class Parser implements IParser {
   }
 
 
-  public parseExpression(): NunjucksNode {
+  public parseExpression(): INunjucksNode {
     return this.parseInlineIf();
   }
 
 
-  private parseInlineIf(): NunjucksNode {
-    let node: NunjucksNode | InlineIf = this.parseOr();
+  private parseInlineIf(): INunjucksNode {
+    let node: INunjucksNode | InlineIf = this.parseOr();
     if (this.skipSymbol('if')) {
-      const condNode: NunjucksNode = this.parseOr();
-      const bodyNode: NunjucksNode = node;
+      const condNode: INunjucksNode = this.parseOr();
+      const bodyNode: INunjucksNode = node;
       node = new InlineIf(node.lineno, node.colno);
       (node as InlineIf).body = bodyNode;
       (node as InlineIf).cond = condNode;
@@ -822,10 +823,10 @@ export class Parser implements IParser {
   }
 
 
-  private parseOr(): NunjucksNode {
-    let node: NunjucksNode = this.parseAnd();
+  private parseOr(): INunjucksNode {
+    let node: INunjucksNode = this.parseAnd();
     while (this.skipSymbol('or')) {
-      const node2: NunjucksNode = this.parseAnd();
+      const node2: INunjucksNode = this.parseAnd();
       node = new Or(node.lineno,
         node.colno,
         node,
@@ -835,10 +836,10 @@ export class Parser implements IParser {
   }
 
 
-  private parseAnd(): NunjucksNode {
-    let node: NunjucksNode = this.parseNot();
+  private parseAnd(): INunjucksNode {
+    let node: INunjucksNode = this.parseNot();
     while (this.skipSymbol('and')) {
-      const node2: NunjucksNode = this.parseNot();
+      const node2: INunjucksNode = this.parseNot();
       node = new And(node.lineno,
         node.colno,
         node,
@@ -848,7 +849,7 @@ export class Parser implements IParser {
   }
 
 
-  private parseNot(): NunjucksNode {
+  private parseNot(): INunjucksNode {
     const tok: Token<any> = this.parserTokenStream.peekToken();
     if (this.skipSymbol('not')) {
       return new Not(tok.lineno,
@@ -859,8 +860,8 @@ export class Parser implements IParser {
   }
 
 
-  private parseIn(): NunjucksNode {
-    let node: NunjucksNode = this.parseIs();
+  private parseIn(): INunjucksNode {
+    let node: INunjucksNode = this.parseIs();
     while (1) { // eslint-disable-line no-constant-condition
       // check if the next token is 'not'
       const tok: Token<any> = this.parserTokenStream.nextToken();
@@ -873,7 +874,7 @@ export class Parser implements IParser {
         this.parserTokenStream.pushToken(tok);
       }
       if (this.skipSymbol('in')) {
-        const node2: NunjucksNode = this.parseIs();
+        const node2: INunjucksNode = this.parseIs();
         node = new In(node.lineno,
           node.colno,
           node,
@@ -897,14 +898,14 @@ export class Parser implements IParser {
 
   // I put this right after "in" in the operator precedence stack. That can
   // obviously be changed to be closer to Jinja.
-  private parseIs(): NunjucksNode {
-    let node: NunjucksNode = this.parseCompare();
+  private parseIs(): INunjucksNode {
+    let node: INunjucksNode = this.parseCompare();
     // look for an is
     if (this.skipSymbol('is')) {
       // look for a not
       const not: boolean = this.skipSymbol('not');
       // get the next node
-      const node2: NunjucksNode = this.parseCompare();
+      const node2: INunjucksNode = this.parseCompare();
       // create an Is node using the next node and the info from our Is node.
       node = new Is(node.lineno, node.colno, node, node2);
       // if we have a Not, create a Not node from our Is node.
@@ -917,9 +918,9 @@ export class Parser implements IParser {
   }
 
 
-  private parseCompare(): NunjucksNode {
+  private parseCompare(): INunjucksNode {
     const compareOps: string[] = [ '==', '===', '!=', '!==', '<', '>', '<=', '>=' ];
-    const expr: NunjucksNode = this.parseConcat();
+    const expr: INunjucksNode = this.parseConcat();
     const ops: NunjucksNode[] = [];
 
     while (1) { // eslint-disable-line no-constant-condition
@@ -950,10 +951,10 @@ export class Parser implements IParser {
 
 
   // finds the '~' for string concatenation
-  private parseConcat(): NunjucksNode {
-    let node: NunjucksNode = this.parseAdd();
+  private parseConcat(): INunjucksNode {
+    let node: INunjucksNode = this.parseAdd();
     while (this.skipValue(TokenType.TOKEN_TILDE, '~')) {
-      const node2: NunjucksNode = this.parseAdd();
+      const node2: INunjucksNode = this.parseAdd();
       node = new Concat(node.lineno,
         node.colno,
         node,
@@ -963,10 +964,10 @@ export class Parser implements IParser {
   }
 
 
-  private parseAdd(): NunjucksNode {
-    let node: NunjucksNode = this.parseSub();
+  private parseAdd(): INunjucksNode {
+    let node: INunjucksNode = this.parseSub();
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '+')) {
-      const node2: NunjucksNode = this.parseSub();
+      const node2: INunjucksNode = this.parseSub();
       node = new Add(node.lineno,
         node.colno,
         node,
@@ -976,10 +977,10 @@ export class Parser implements IParser {
   }
 
 
-  private parseSub(): NunjucksNode {
-    let node: NunjucksNode = this.parseMul();
+  private parseSub(): INunjucksNode {
+    let node: INunjucksNode = this.parseMul();
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '-')) {
-      const node2: NunjucksNode = this.parseMul();
+      const node2: INunjucksNode = this.parseMul();
       node = new Sub(node.lineno,
         node.colno,
         node,
@@ -989,10 +990,10 @@ export class Parser implements IParser {
   }
 
 
-  private parseMul(): NunjucksNode {
-    let node: NunjucksNode = this.parseDiv();
+  private parseMul(): INunjucksNode {
+    let node: INunjucksNode = this.parseDiv();
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '*')) {
-      const node2: NunjucksNode = this.parseDiv();
+      const node2: INunjucksNode = this.parseDiv();
       node = new Mul(node.lineno,
         node.colno,
         node,
@@ -1002,10 +1003,10 @@ export class Parser implements IParser {
   }
 
 
-  private parseDiv(): NunjucksNode {
-    let node: NunjucksNode = this.parseFloorDiv();
+  private parseDiv(): INunjucksNode {
+    let node: INunjucksNode = this.parseFloorDiv();
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '/')) {
-      const node2: NunjucksNode = this.parseFloorDiv();
+      const node2: INunjucksNode = this.parseFloorDiv();
       node = new Div(node.lineno,
         node.colno,
         node,
@@ -1015,10 +1016,10 @@ export class Parser implements IParser {
   }
 
 
-  private parseFloorDiv(): NunjucksNode {
-    let node: NunjucksNode = this.parseMod();
+  private parseFloorDiv(): INunjucksNode {
+    let node: INunjucksNode = this.parseMod();
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '//')) {
-      const node2: NunjucksNode = this.parseMod();
+      const node2: INunjucksNode = this.parseMod();
       node = new FloorDiv(node.lineno,
         node.colno,
         node,
@@ -1028,10 +1029,10 @@ export class Parser implements IParser {
   }
 
 
-  private parseMod(): NunjucksNode {
-    let node: NunjucksNode = this.parsePow();
+  private parseMod(): INunjucksNode {
+    let node: INunjucksNode = this.parsePow();
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '%')) {
-      const node2: NunjucksNode = this.parsePow();
+      const node2: INunjucksNode = this.parsePow();
       node = new Mod(node.lineno,
         node.colno,
         node,
@@ -1041,10 +1042,10 @@ export class Parser implements IParser {
   }
 
 
-  private parsePow(): NunjucksNode {
-    let node: NunjucksNode = this.parseUnary();
+  private parsePow(): INunjucksNode {
+    let node: INunjucksNode = this.parseUnary();
     while (this.skipValue(TokenType.TOKEN_OPERATOR, '**')) {
-      const node2: NunjucksNode = this.parseUnary();
+      const node2: INunjucksNode = this.parseUnary();
       node = new Pow(node.lineno,
         node.colno,
         node,
@@ -1054,9 +1055,9 @@ export class Parser implements IParser {
   }
 
 
-  private parseUnary(noFilters?: boolean): NunjucksNode {
+  private parseUnary(noFilters?: boolean): INunjucksNode {
     const tok: Token<any> = this.parserTokenStream.peekToken();
-    let node: NunjucksNode;
+    let node: INunjucksNode;
 
     if (this.skipValue(TokenType.TOKEN_OPERATOR, '-')) {
       node = new Neg(tok.lineno,
@@ -1078,7 +1079,7 @@ export class Parser implements IParser {
   }
 
 
-  private parsePrimary(noPostfix: boolean = false): NunjucksNode {
+  private parsePrimary(noPostfix: boolean = false): INunjucksNode {
     const tok: Token<any> = this.parserTokenStream.nextToken();
     let val: number | boolean | RegExp;
 
@@ -1106,7 +1107,7 @@ export class Parser implements IParser {
       val = new RegExp(tok.value.body, tok.value.flags);
     }
 
-    let node: NunjucksNode | undefined;
+    let node: INunjucksNode | undefined;
     if (val !== undefined) {
       node = new Literal(tok.lineno, tok.lineno, val as number);
     } else if (tok.type === TokenType.TOKEN_SYMBOL) {
@@ -1173,7 +1174,7 @@ export class Parser implements IParser {
   }
 
 
-  private parseFilterArgs(node: NunjucksNode): NunjucksNode[] {
+  private parseFilterArgs(node: INunjucksNode): INunjucksNode[] {
     if (this.parserTokenStream.peekToken().type === TokenType.TOKEN_LEFT_PAREN) {
       // Get a FunCall node and add the parameters to the
       // filter
@@ -1184,7 +1185,7 @@ export class Parser implements IParser {
   }
 
 
-  private parseFilter(node: NunjucksNode): NunjucksNode {
+  private parseFilter(node: INunjucksNode): INunjucksNode {
     while (this.skip(TokenType.TOKEN_PIPE)) {
       const name: NunjucksSymbol = this.parseFilterName();
 
@@ -1211,7 +1212,7 @@ export class Parser implements IParser {
     }
 
     const name: NunjucksSymbol = this.parseFilterName();
-    const args: NunjucksNode[] = this.parseFilterArgs(name);
+    const args: INunjucksNode[] = this.parseFilterArgs(name);
 
     this.advanceAfterBlockEnd(filterTok.value);
     const body: Capture = new Capture(name.lineno, name.colno, this.parseUntilBlocks('endfilter'));
@@ -1271,7 +1272,7 @@ export class Parser implements IParser {
 
       if (node instanceof Dict) {
         // TODO: check for errors
-        const key: NunjucksNode = this.parsePrimary();
+        const key: INunjucksNode = this.parsePrimary();
 
         // We expect a key/value pair for dicts, separated by a
         // colon
@@ -1282,14 +1283,14 @@ export class Parser implements IParser {
         }
 
         // TODO: check for errors
-        const value: NunjucksNode = this.parseExpression();
+        const value: INunjucksNode = this.parseExpression();
         node.addChild(new Pair(key.lineno,
           key.colno,
           key,
           value));
       } else {
         // TODO: check for errors
-        const expr: NunjucksNode = this.parseExpression();
+        const expr: INunjucksNode = this.parseExpression();
         node.addChild(expr);
       }
     }
@@ -1333,7 +1334,7 @@ export class Parser implements IParser {
           tok.lineno,
           tok.colno);
       } else {
-        const arg: NunjucksNode = this.parseExpression();
+        const arg: INunjucksNode = this.parseExpression();
 
         if (this.skipValue(TokenType.TOKEN_OPERATOR, '=')) {
           kwargs.addChild(
@@ -1411,7 +1412,7 @@ export class Parser implements IParser {
         }
         buf.push(n);
       } else if (tok.type === TokenType.TOKEN_VARIABLE_START) {
-        const e: NunjucksNode = this.parseExpression();
+        const e: INunjucksNode = this.parseExpression();
         this.dropLeadingWhitespace = false;
         this.advanceAfterVariableEnd();
         buf.push(new Output(tok.lineno, tok.colno, [ e ]));

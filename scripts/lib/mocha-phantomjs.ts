@@ -1,9 +1,11 @@
 import { spawn, ChildProcess } from 'child_process';
 import * as path from 'path';
-import { Utils } from './utils';
 import { IPromiseRejectFn } from './IPromiseRejectFn';
 import { IPromiseResolveFn } from './IPromiseResolveFn';
 import { IMochaPhantomJsOptions } from './i-mocha-phantom-js-options';
+import { lookup } from './utils';
+
+
 
 export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Promise<void> {
   const coverageFile: string = path.join(
@@ -15,6 +17,7 @@ export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Prom
       const scriptPath: string = require.resolve('mocha-phantomjs-core/mocha-phantomjs-core.js');
 
       if (!scriptPath) {
+        // noinspection ExceptionCaughtLocallyJS
         throw new Error('mocha-phantomjs-core.js not found');
       }
 
@@ -28,9 +31,10 @@ export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Prom
           coverageFile: coverageFile,
         }, options.phantomjs || { })),
       ];
-      const phantomjsPath: string = Utils.lookup('.bin/phantomjs', true) || Utils.lookup('phantomjs-prebuilt/bin/phantomjs', true);
+      const phantomjsPath: string = lookup('.bin/phantomjs', true) || lookup('phantomjs-prebuilt/bin/phantomjs', true);
 
       if (!phantomjsPath) {
+        // noinspection ExceptionCaughtLocallyJS
         throw new Error('PhantomJS not found');
       }
 

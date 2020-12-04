@@ -28,7 +28,7 @@ export function lookupEscape(ch): string | undefined {
 
 
 export function _prettifyError(path: string, withInternals: boolean, err): TemplateError {
-  if (!(err instanceof TemplateError)) {
+  if (!(err instanceof TemplateError || err?.name === TemplateError.DEFAULT_NAME)) {
     // not one of ours, cast it
     err = new TemplateError(err);
   }

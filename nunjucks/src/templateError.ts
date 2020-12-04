@@ -3,8 +3,11 @@ import { repeat } from './lib';
 
 
 export class TemplateError extends Error {
+  public static readonly DEFAULT_NAME: string = 'Template render error';
+
   private firstUpdate: boolean = true;
   public cause: Error;
+  public readonly name: string = TemplateError.DEFAULT_NAME;
 
 
   get getStack(): () => string {
@@ -35,8 +38,6 @@ export class TemplateError extends Error {
       this.cause = message;
       this.message = `${this.cause.name}: ${this.cause.message}`;
     }
-
-    this.name = 'Template render error';
 
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);

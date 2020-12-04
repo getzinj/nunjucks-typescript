@@ -1,5 +1,5 @@
-import { NunjucksNode } from 'nunjucks/src/nodes/nunjucksNode';
 import { BinOp } from './binOp';
+import { INunjucksNode } from '../INunjucksNode';
 
 
 
@@ -9,7 +9,7 @@ export class Sub extends BinOp {
   }
 
 
-  constructor(lineno: number, colno: number, node1: NunjucksNode, node2: NunjucksNode) {
+  constructor(lineno: number, colno: number, node1: INunjucksNode, node2: INunjucksNode) {
     super(lineno, colno, node1, node2);
   }
 }

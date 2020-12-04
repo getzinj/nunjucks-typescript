@@ -1,15 +1,16 @@
 import { NunjucksNode } from './nunjucksNode';
+import { INunjucksNode } from './INunjucksNode';
 
 
 
 export class LookupVal extends NunjucksNode {
   get typename(): string { return 'LookupVal'; }
 
-  public target: NunjucksNode;
-  public val: NunjucksNode;
+  public target: INunjucksNode;
+  public val: INunjucksNode;
 
 
-  constructor(lineno: number, colno: number, target: NunjucksNode, val: NunjucksNode) {
+  constructor(lineno: number, colno: number, target: INunjucksNode, val: INunjucksNode) {
     super(lineno, colno, target, val);
   }
 

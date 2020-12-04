@@ -1,6 +1,7 @@
-import { NunjucksNode} from './nunjucksNode';
+import { NunjucksNode } from './nunjucksNode';
 import { NunjucksSymbol } from './nunjucksSymbol';
 import { NunjucksNodeList } from './nunjucksNodeList';
+import { INunjucksNode } from './INunjucksNode';
 
 
 
@@ -11,7 +12,7 @@ export class FunCall extends NunjucksNode {
   public args: NunjucksNodeList;
 
 
-  constructor(lineno: number, colno: number, name: NunjucksNode, args: NunjucksNodeList, ...additional) {
+  constructor(lineno: number, colno: number, name: INunjucksNode, args: NunjucksNodeList, ...additional) {
     super(lineno, colno, name, args, ... additional);
   }
 

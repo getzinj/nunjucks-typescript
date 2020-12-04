@@ -1,5 +1,6 @@
 import { Case } from './case';
 import { NunjucksNode } from './nunjucksNode';
+import { INunjucksNode } from './INunjucksNode';
 
 
 
@@ -11,7 +12,7 @@ export class Switch extends NunjucksNode {
   public default;
 
 
-  constructor(lineno: number, colno: number, public expr: NunjucksNode, public cases: Case[], defaultCase) {
+  constructor(lineno: number, colno: number, public expr: INunjucksNode, public cases: Case[], defaultCase) {
     super(lineno, colno, expr, cases, defaultCase);
   }
 
