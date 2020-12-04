@@ -10,8 +10,8 @@ declare var nunjucks;
 
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
-    precompile = require('../nunjucks/src/precompile/precompile').precompile;
-    precompileString = require('../nunjucks/src/precompile/precompile').precompileString;
+    precompile = require('../nunjucks/src/compiler/precompile/precompile').precompile;
+    precompileString = require('../nunjucks/src/compiler/precompile/precompile').precompileString;
   } else {
     expect = window['expect'];
     precompile = nunjucks.precompile;

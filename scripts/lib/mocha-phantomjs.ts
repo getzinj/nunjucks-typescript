@@ -1,14 +1,11 @@
+import { spawn, ChildProcess } from 'child_process';
 import * as path from 'path';
-
-import { ChildProcess } from 'child_process';
 import { Utils } from './utils';
-import { spawn } from 'child_process';
 import { IPromiseRejectFn } from './IPromiseRejectFn';
 import { IPromiseResolveFn } from './IPromiseResolveFn';
+import { IMochaPhantomJsOptions } from './i-mocha-phantom-js-options';
 
-
-export function mochaPhantomJS(url, options?): Promise<void> {
-  options = options || {};
+export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Promise<void> {
   const coverageFile: string = path.join(
     __dirname, '../../.nyc_output',
     (url.indexOf('slim') > -1) ? 'browser-slim.json' : 'browser-std.json');
@@ -29,7 +26,7 @@ export function mochaPhantomJS(url, options?): Promise<void> {
           useColors: true,
           hooks: 'mocha-phantomjs-istanbul',
           coverageFile: coverageFile,
-        }, options.phantomjs || {})),
+        }, options.phantomjs || { })),
       ];
       const phantomjsPath: string = Utils.lookup('.bin/phantomjs', true) || Utils.lookup('phantomjs-prebuilt/bin/phantomjs', true);
 

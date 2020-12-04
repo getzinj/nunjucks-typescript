@@ -3,7 +3,7 @@
 import * as path from 'path';
 import { ILoader } from '../interfaces/ILoader';
 import { Template } from '../environment/template';
-import { EventEmitter } from "events";
+import { EventEmitter } from 'events';
 
 
 

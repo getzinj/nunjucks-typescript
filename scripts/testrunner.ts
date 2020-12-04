@@ -2,9 +2,7 @@
 
 'use strict';
 
-const Precompile: { precompileTestTemplates(): Promise<void> } = require('./lib/precompile');
 const NYC = require('nyc');
-const Runtests: { runtests(): Promise<void> } = require('./lib/runtests');
 
 process.env.NODE_ENV = 'test';
 
@@ -18,10 +16,13 @@ nyc.reset();
 require('@babel/register');
 
 
+const runtests = require('./lib/runtests').runtests;
+const precompileTestTemplates = require('./lib/precompile').precompileTestTemplates;
+
 let err: any;
 
-Precompile.precompileTestTemplates()
-  .then( Runtests.runtests )
+precompileTestTemplates()
+  .then( runtests )
   .catch( (e: any): void => {
     err = e;
     console.log(err); // eslint-disable-line no-console

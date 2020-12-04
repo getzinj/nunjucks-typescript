@@ -16,7 +16,7 @@ declare var nunjucks;
     expect = require('expect.js');
     util = require('./util.spec');
     Loader = require('../nunjucks/src/loaders/FileSystemLoader').FileSystemLoader;
-    templatesPath = fixPath(path.join(__dirname, '\templates'), '');
+    templatesPath = 'tests/templates';
     path = require('path');
   } else {
     expect = window['expect'];

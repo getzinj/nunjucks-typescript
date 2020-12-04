@@ -5,7 +5,6 @@ import { Environment } from '../nunjucks/src/environment/environment';
 import { Done } from 'mocha';
 import { Template } from '../nunjucks/src/environment/template';
 import { CallExtension } from '../nunjucks/src/nodes/callExtension';
-import path from 'path';
 
 
 
@@ -18,7 +17,7 @@ import path from 'path';
 
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
-    util = require('./util');
+    util = require('./util.spec');
     fs = require('fs');
   } else {
     expect = window['expect'];

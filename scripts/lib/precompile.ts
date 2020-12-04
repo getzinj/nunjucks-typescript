@@ -5,14 +5,13 @@ import * as path from 'path';
 import { IPromiseResolveFn } from './IPromiseResolveFn';
 import { IPromiseRejectFn } from './IPromiseRejectFn';
 
-
-
 const includeFileTypes: RegExp = /\.(njk|html)$/;
+
+export var testDir: string = path.join(__dirname, '../../tests');
 
 export function precompileTestTemplates(): Promise<void> {
   return new Promise((resolve: IPromiseResolveFn<void>, reject: IPromiseRejectFn<void>): void => {
     try {
-      const testDir: string = path.join(__dirname, '../../tests');
       const output: string = precompile(path.join(testDir, 'templates'), {
         include: [ includeFileTypes ],
       });
