@@ -100,7 +100,8 @@ function getRunTestsPromiseExecutor(): IPromiseExecutor<void> {
             server = args[0];
             const port: number = args[1];
             const promises: IPromiseResolveFn<void>[] = ['index', 'slim'].map(
-                (f: string): IPromiseResolveFn<void> => ((): Promise<void> => mochaPhantomJS(`http://localhost:${ port }/tests/browser/${ f }.html`)));
+                (f: string): IPromiseResolveFn<void> =>
+                    (): Promise<void> => mochaPhantomJS(`http://localhost:${ port }/tests/browser/${ f }.html`));
             return promiseSequence(promises).then((): void => {
               server.close();
               resolve();

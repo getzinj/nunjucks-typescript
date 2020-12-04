@@ -28,11 +28,11 @@ export function lookupEscape(ch): string | undefined {
 
 
 export function _prettifyError(path: string, withInternals: boolean, err): TemplateError {
-  if (!err.Update) {
+  if (!(err instanceof TemplateError)) {
     // not one of ours, cast it
     err = new TemplateError(err);
   }
-  err.Update(path);
+  err?.Update?.(path);
 
   // Unless they marked the dev flag, show them a trace from here
   if (!withInternals) {
