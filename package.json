@@ -85,9 +85,10 @@
     "mocha": "cross-env NODE_ENV=test NODE_PATH=tests/test-node-pkgs mocha -R spec tests",
     "lint": "eslint **/*.ts",
     "prepare": "npm run build",
-    "test:instrument": "cross-env NODE_ENV=test scripts/bundle.ts",
+    "test:instrument": "cross-env NODE_ENV=test scripts/bundle.js",
     "test:runner": "cross-env NODE_ENV=test NODE_PATH=tests/test-node-pkgs scripts/testrunner.js",
-    "test": "npm run lint && npm run test:instrument && npm run test:runner"
+    "test": "npm run lint && npm run test:instrument && npm run test:runner",
+    "doIt": "npm run prepare && npm run test:instrument && npm run test:runner"
   },
   "bin": {
     "nunjucks-precompile": "./bin/precompile"

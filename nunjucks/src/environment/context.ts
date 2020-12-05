@@ -1,7 +1,7 @@
 import { IContext } from '../interfaces/IContext';
 import { IEnvironment } from '../interfaces/IEnvironment';
 import { IBlocks } from '../interfaces/IBlocks';
-import { keys, indexOf } from '../lib';
+import { keys, indexOf, extend } from '../lib';
 import { IBlockFunction } from '../interfaces/IBlockFunction';
 import { Frame } from '../runtime/frame';
 import { Environment } from './environment';
@@ -20,7 +20,7 @@ export class Context implements IContext {
     this.env = env ?? new Environment();
 
     // Make a duplicate of ctx
-    this.ctx = ctx ? { ... ctx } : { };
+    this.ctx = extend({}, ctx);
 
     this.blocks = {};
     this.exported = [];

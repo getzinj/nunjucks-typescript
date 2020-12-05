@@ -2,6 +2,7 @@
 
 import { SafeString } from '../runtime/SafeString';
 
+declare var exports;
 
 /**
  * Returns `true` if the object is a function, otherwise `false`.
@@ -215,8 +216,8 @@ export function mapping<T>(value: T): boolean {
 }
 
 
-module.exports = {
-  ... module.exports,
-  'null': nullTest,
-  'undefined': undefinedTest
-};
+module.exports['null'] = nullTest;
+module.exports['undefined'] = undefinedTest;
+
+exports['null'] = nullTest;
+exports['undefined'] = undefinedTest;

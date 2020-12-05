@@ -1,3 +1,6 @@
+declare var exports;
+
+
 'use strict';
 
 import * as he from 'he';
@@ -702,10 +705,11 @@ export const intFilter: (...macroArgs) => any = r.makeMacro(
 );
 
 
-module.exports = {
-  ... module.exports,
-  // eslint-disable-next-line quote-props
-  'int': intFilter,
-  e: escape,
-  d: default_
-};
+module.exports['int'] = intFilter;
+module.exports['e'] = escape;
+module.exports['d'] = default_;
+
+
+exports['int'] = intFilter;
+exports['e'] = escape;
+exports['d'] = default_;

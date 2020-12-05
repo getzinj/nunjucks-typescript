@@ -1,4 +1,4 @@
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, ChildProcess, SpawnOptionsWithoutStdio } from 'child_process';
 import * as path from 'path';
 import { IPromiseRejectFn } from './IPromiseRejectFn';
 import { IPromiseResolveFn } from './IPromiseResolveFn';
@@ -8,9 +8,9 @@ import { lookup } from './utils';
 
 
 export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Promise<void> {
-  const coverageFile: string = path.join(
-    __dirname, '../../.nyc_output',
-    (url.indexOf('slim') > -1) ? 'browser-slim.json' : 'browser-std.json');
+  const coverageFile: string = path.join(__dirname, '../../.nyc_output', (url.indexOf('slim') > -1)
+        ? 'browser-slim.json'
+        : 'browser-std.json');
 
   return new Promise((resolve: IPromiseResolveFn<void>, reject: IPromiseRejectFn<void>): void => {
     try {
@@ -38,7 +38,9 @@ export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Prom
         throw new Error('PhantomJS not found');
       }
 
-      const proc: ChildProcess = spawn(phantomjsPath, args, { cwd: path.join(__dirname, '../..') });
+      const runDir: string = path.join(__dirname, '../..');
+      const opts: SpawnOptionsWithoutStdio = { cwd: runDir };
+      const proc: ChildProcess = spawn(phantomjsPath, args, opts);
 
       proc.stdout.pipe(process.stdout);
       proc.stderr.pipe(process.stderr);
