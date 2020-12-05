@@ -8,8 +8,8 @@ import { BannerPlugin, Configuration, DefinePlugin, DevtoolModuleFilenameTemplat
 const webpack = require('webpack');
 import { IBundleType } from './IBundleType';
 import { IUglifyJSConfig } from './IUglifyJSConfig';
+import { promiseSequence } from './lib/utils';
 
-import { Utils } from './lib/utils';
 
 require('module-alias/register');
 
@@ -150,6 +150,6 @@ const promises: (() => Promise<void>)[] =
     );
 
 
-Utils.promiseSequence(promises).catch((err: any): void => {
+promiseSequence(promises).catch((err: any): void => {
   throw err;
 });

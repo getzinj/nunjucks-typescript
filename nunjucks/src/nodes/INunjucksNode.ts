@@ -5,4 +5,5 @@ export interface INunjucksNode {
   typename: string;
 
   iterFields(func): void;
+  findAll<T>(type, results?: T[]): T[];
 }

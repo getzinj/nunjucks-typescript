@@ -27,10 +27,10 @@ export function lookupEscape(ch): string | undefined {
 }
 
 
-export function _prettifyError(path: string, withInternals: boolean, err): TemplateError {
-  if (!(err instanceof TemplateError || err?.name === TemplateError.DEFAULT_NAME)) {
+export function _prettifyError(path: string, withInternals: boolean, err): Error {
+  if (!err.Update) {
     // not one of ours, cast it
-    err = new TemplateError(err);
+    err = TemplateError(err);
   }
   err?.Update?.(path);
 
@@ -246,7 +246,7 @@ function keys_<T, K extends keyof T>(obj: T): K[] {
   return arr;
 }
 
-export { keys_ as keys }
+export { keys_ as keys };
 
 
 export function _entries<T, K extends keyof T, V extends T[K]>(obj: T): [K, V][] {

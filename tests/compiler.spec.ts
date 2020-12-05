@@ -5,6 +5,7 @@ import { Environment } from '../nunjucks/src/environment/environment';
 import { Done } from 'mocha';
 import { Template } from '../nunjucks/src/environment/template';
 import { CallExtension } from '../nunjucks/src/nodes/callExtension';
+import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
 
@@ -2323,7 +2324,7 @@ class ShouldAllowCustomTagCompilationExtension implements IExtension {
   public parse(parser, nodes): CallExtension {
     parser.advanceAfterBlockEnd();
 
-    let content = parser.parseUntilBlocks('endtest');
+    let content: NunjucksNodeList = parser.parseUntilBlocks('endtest');
     let tag: CallExtension = new CallExtension(this, 'run', null, [ content ]);
     parser.advanceAfterBlockEnd();
 

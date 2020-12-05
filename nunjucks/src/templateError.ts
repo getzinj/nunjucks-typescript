@@ -2,51 +2,64 @@ import { repeat } from './lib';
 
 
 
-export class TemplateError extends Error {
-  public static readonly DEFAULT_NAME: string = 'Template render error';
 
-  private firstUpdate: boolean = true;
-  public cause: Error;
-  public readonly name: string = TemplateError.DEFAULT_NAME;
+export function TemplateError(message, lineno?: number, colno?: number, line?: string) {
+  var err;
+  var cause;
 
-
-  get getStack(): () => string {
-    let returnValue: () => string;
-
-    if (this.cause) {
-      const stackDescriptor: PropertyDescriptor = Object.getOwnPropertyDescriptor(this.cause, 'stack');
-      returnValue = stackDescriptor && (stackDescriptor.get || (() => stackDescriptor.value));
-      if (!returnValue) {
-        returnValue = (): string => this.cause.stack;
-      }
-    } else {
-      const stack: string = (new Error(this.message)).stack;
-      returnValue = (): string => stack;
-    }
-
-    return returnValue;
+  if (message instanceof Error) {
+    cause = message;
+    message = `${cause.name}: ${cause.message}`;
   }
 
-
-  get stack(): string { return this.getStack.call(this); }
-
-
-  constructor(message, public readonly lineno?: number, public readonly colno?: number, public readonly line?: string) {
-    super(message);
-
-    if (message instanceof Error) {
-      this.cause = message;
-      this.message = `${this.cause.name}: ${this.cause.message}`;
-    }
-
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
+  if (Object.setPrototypeOf) {
+    err = new Error(message);
+    Object.setPrototypeOf(err, TemplateError.prototype);
+  } else {
+    err = this;
+    Object.defineProperty(err, 'message', {
+      enumerable: false,
+      writable: true,
+      value: message,
+    });
   }
 
+  Object.defineProperty(err, 'name', {
+    value: 'Template render error',
+  });
 
-  public Update(path): TemplateError {
-    let msg: string = '(' + (path || 'unknown path') + ')';
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(err, this.constructor);
+  }
+
+  let getStack;
+
+  if (cause) {
+    const stackDescriptor = Object.getOwnPropertyDescriptor(cause, 'stack');
+    getStack = stackDescriptor && (stackDescriptor.get || (() => stackDescriptor.value));
+    if (!getStack) {
+      getStack = () => cause.stack;
+    }
+  } else {
+    const stack = (new Error(message)).stack;
+    getStack = (() => stack);
+  }
+
+  Object.defineProperty(err, 'stack', {
+    get: () => getStack.call(err),
+  });
+
+  Object.defineProperty(err, 'cause', {
+    value: cause
+  });
+
+  err.lineno = lineno;
+  err.colno = colno;
+  err.line = line;
+  err.firstUpdate = true;
+
+  err.Update = function Update(path) {
+    let msg = '(' + (path || 'unknown path') + ')';
 
     // only show lineno + colno next to path of template
     // where error occurred
@@ -69,13 +82,27 @@ export class TemplateError extends Error {
           msg += '\n';
         }
       }
-
       msg += ' ';
     }
 
     this.message = msg + (this.message || '');
     this.firstUpdate = false;
-
     return this;
-  }
+  };
+
+  return err;
 }
+
+
+if (Object.setPrototypeOf) {
+  Object.setPrototypeOf(TemplateError.prototype, Error.prototype);
+} else {
+  TemplateError.prototype = Object.create(Error.prototype, {
+    constructor: {
+      value: TemplateError,
+    },
+  });
+}
+
+exports.TemplateError = TemplateError;
+

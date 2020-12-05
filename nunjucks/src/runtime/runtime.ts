@@ -58,6 +58,7 @@ export function makeMacro(argNames: string[], kwargNames, func): (...macroArgs) 
 }
 
 
+// eslint-disable-next-line no-unused-vars
 export function makeKeywordArgs<T, V extends T, IHasKeywords>(obj: T): V {
   obj['__keywords'] = true;
   return obj as V;
@@ -132,7 +133,7 @@ export function suppressValue<V>(val: V | string, autoescape: boolean): V | stri
 
 export function ensureDefined<T>(val: T | undefined, lineno: number, colno: number): T {
   if (val === null || val === undefined) {
-    throw new TemplateError(
+    throw TemplateError(
       'attempted to output null or undefined value',
       lineno + 1,
       colno + 1
@@ -177,13 +178,11 @@ export let contextOrFrameLookup: <T>(context: Context, frame: Frame, name: strin
       };
 
 
-export function handleError<T, V extends T & { lineno }>(error: T | V,
-                                                         lineno: number,
-                                                         colno: number): V | TemplateError {
-  if ('lineno' in error) { // TODO: Probably a TemplateError but can we assume that's what the author originally intended?
-    return error;
+export function handleError(error: Error, lineno: number, colno: number): Error {
+  if (error['lineno']) {
+    return error as Error;
   } else {
-    return new TemplateError(error, lineno, colno);
+    return TemplateError(error, lineno, colno);
   }
 }
 

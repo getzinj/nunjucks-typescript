@@ -90,7 +90,7 @@ function getTupleSortIndex(by: 'key' | 'value' | undefined | null): 0 | 1 {
   } else if (by === 'value') {
     return 1;
   } else {
-    throw new TemplateError('dictsort filter: You can only sort by either key or value');
+    throw TemplateError('dictsort filter: You can only sort by either key or value');
   }
 }
 
@@ -129,7 +129,7 @@ export function dictsort<O, K extends keyof O, V extends O[K]>(val: O,
                                                                caseSensitive: boolean = false,
                                                                by: 'key' | 'value' = 'key'): [K, V][] {
   if (!lib.isObject(val)) {
-    throw new TemplateError1('dictsort filter: val must be an object');
+    throw TemplateError1('dictsort filter: val must be an object');
   }
 
   const tuples: [ K, V ][] = dictToTuples(val);
@@ -248,7 +248,7 @@ export function list<T>(val: T[] | Record<string | number | symbol, T> | string)
   } else if (lib.isArray(val)) {
     return val;
   } else {
-    throw new TemplateError1('list filter: type not iterable');
+    throw TemplateError1('list filter: type not iterable');
   }
 }
 

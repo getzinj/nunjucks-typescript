@@ -101,7 +101,7 @@ export class Parser implements IParser {
     if (colno !== undefined) {
       colno += 1;
     }
-    return new TemplateError(msg, lineno, colno, this.parserTokenStream.currentLine);
+    return TemplateError(msg, lineno, colno, this.parserTokenStream.currentLine);
   }
 
 

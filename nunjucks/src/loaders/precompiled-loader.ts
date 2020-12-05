@@ -6,11 +6,12 @@ import { ILoader } from '../interfaces/ILoader';
 
 
 
+
 export class PrecompiledLoader extends Loader implements ILoader {
-  private readonly precompiled: Record<string, ISource>;
+  private readonly precompiled;
 
 
-  constructor(compiledTemplates: Record<string, ISource>) {
+  constructor(compiledTemplates) {
     super();
     this.precompiled = compiledTemplates || {};
   }

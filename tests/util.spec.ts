@@ -55,17 +55,19 @@ import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
   });
 
 
-  function equal(str, ctx, opts, str2, env?): void {
+  function equal(str: string, ctx: IContext, opts, str2, env?): void;
+  function equal(str: string, ctx: string, opts, str2, env?): void;
+  function equal(str: string, ctx, opts, str2, env?): void {
     if (typeof ctx === 'string') {
       env = opts;
       str2 = ctx;
       ctx = null;
-      opts = {};
+      opts = { };
     }
     if (typeof opts === 'string') {
       env = str2;
       str2 = opts;
-      opts = {};
+      opts = { };
     }
     opts = opts || {};
     const res = render(str, ctx, opts, env);

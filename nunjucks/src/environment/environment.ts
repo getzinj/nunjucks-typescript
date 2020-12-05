@@ -89,8 +89,8 @@ export class Environment extends EventEmitter implements IEnvironment {
     this.extensions = { };
     this.extensionsList = [ ];
 
-    lib._entries(filters).forEach(([name, filter]): Environment => this.addFilter(name, filter));
-    lib._entries(tests).forEach(([name, test]): Environment => this.addTest(name, test));
+    lib._entries(filters).forEach(([ name, filter ]): Environment => this.addFilter(name, filter));
+    lib._entries(tests).forEach(([ name, test ]): Environment => this.addTest(name, test));
   }
 
 

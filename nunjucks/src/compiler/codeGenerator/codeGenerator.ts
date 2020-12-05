@@ -1,5 +1,4 @@
 import { repeat } from '../../lib';
-import { NunjucksNode } from '../../nodes/nunjucksNode';
 import { Frame } from '../../runtime/frame';
 import { Literal } from '../../nodes/literal';
 import { NunjucksSymbol } from '../../nodes/nunjucksSymbol';
@@ -100,7 +99,7 @@ export class CodeGenerator {
   }
 
 
-  private _emitFuncBegin(node: NunjucksNode, name: string): void {
+  private _emitFuncBegin(node: INunjucksNode, name: string): void {
     this.buffer = 'output';
     this._scopeClosers = '';
     this._emitLine(`function ${name}(env, context, frame, runtime, cb) {`);
@@ -174,19 +173,19 @@ export class CodeGenerator {
   }
 
 
-  private _compileChildren(node: NunjucksNode, frame: Frame): void {
-    node?.children?.forEach?.((child: NunjucksNode): void => {
+  private _compileChildren(node: INunjucksNode, frame: Frame): void {
+    node?.children?.forEach?.((child: INunjucksNode): void => {
       this.compile(child, frame);
     });
   }
 
 
-  private _compileAggregate(node: NunjucksNode, frame: Frame, startChar?: string, endChar?: string): void {
+  private _compileAggregate(node: INunjucksNode, frame: Frame, startChar?: string, endChar?: string): void {
     if (startChar) {
       this._emit(startChar);
     }
 
-    node.children.forEach((child: NunjucksNode, i: number): void => {
+    node.children.forEach((child: INunjucksNode, i: number): void => {
       if (i > 0) {
         this._emit(',');
       }
@@ -200,7 +199,7 @@ export class CodeGenerator {
   }
 
 
-  private _compileExpression(node: NunjucksNode, frame: Frame): void {
+  private _compileExpression(node: INunjucksNode, frame: Frame): void {
     // TODO: I'm not really sure if this type check is worth it or  not.
     this.assertType(
         node,
@@ -246,7 +245,7 @@ export class CodeGenerator {
 
   private compileCallExtension(node: CallExtension, frame: Frame, async?: boolean): void {
     const args: INunjucksNodeList = node.args;
-    const contentArgs: NunjucksNode[] = node.contentArgs;
+    const contentArgs: INunjucksNode[] = node.contentArgs;
     const autoescape: boolean = typeof node.autoescape === 'boolean' ? node.autoescape : true;
 
     if (!async) {
@@ -266,7 +265,7 @@ export class CodeGenerator {
             'use `parser.parseSignature`');
       }
 
-      args.children.forEach((arg: NunjucksNode, i: number): void => {
+      args.children.forEach((arg: INunjucksNode, i: number): void => {
         // Tag arguments are passed normally to the call. Note
         // that keyword arguments are turned into a single js
         // object as the last argument, if they exist.
@@ -279,7 +278,7 @@ export class CodeGenerator {
     }
 
     if (contentArgs.length) {
-      contentArgs.forEach((arg: NunjucksNode, i: number): void => {
+      contentArgs.forEach((arg: INunjucksNode, i: number): void => {
         if (i > 0) {
           this._emit(',');
         }
@@ -383,8 +382,8 @@ export class CodeGenerator {
 
 
   private compilePair(node: Pair, frame: Frame): void {
-    let key: NunjucksNode = node.key;
-    const val: NunjucksNode = node.value;
+    let key: INunjucksNode = node.key;
+    const val: INunjucksNode = node.value;
 
     if (key instanceof NunjucksSymbol) {
       key = new Literal(key.lineno, key.colno, key.value);
@@ -795,7 +794,7 @@ export class CodeGenerator {
       this._emitLine(`for(${i}=0; ${i} < ${arr}.length; ${i}++) {`);
 
       // Bind each declared var
-      node.name.children.forEach((child: NunjucksNode, u: string | number): void => {
+      node.name.children.forEach((child: INunjucksNode, u: string | number): void => {
         const tid: string = this._tmpid();
         this._emitLine(`var ${tid} = ${arr}[${i}][${u}];`);
         this._emitLine(`frame.set("${child}", ${arr}[${i}][${u}]);`);
@@ -1275,7 +1274,7 @@ export class CodeGenerator {
 
   private compileOutput(node: Output, frame: Frame): void {
     const children: INunjucksNode[] = node.children;
-    children.forEach((child: NunjucksNode): void => {
+    children.forEach((child: INunjucksNode): void => {
       // TemplateData is a special case because it is never
       // autoescaped, so simply output it for optimization
       if (child instanceof TemplateData) {
@@ -1299,7 +1298,7 @@ export class CodeGenerator {
   }
 
 
-  private compileRoot(node: NunjucksNode, frame: Frame | null | undefined): void {
+  private compileRoot(node: INunjucksNode, frame: Frame | null | undefined): void {
     if (frame) {
       this.fail('compileRoot: root node can\'t have frame');
     }
@@ -1362,7 +1361,7 @@ export class CodeGenerator {
   }
 
 
-  public compile(node: NunjucksNode, frame?: Frame): CodeGenerator {
+  public compile(node: INunjucksNode, frame?: Frame): CodeGenerator {
     const _compile: (node, frame: Frame) => void = this.lookupTable[node.typename];
     if (_compile) {
       _compile.call(this, node, frame);
@@ -1388,11 +1387,11 @@ export class CodeGenerator {
       colno += 1;
     }
 
-    throw new TemplateError(msg, lineno, colno);
+    throw TemplateError(msg, lineno, colno);
   }
 
 
-  public generateCode(transformedCode: NunjucksNode): string {
+  public generateCode(transformedCode: INunjucksNode): string {
     this.compile(transformedCode);
     return this.getCode();
   }

@@ -4,13 +4,14 @@
 import { handleError, Frame } from '../runtime/runtime';
 import { IContext } from '../interfaces/IContext';
 import { IEnvironment } from '../interfaces/IEnvironment';
+import { ISourceDetails } from '../interfaces/ISourceDetails';
 
 
 
-export const noopTmplSrc = {
+export const noopTmplSrc: ISourceDetails = {
   type: 'code',
   obj: {
-    root(env: IEnvironment, context: IContext, frame: Frame, runtime, cb: (arg0, arg1?: string) => void) {
+    root(env: IEnvironment, context: IContext, frame: Frame, runtime, cb: (arg0, arg1?: string) => void): void {
       try {
         cb(null, '');
       } catch (e) {

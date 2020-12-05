@@ -1,5 +1,9 @@
+import { ISourceDetails } from './ISourceDetails';
+
+
+
 export interface ISource {
   path: string;
-  src;
+  src: ISourceDetails | string;
   noCache?: boolean;
 }
