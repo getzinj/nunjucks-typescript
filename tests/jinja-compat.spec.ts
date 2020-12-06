@@ -1,5 +1,3 @@
-import { Done } from 'mocha';
-
 (((): void => {
   'use strict';
 
@@ -19,7 +17,7 @@ import { Done } from 'mocha';
     const arr: string[] = [ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' ];
 
 
-    it('should support array slices with start and stop', (done: Done): void => {
+    it('should support array slices with start and stop', (done): void => {
       equal('{% for i in arr[1:4] %}{{ i }}{% endfor %}',
         { arr: arr },
         'bcd');
@@ -27,7 +25,7 @@ import { Done } from 'mocha';
     });
 
 
-    it('should support array slices using expressions', (done: Done): void => {
+    it('should support array slices using expressions', (done): void => {
       equal('{% for i in arr[n:n+3] %}{{ i }}{% endfor %}',
         {
           n: 1,
@@ -38,7 +36,7 @@ import { Done } from 'mocha';
     });
 
 
-    it('should support array slices with start', (done: Done): void => {
+    it('should support array slices with start', (done): void => {
       equal('{% for i in arr[3:] %}{{ i }}{% endfor %}',
         { arr: arr },
         'defgh');
@@ -46,7 +44,7 @@ import { Done } from 'mocha';
     });
 
 
-    it('should support array slices with negative start', (done: Done): void => {
+    it('should support array slices with negative start', (done): void => {
       equal('{% for i in arr[-3:] %}{{ i }}{% endfor %}',
         { arr: arr },
         'fgh');
@@ -54,7 +52,7 @@ import { Done } from 'mocha';
     });
 
 
-    it('should support array slices with stop', (done: Done): void => {
+    it('should support array slices with stop', (done): void => {
       equal('{% for i in arr[:4] %}{{ i }}{% endfor %}',
         { arr: arr },
         'abcd');
@@ -62,7 +60,7 @@ import { Done } from 'mocha';
     });
 
 
-    it('should support array slices with negative stop', (done: Done): void => {
+    it('should support array slices with negative stop', (done): void => {
       equal('{% for i in arr[:-3] %}{{ i }}{% endfor %}',
         { arr: arr },
         'abcde');
@@ -70,7 +68,7 @@ import { Done } from 'mocha';
     });
 
 
-    it('should support array slices with step', (done: Done): void => {
+    it('should support array slices with step', (done): void => {
       equal('{% for i in arr[::2] %}{{ i }}{% endfor %}',
         { arr: arr },
         'aceg');
@@ -78,7 +76,7 @@ import { Done } from 'mocha';
     });
 
 
-    it('should support array slices with negative step', (done: Done): void => {
+    it('should support array slices with negative step', (done): void => {
       equal('{% for i in arr[::-1] %}{{ i }}{% endfor %}',
         { arr: arr },
         'hgfedcba');
@@ -86,7 +84,7 @@ import { Done } from 'mocha';
     });
 
 
-    it('should support array slices with start and negative step', (done: Done): void => {
+    it('should support array slices with start and negative step', (done): void => {
       equal('{% for i in arr[4::-1] %}{{ i }}{% endfor %}',
         { arr: arr },
         'edcba');
@@ -94,7 +92,7 @@ import { Done } from 'mocha';
     });
 
 
-    it('should support array slices with negative start and negative step', (done: Done): void => {
+    it('should support array slices with negative start and negative step', (done): void => {
       equal('{% for i in arr[-5::-1] %}{{ i }}{% endfor %}',
         { arr: arr },
         'dcba');
@@ -102,7 +100,7 @@ import { Done } from 'mocha';
     });
 
 
-    it('should support array slices with stop and negative step', (done: Done): void => {
+    it('should support array slices with stop and negative step', (done): void => {
       equal('{% for i in arr[:3:-1] %}{{ i }}{% endfor %}',
         { arr: arr },
         'hgfe');
@@ -110,7 +108,7 @@ import { Done } from 'mocha';
     });
 
 
-    it('should support array slices with start and step', (done: Done): void => {
+    it('should support array slices with start and step', (done): void => {
       equal('{% for i in arr[1::2] %}{{ i }}{% endfor %}',
         { arr: arr },
         'bdfh');
@@ -118,7 +116,7 @@ import { Done } from 'mocha';
     });
 
 
-    it('should support array slices with start, stop, and step', (done: Done): void => {
+    it('should support array slices with start, stop, and step', (done): void => {
       equal('{% for i in arr[1:7:2] %}{{ i }}{% endfor %}',
         { arr: arr },
         'bdf');

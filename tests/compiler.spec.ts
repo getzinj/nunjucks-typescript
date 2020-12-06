@@ -1,28 +1,26 @@
-import { Parser } from '../nunjucks/src/compiler/parser/parser';
-import { TokenType } from '../nunjucks/src/compiler/lexer/tokenType';
-import { IExtension } from '../nunjucks/src/interfaces/IExtension';
-import { Environment } from '../nunjucks/src/environment/environment';
-import { Done } from 'mocha';
-import { Template } from '../nunjucks/src/environment/template';
-import { CallExtension } from '../nunjucks/src/nodes/callExtension';
-import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
-
-
-
 (((): void => {
   'use strict';
 
-  let expect;
-  let util;
-  let fs;
+  var expect;
+  var util;
+  var Template;
+  var Environment;
+  var fs;
+  var TokenType;
 
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
     util = require('./util.spec');
+    Template = require('../nunjucks/src/environment').Template;
+    Environment = require('../nunjucks/src/environment').Environment;
     fs = require('fs');
+    TokenType = require('../nunjucks/src/compiler/lexer/tokenType');
   } else {
     expect = window['expect'];
     util = window['util'];
+    Template = nunjucks.Template;
+    Environment = nunjucks.Environment;
+    TokenType = nunjucks.TokenType;
   }
 
   const render = util.render;
@@ -32,7 +30,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
   const Loader = util.Loader;
 
   describe('compiler', (): void => {
-    it('should compile templates', (done: Done): void => {
+    it('should compile templates', (done): void => {
       equal('Hello world', 'Hello world');
       equal('Hello world, {{ name }}',
         { name: 'James' },
@@ -49,19 +47,19 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should escape newlines', (done: Done): void => {
+    it('should escape newlines', (done): void => {
       equal('foo\\nbar', 'foo\\nbar');
       finish(done);
     });
 
 
-    it('should escape Unicode line seperators', (done: Done): void => {
+    it('should escape Unicode line seperators', (done): void => {
       equal('\u2028', '\u2028');
       finish(done);
     });
 
 
-    it('should compile references', (done: Done): void => {
+    it('should compile references', (done): void => {
       equal('{{ foo.bar }}',
         { foo: { bar: 'baz' } },
         'baz');
@@ -74,7 +72,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should compile references - object without prototype', (done: Done): void => {
+    it('should compile references - object without prototype', (done): void => {
       const context = Object.create(null);
       context.foo = Object.create(null);
       context.foo.bar = 'baz';
@@ -91,7 +89,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should fail silently on undefined values', (done: Done): void => {
+    it('should fail silently on undefined values', (done): void => {
       equal('{{ foo }}', '');
       equal('{{ foo.bar }}', '');
       equal('{{ foo.bar.baz }}', '');
@@ -100,32 +98,32 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should not treat falsy values the same as undefined', (done: Done): void => {
+    it('should not treat falsy values the same as undefined', (done): void => {
       equal('{{ foo }}', { foo: 0 }, '0');
       equal('{{ foo }}', { foo: false }, 'false');
       finish(done);
     });
 
 
-    it('should display none as empty string', (done: Done): void => {
+    it('should display none as empty string', (done): void => {
       equal('{{ none }}', '');
       finish(done);
     });
 
 
-    it('should compile none as falsy', (done: Done): void => {
+    it('should compile none as falsy', (done): void => {
       equal('{% if not none %}yes{% endif %}', 'yes');
       finish(done);
     });
 
 
-    it('should compile none as null, not undefined', (done: Done): void => {
+    it('should compile none as null, not undefined', (done): void => {
       equal('{{ none|default("d", false) }}', '');
       finish(done);
     });
 
 
-    it('should compile function calls', (done: Done): void => {
+    it('should compile function calls', (done): void => {
       equal('{{ foo("msg") }}',
         { foo: (str): string => str + 'hi' },
         'msghi');
@@ -133,7 +131,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should compile function calls with correct scope', (done: Done): void => {
+    it('should compile function calls with correct scope', (done): void => {
       equal('{{ foo.bar() }}', {
         foo: {
           bar: function(): string {
@@ -163,7 +161,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should compile if blocks', (done: Done): void => {
+    it('should compile if blocks', (done): void => {
       const tmpl: string = ('Give me some {% if hungry %}pizza' +
           '{% else %}water{% endif %}');
 
@@ -231,7 +229,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should compile the ternary operator', (done: Done): void => {
+    it('should compile the ternary operator', (done): void => {
       equal('{{ "foo" if bar else "baz" }}', 'baz');
       equal('{{ "foo" if bar else "baz" }}', { bar: true }, 'foo');
 
@@ -239,7 +237,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should compile inline conditionals', (done: Done): void => {
+    it('should compile inline conditionals', (done): void => {
       const tmpl: string = 'Give me some {{ "pizza" if hungry else "water" }}';
 
       equal(tmpl, { hungry: true }, 'Give me some pizza');
@@ -510,7 +508,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       runLoopTests('asyncAll');
 
 
-      it('should allow overriding var with none inside nested scope', (done: Done): void => {
+      it('should allow overriding var with none inside nested scope', (done): void => {
         equal(
           '{% set var = "foo" %}' +
           '{% for i in [1] %}{% set var = none %}{{ var }}{% endfor %}',
@@ -520,7 +518,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile async control', function(done: Done): void {
+      it('should compile async control', function(done): void {
         if (!fs) {
           this.skip();
         } else {
@@ -728,7 +726,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should throw an error when using the "in" operator on unexpected types', (done: Done): void => {
+      it('should throw an error when using the "in" operator on unexpected types', (done): void => {
         render(
           '{% if "a" in 1 %}yes{% endif %}',
           {},
@@ -768,14 +766,14 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should include error line in raised TemplateError', (done: Done): void => {
+      it('should include error line in raised TemplateError', (done): void => {
         const tmplStr: string = [
           '{% set items = ["a", "b",, "c"] %}',
           '{{ items | join(",") }}',
         ].join('\n');
 
         const loader = new Loader('tests/templates');
-        const env: Environment = new Environment(loader);
+        const env = new Environment(loader);
         const tmpl = new Template(tmplStr, env, 'parse-error.njk');
 
         tmpl.render({}, (err, res): void => {
@@ -794,13 +792,13 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should include error line when exception raised in user function', (done: Done): void => {
+      it('should include error line when exception raised in user function', (done): void => {
         const tmplStr: string = [
           '{% block content %}',
           '<div>{{ foo() }}</div>',
           '{% endblock %}',
         ].join('\n');
-        const env: Environment = new Environment(new Loader('tests/templates'));
+        const env = new Environment(new Loader('tests/templates'));
         const tmpl: any = new Template(tmplStr, env, 'user-error.njk');
 
         function foo(): void {
@@ -827,7 +825,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should pass errors from included templates to callback when async', (done: Done): void => {
+    it('should pass errors from included templates to callback when async', (done): void => {
       render(
         '{% include "broken-import.njk" %}',
         { str: 'abc' },
@@ -840,7 +838,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should compile string concatenations with tilde', (done: Done): void => {
+    it('should compile string concatenations with tilde', (done): void => {
       equal('{{ 4 ~ \'hello\' }}', '4hello');
       equal('{{ 4 ~ 5 }}', '45');
       equal('{{ \'a\' ~ \'b\' ~ 5 }}', 'ab5');
@@ -849,7 +847,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     describe('macros', () => {
-      it('should compile macros', (done: Done): void => {
+      it('should compile macros', (done): void => {
         equal(
           '{% macro foo() %}This is a macro{% endmacro %}' +
           '{{ foo() }}',
@@ -858,7 +856,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macros with optional args', (done: Done): void => {
+      it('should compile macros with optional args', (done): void => {
         equal(
           '{% macro foo(x, y) %}{{ y }}{% endmacro %}' +
           '{{ foo(1) }}',
@@ -867,7 +865,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macros with args that can be passed to filters', (done: Done): void => {
+      it('should compile macros with args that can be passed to filters', (done): void => {
         equal(
           '{% macro foo(x) %}{{ x|title }}{% endmacro %}' +
           '{{ foo("foo") }}',
@@ -876,7 +874,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macros with positional args', (done: Done): void => {
+      it('should compile macros with positional args', (done): void => {
         equal(
           '{% macro foo(x, y) %}{{ y }}{% endmacro %}' +
           '{{ foo(1, 2) }}',
@@ -885,7 +883,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macros with arg defaults', (done: Done): void => {
+      it('should compile macros with arg defaults', (done): void => {
         equal(
           '{% macro foo(x, y, z=5) %}{{ y }}{% endmacro %}' +
           '{{ foo(1, 2) }}',
@@ -898,7 +896,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macros with keyword args', (done: Done): void => {
+      it('should compile macros with keyword args', (done): void => {
         equal(
           '{% macro foo(x, y, z=5) %}{{ y }}{% endmacro %}' +
           '{{ foo(1, y=2) }}',
@@ -907,7 +905,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macros with only keyword args', (done: Done): void => {
+      it('should compile macros with only keyword args', (done): void => {
         equal(
           '{% macro foo(x, y, z=5) %}{{ x }}{{ y }}{{ z }}' +
           '{% endmacro %}' +
@@ -917,7 +915,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macros with keyword args overriding defaults', (done: Done): void => {
+      it('should compile macros with keyword args overriding defaults', (done): void => {
         equal(
           '{% macro foo(x, y, z=5) %}{{ x }}{{ y }}{{ z }}' +
           '{% endmacro %}' +
@@ -927,7 +925,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macros with out-of-order keyword args', (done: Done): void => {
+      it('should compile macros with out-of-order keyword args', (done): void => {
         equal(
           '{% macro foo(x, y=2, z=5) %}{{ x }}{{ y }}{{ z }}' +
           '{% endmacro %}' +
@@ -937,7 +935,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macros', (done: Done): void => {
+      it('should compile macros', (done): void => {
         equal(
           '{% macro foo(x, y=2, z=5) %}{{ x }}{{ y }}{{ z }}' +
           '{% endmacro %}' +
@@ -947,7 +945,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macros with multiple overridden arg defaults', (done: Done): void => {
+      it('should compile macros with multiple overridden arg defaults', (done): void => {
         equal(
           '{% macro foo(x, y=2, z=5) %}{{ x }}{{ y }}{{ z }}' +
           '{% endmacro %}' +
@@ -957,7 +955,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macro calls inside blocks', (done: Done): void => {
+      it('should compile macro calls inside blocks', (done): void => {
         equal(
           '{% extends "base.njk" %}' +
           '{% macro foo(x, y=2, z=5) %}{{ x }}{{ y }}{{ z }}' +
@@ -970,7 +968,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macros defined in one block and called in another', (done: Done): void => {
+      it('should compile macros defined in one block and called in another', (done): void => {
         equal(
           '{% block bar %}' +
           '{% macro foo(x, y=2, z=5) %}{{ x }}{{ y }}{{ z }}' +
@@ -984,7 +982,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macros that include other templates', (done: Done): void => {
+      it('should compile macros that include other templates', (done): void => {
         equal(
           '{% macro foo() %}{% include "include.njk" %}{% endmacro %}' +
           '{{ foo() }}',
@@ -994,7 +992,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macros that set vars', (done: Done): void => {
+      it('should compile macros that set vars', (done): void => {
         equal(
           '{% macro foo() %}{% set x = "foo"%}{{ x }}{% endmacro %}' +
           '{% set x = "bar" %}' +
@@ -1007,7 +1005,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should not leak variables set in macro to calling scope', (done: Done): void => {
+      it('should not leak variables set in macro to calling scope', (done): void => {
         equal(
           '{% macro setFoo() %}' +
           '{% set x = "foo" %}' +
@@ -1025,7 +1023,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should not leak variables set in nested scope within macro out to calling scope', (done: Done): void => {
+      it('should not leak variables set in nested scope within macro out to calling scope', (done): void => {
         equal(
           '{% macro setFoo() %}' +
           '{% for y in [1] %}{% set x = "foo" %}{{ x }}{% endfor %}' +
@@ -1043,7 +1041,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
 
-      it('should compile macros without leaking set to calling scope', (done: Done): void => {
+      it('should compile macros without leaking set to calling scope', (done): void => {
         // This test checks that the issue #577 is resolved.
         // If the bug is not fixed, and set variables leak into the
         // caller scope, there will be too many "foo"s here ("foofoofoo"),
@@ -1068,7 +1066,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile macros that cannot see variables in caller scope', (done: Done): void => {
+      it('should compile macros that cannot see variables in caller scope', (done): void => {
         equal(
           '{% macro one(var) %}{{ two() }}{% endmacro %}' +
           '{% macro two() %}{{ var }}{% endmacro %}' +
@@ -1078,7 +1076,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile call blocks', (done: Done): void => {
+      it('should compile call blocks', (done): void => {
         equal(
           '{% macro wrap(el) %}' +
           '<{{ el }}>{{ caller() }}</{{ el }}>' +
@@ -1090,7 +1088,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile call blocks with args', (done: Done): void => {
+      it('should compile call blocks with args', (done): void => {
         equal(
           '{% macro list(items) %}' +
           '<ul>{% for i in items %}' +
@@ -1104,7 +1102,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should compile call blocks using imported macros', (done: Done): void => {
+      it('should compile call blocks using imported macros', (done): void => {
         equal(
           '{% import "import.njk" as imp %}' +
           '{% call imp.wrap("span") %}Hey{% endcall %}',
@@ -1114,7 +1112,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
     describe('templates', () => {
-      it('should import templates', (done: Done): void => {
+      it('should import templates', (done): void => {
         equal(
           '{% import "import.njk" as imp %}' +
           '{{ imp.foo() }} {{ imp.bar }}',
@@ -1141,7 +1139,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should import templates with context', (done: Done): void => {
+      it('should import templates with context', (done): void => {
         equal(
           '{% set bar = "BAR" %}' +
           '{% import "import-context.njk" as imp with context %}' +
@@ -1182,7 +1180,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should import templates without context', (done: Done): void => {
+      it('should import templates without context', (done): void => {
         equal(
           '{% set bar = "BAR" %}' +
           '{% import "import-context.njk" as imp without context %}' +
@@ -1199,7 +1197,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should default to importing without context', (done: Done): void => {
+      it('should default to importing without context', (done): void => {
         equal(
           '{% set bar = "BAR" %}' +
           '{% import "import-context.njk" as imp %}' +
@@ -1216,7 +1214,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should inherit templates', (done: Done): void => {
+      it('should inherit templates', (done): void => {
         equal('{% extends "base.njk" %}', 'FooBarBazFizzle');
         equal('hola {% extends "base.njk" %} hizzle mumble', 'FooBarBazFizzle');
 
@@ -1237,7 +1235,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should not call blocks not defined from template inheritance', (done: Done): void => {
+      it('should not call blocks not defined from template inheritance', (done): void => {
         let count: number = 0;
         render(
           '{% extends "base.njk" %}' +
@@ -1251,7 +1249,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should conditionally inherit templates', (done: Done): void => {
+      it('should conditionally inherit templates', (done): void => {
         equal(
           '{% if false %}{% extends "base.njk" %}{% endif %}' +
           '{% block block1 %}BAR{% endblock %}',
@@ -1284,7 +1282,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should error if same block is defined multiple times', (done: Done): void => {
+      it('should error if same block is defined multiple times', (done): void => {
         const func: () => void = (): void => {
           render(
               '{% extends "simple-base.njk" %}' +
@@ -1298,7 +1296,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should render nested blocks in child template', (done: Done): void => {
+      it('should render nested blocks in child template', (done): void => {
         equal(
           '{% extends "base.njk" %}' +
           '{% block block1 %}{% block nested %}BAR{% endblock %}{% endblock %}',
@@ -1309,7 +1307,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
       describe('super', () => {
-        it('should render parent blocks with super()', (done: Done): void => {
+        it('should render parent blocks with super()', (done): void => {
           equal(
             '{% extends "base.njk" %}' +
             '{% block block1 %}{{ super() }}BAR{% endblock %}',
@@ -1325,7 +1323,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
         });
 
 
-        it('should let super() see global vars from child template', (done: Done): void => {
+        it('should let super() see global vars from child template', (done): void => {
           equal(
             '{% extends "base-show.njk" %}{% set var = "child" %}' +
             '{% block main %}{{ super() }}{% endblock %}',
@@ -1335,7 +1333,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
         });
 
 
-        it('should not let super() see vars from child block', (done: Done): void => {
+        it('should not let super() see vars from child block', (done): void => {
           equal(
             '{% extends "base-show.njk" %}' +
             '{% block main %}{% set var = "child" %}{{ super() }}{% endblock %}',
@@ -1347,7 +1345,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
       describe('self', () => {
-        it('should render blocks with self()', (done: Done): void => {
+        it('should render blocks with self()', (done): void => {
           equal(
               '{% extends "base.njk" %}' +
               '{% block block1 %}BAR{% endblock %}' +
@@ -1359,7 +1357,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should let child templates access parent global scope', (done: Done): void => {
+      it('should let child templates access parent global scope', (done): void => {
         equal(
           '{% extends "base-set.njk" %}' +
           '{% block main %}{{ var }}{% endblock %}',
@@ -1369,7 +1367,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should not let super() modify calling scope', (done: Done): void => {
+      it('should not let super() modify calling scope', (done): void => {
         equal(
           '{% extends "base-set-inside-block.njk" %}' +
           '{% block main %}{{ super() }}{{ var }}{% endblock %}',
@@ -1379,7 +1377,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should not let child templates set vars in parent scope', (done: Done): void => {
+      it('should not let child templates set vars in parent scope', (done): void => {
         equal(
           '{% extends "base-set-and-show.njk" %}' +
           '{% block main %}{% set var = "child" %}{% endblock %}',
@@ -1389,7 +1387,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should render blocks in their own scope', (done: Done): void => {
+      it('should render blocks in their own scope', (done): void => {
         equal(
           '{% set var = "parent" %}' +
           '{% block main %}{% set var = "inner" %}{% endblock %}' +
@@ -1400,21 +1398,21 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should include templates', (done: Done): void => {
+      it('should include templates', (done): void => {
         equal('hello world {% include "include.njk" %}',
           'hello world FooInclude ');
         finish(done);
       });
 
 
-      it('should include 130 templates without call stack size exceed', (done: Done): void => {
+      it('should include 130 templates without call stack size exceed', (done): void => {
         equal('{% include "includeMany.njk" %}',
           new Array(131).join('FooInclude \n'));
         finish(done);
       });
 
 
-      it('should include templates with context', (done: Done): void => {
+      it('should include templates with context', (done): void => {
         equal('hello world {% include "include.njk" %}',
           { name: 'james' },
           'hello world FooInclude james');
@@ -1422,13 +1420,13 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should include templates that can see including scope, but not write to it', (done: Done): void => {
+      it('should include templates that can see including scope, but not write to it', (done): void => {
         equal('{% set var = 1 %}{% include "include-set.njk" %}{{ var }}', '12\n1');
         finish(done);
       });
 
 
-      it('should include templates dynamically', (done: Done): void => {
+      it('should include templates dynamically', (done): void => {
         equal('hello world {% include tmpl %}',
           {
             name: 'thedude',
@@ -1439,7 +1437,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should include templates dynamically based on a set var', (done: Done): void => {
+      it('should include templates dynamically based on a set var', (done): void => {
         equal('hello world {% set tmpl = "include.njk" %}{% include tmpl %}',
           { name: 'thedude' },
           'hello world FooInclude thedude');
@@ -1447,7 +1445,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should include templates dynamically based on an object attr', (done: Done): void => {
+      it('should include templates dynamically based on an object attr', (done): void => {
         equal('hello world {% include data.tmpl %}',
           {
             name: 'thedude',
@@ -1459,7 +1457,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should throw an error when including a file that does not exist', (done: Done): void => {
+      it('should throw an error when including a file that does not exist', (done): void => {
         render(
           '{% include "missing.njk" %}',
           {},
@@ -1474,7 +1472,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should fail silently on missing templates if requested', (done: Done): void => {
+      it('should fail silently on missing templates if requested', (done): void => {
         equal('hello world {% include "missing.njk" ignore missing %}',
           'hello world ');
 
@@ -1490,7 +1488,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
      * This test checks that this issue is resolved: http://stackoverflow.com/questions/21777058/loop-index-in-included-nunjucks-file
      */
 
-    it('should have access to "loop" inside an include', (done: Done): void => {
+    it('should have access to "loop" inside an include', (done): void => {
       equal('{% for item in [1,2,3] %}{% include "include-in-loop.njk" %}{% endfor %}',
         '1,0,true\n2,1,false\n3,2,false\n');
 
@@ -1507,7 +1505,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should maintain nested scopes', (done: Done): void => {
+    it('should maintain nested scopes', (done): void => {
       equal(
         '{% for i in [1,2] %}' +
         '{% for i in [3,4] %}{{ i }}{% endfor %}' +
@@ -1518,7 +1516,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should allow blocks in for loops', (done: Done): void => {
+    it('should allow blocks in for loops', (done): void => {
       equal(
         '{% extends "base2.njk" %}' +
         '{% block item %}hello{{ item }}{% endblock %}',
@@ -1528,7 +1526,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should make includes inherit scope', (done: Done): void => {
+    it('should make includes inherit scope', (done): void => {
       equal(
         '{% for item in [1,2] %}' +
         '{% include "item.njk" %}' +
@@ -1539,7 +1537,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should compile a set block', (done: Done): void => {
+    it('should compile a set block', (done): void => {
       equal('{% set username = "foo" %}{{ username }}',
         { username: 'james' },
         'foo');
@@ -1597,7 +1595,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should compile set with frame references', (done: Done): void => {
+    it('should compile set with frame references', (done): void => {
       equal('{% set username = user.name %}{{ username }}',
         { user: { name: 'james' } },
         'james');
@@ -1606,7 +1604,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should compile set assignments of the same variable', (done: Done): void => {
+    it('should compile set assignments of the same variable', (done): void => {
       equal(
         '{% set x = "hello" %}' +
         '{% if false %}{% set x = "world" %}{% endif %}' +
@@ -1623,7 +1621,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should compile block-set', (done: Done): void => {
+    it('should compile block-set', (done): void => {
       equal(
         '{% set block_content %}{% endset %}' +
         '{{ block_content }}',
@@ -1688,7 +1686,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should compile block-set wrapping an inherited block', (done: Done): void => {
+    it('should compile block-set wrapping an inherited block', (done): void => {
       equal(
         '{% extends "base-set-wraps-block.njk" %}' +
         '{% block somevar %}foo{% endblock %}',
@@ -1698,7 +1696,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should throw errors', (done: Done): void => {
+    it('should throw errors', (done): void => {
       render('{% from "import.njk" import boozle %}',
         {},
         { noThrow: true },
@@ -1710,7 +1708,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should allow custom tag compilation', (done: Done): void => {
+    it('should allow custom tag compilation', (done): void => {
       equal('{% test %}123456789{% endtest %}', null,
         { extensions: { TestExtension: new ShouldAllowCustomTagCompilationExtension() } },
         '987654321');
@@ -1719,7 +1717,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should allow custom tag compilation without content', (done: Done): void => {
+    it('should allow custom tag compilation without content', (done): void => {
       function TestExtension(): void {
         // jshint validthis: true
         this.tags = [ 'test' ];
@@ -1729,7 +1727,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
           const args = parser.parseSignature(null, true);
           parser.advanceAfterBlockEnd(tok.value);
 
-          return new CallExtension(this, 'run', args, null);
+          return new nodes.CallExtension(this, 'run', args, null);
         };
 
         this.run = (context, arg1) => {
@@ -1746,21 +1744,21 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should allow complicated custom tag compilation', (done: Done): void => {
+    it('should allow complicated custom tag compilation', (done): void => {
       equal('{% test %}abcdefg{% endtest %}', null,
-        { extensions: { TestExtension: new ShouldAllowComplicatedCustomTagCompilationExtension() } },
+        { extensions: { TestExtension: new ShouldAllowComplicatedCustomTagCompilationExtension(TokenType) } },
         'a,b,c,d,e,f,g');
 
       equal('{% test %}abcdefg{% intermediate %}second half{% endtest %}',
         null,
-        { extensions: { TestExtension: new ShouldAllowComplicatedCustomTagCompilationExtension() } },
+        { extensions: { TestExtension: new ShouldAllowComplicatedCustomTagCompilationExtension(TokenType) } },
         'a,b,c,d,e,f,gflah dnoces');
 
       finish(done);
     });
 
 
-    it('should allow custom tag with args compilation', (done: Done): void => {
+    it('should allow custom tag with args compilation', (done): void => {
       let opts = { extensions: { TestExtension: new ShouldAllowCustomTagWithArgsCompilationExtension() } };
       equal(
         '{% test %}foobar{% endtest %}', null, opts,
@@ -1778,13 +1776,13 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should autoescape by default', (done: Done): void => {
+    it('should autoescape by default', (done): void => {
       equal('{{ foo }}', { foo: '"\'<>&' }, '&quot;&#39;&lt;&gt;&amp;');
       finish(done);
     });
 
 
-    it('should autoescape if autoescape is on', (done: Done): void => {
+    it('should autoescape if autoescape is on', (done): void => {
       equal(
         '{{ foo }}',
         { foo: '"\'<>&' },
@@ -1847,7 +1845,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should not autoescape safe strings', (done: Done): void => {
+    it('should not autoescape safe strings', (done): void => {
       equal(
         '{{ foo|safe }}',
         { foo: '"\'<>&' },
@@ -1858,7 +1856,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should not autoescape macros', (done: Done): void => {
+    it('should not autoescape macros', (done): void => {
       render(
         '{% macro foo(x, y) %}{{ x }} and {{ y }}{% endmacro %}' +
         '{{ foo("<>&", "<>") }}',
@@ -1883,7 +1881,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should not autoescape super()', (done: Done): void => {
+    it('should not autoescape super()', (done): void => {
       render(
         '{% extends "base3.njk" %}' +
         '{% block block1 %}{{ super() }}{% endblock %}',
@@ -1898,7 +1896,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should not autoescape when extension set false', (done: Done): void => {
+    it('should not autoescape when extension set false', (done): void => {
       function TestExtension(): void {
         // jshint validthis: true
         this.tags = [ 'test' ];
@@ -1909,7 +1907,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
           const tok = parser.parserTokenStream.nextToken();
           const args = parser.parseSignature(null, true);
           parser.advanceAfterBlockEnd(tok.value);
-          return new CallExtension(this, 'run', args, null);
+          return new nodes.CallExtension(this, 'run', args, null);
         };
 
         this.run = (): string => {
@@ -1934,7 +1932,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should pass context as this to filters', (done: Done): void => {
+    it('should pass context as this to filters', (done): void => {
       render(
         '{{ foo | hallo }}',
         { foo: 1, bar: 2 },
@@ -1954,7 +1952,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should render regexs', (done: Done): void => {
+    it('should render regexs', (done): void => {
       equal('{{ r/name [0-9] \\// }}',
         '/name [0-9] \\//');
 
@@ -1965,7 +1963,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should throw an error when {% call %} is passed an object that is not a function', (done: Done): void => {
+    it('should throw an error when {% call %} is passed an object that is not a function', (done): void => {
       render(
         '{% call foo() %}{% endcall %}',
         { foo: 'bar' },
@@ -1979,7 +1977,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should throw an error when including a file that calls an undefined macro', (done: Done): void => {
+    it('should throw an error when including a file that calls an undefined macro', (done): void => {
       render(
         '{% include "undefined-macro.njk" %}',
         {},
@@ -1994,7 +1992,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should throw an error when including a file that calls an undefined macro even inside {% if %} tag', (done: Done): void => {
+    it('should throw an error when including a file that calls an undefined macro even inside {% if %} tag', (done): void => {
       render(
         '{% if true %}{% include "undefined-macro.njk" %}{% endif %}',
         {},
@@ -2009,7 +2007,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should throw an error when including a file that imports macro that calls an undefined macro', (done: Done): void => {
+    it('should throw an error when including a file that imports macro that calls an undefined macro', (done): void => {
       render(
         '{% include "import-macro-call-undefined-macro.njk" %}',
         { list: [ 1, 2, 3 ] },
@@ -2025,7 +2023,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
 
-    it('should control whitespaces correctly', (done: Done): void => {
+    it('should control whitespaces correctly', (done): void => {
       equal(
         '{% if true -%}{{"hello"}} {{"world"}}{% endif %}',
         'hello world');
@@ -2043,7 +2041,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should control expression whitespaces correctly', (done: Done): void => {
+    it('should control expression whitespaces correctly', (done): void => {
       equal(
         'Well, {{- \' hello, \' -}} my friend',
         'Well, hello, my friend'
@@ -2061,7 +2059,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should get right value when macro parameter conflict with global macro name', (done: Done): void => {
+    it('should get right value when macro parameter conflict with global macro name', (done): void => {
       render(
         '{# macro1 and macro2 definition #}' +
         '{% macro macro1() %}' +
@@ -2080,7 +2078,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should get right value when macro include macro', (done: Done): void => {
+    it('should get right value when macro include macro', (done): void => {
       render(
         '{# macro1 and macro2 definition #}' +
         '{% macro macro1() %} foo' +
@@ -2099,7 +2097,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should allow access to outer scope in call blocks', (done: Done): void => {
+    it('should allow access to outer scope in call blocks', (done): void => {
       render(
         '{% macro inside() %}' +
         '{{ caller() }}' +
@@ -2118,7 +2116,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     });
 
 
-    it('should not leak scope from call blocks to parent', (done: Done): void => {
+    it('should not leak scope from call blocks to parent', (done): void => {
       render(
         '{% set var = "expected" %}' +
         '{% macro inside() %}' +
@@ -2139,7 +2137,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     if (!isSlim) {
-      it('should import template objects', (done: Done): void => {
+      it('should import template objects', (done): void => {
         const tmpl = new Template('{% macro foo() %}Inside a macro{% endmacro %}' +
             '{% set bar = "BAZ" %}');
 
@@ -2159,7 +2157,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should inherit template objects', (done: Done): void => {
+      it('should inherit template objects', (done): void => {
         const tmpl = new Template('Foo{% block block1 %}Bar{% endblock %}' +
             '{% block block2 %}Baz{% endblock %}Whizzle');
 
@@ -2178,7 +2176,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should include template objects', (done: Done): void => {
+      it('should include template objects', (done): void => {
         const tmpl = new Template('FooInclude {{ name }}');
 
         equal('hello world {% include tmpl %}',
@@ -2192,7 +2190,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
 
 
-      it('should throw an error when invalid expression whitespaces are used', (done: Done): void => {
+      it('should throw an error when invalid expression whitespaces are used', (done): void => {
         render(
           ' {{ 2 + 2- }}',
           {},
@@ -2210,28 +2208,28 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
   describe('the filter tag', (): void => {
-    it('should apply the title filter to the body', (done: Done): void => {
+    it('should apply the title filter to the body', (done): void => {
       equal('{% filter title %}may the force be with you{% endfilter %}',
         'May The Force Be With You');
       finish(done);
     });
 
 
-    it('should apply the replace filter to the body', (done: Done): void => {
+    it('should apply the replace filter to the body', (done): void => {
       equal('{% filter replace("force", "forth") %}may the force be with you{% endfilter %}',
         'may the forth be with you');
       finish(done);
     });
 
 
-    it('should work with variables in the body', (done: Done): void => {
+    it('should work with variables in the body', (done): void => {
       equal('{% set foo = "force" %}{% filter replace("force", "forth") %}may the {{ foo }} be with you{% endfilter %}',
         'may the forth be with you');
       finish(done);
     });
 
 
-    it('should work with blocks in the body', (done: Done): void => {
+    it('should work with blocks in the body', (done): void => {
       equal(
         '{% extends "filter-block.html" %}' +
         '{% block block1 %}force{% endblock %}',
@@ -2243,12 +2241,12 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
 
-class ShouldAllowCustomTagWithArgsCompilationExtension implements IExtension {
+class ShouldAllowCustomTagWithArgsCompilationExtension {
   readonly tags: string[] = [ 'test' ];
   readonly _name: Function = this.constructor;
 
 
-  public parse(parser: Parser, nodes) {
+  public parse(parser, nodes) {
     const tok = parser.parserTokenStream.nextToken();
 
     // passing true makes it tolerate when no args exist
@@ -2258,7 +2256,7 @@ class ShouldAllowCustomTagWithArgsCompilationExtension implements IExtension {
     let body = parser.parseUntilBlocks('endtest');
     parser.advanceAfterBlockEnd();
 
-    return new CallExtension(this, 'run', args, [ body ]);
+    return new nodes.CallExtension(this, 'run', args, [ body ]);
   }
 
 
@@ -2283,25 +2281,26 @@ class ShouldAllowCustomTagWithArgsCompilationExtension implements IExtension {
 
 
 
-class ShouldAllowComplicatedCustomTagCompilationExtension implements IExtension {
+class ShouldAllowComplicatedCustomTagCompilationExtension {
   readonly tags: string[] = [ 'test' ];
   readonly _name: Function = this.constructor;
 
+  constructor(private readonly TokenType) { }
 
-  public parse(parser, nodes): CallExtension {
+  public parse(parser, nodes) {
     let intermediate = null;
 
     parser.advanceAfterBlockEnd();
 
     let body = parser.parseUntilBlocks('intermediate', 'endtest');
     if (parser.skipSymbol('intermediate')) {
-      parser.skip(TokenType.TOKEN_BLOCK_END);
+      parser.skip(this.TokenType.TOKEN_BLOCK_END);
       intermediate = parser.parseUntilBlocks('endtest');
     }
 
     parser.advanceAfterBlockEnd();
 
-    return new CallExtension(this, 'run', null, [ body, intermediate ]);
+    return new nodes.CallExtension(this, 'run', null, [ body, intermediate ]);
   }
 
 
@@ -2317,15 +2316,15 @@ class ShouldAllowComplicatedCustomTagCompilationExtension implements IExtension 
 
 
 
-class ShouldAllowCustomTagCompilationExtension implements IExtension {
+class ShouldAllowCustomTagCompilationExtension {
   readonly tags: string[] = [ 'test' ];
 
 
-  public parse(parser, nodes): CallExtension {
+  public parse(parser, nodes) {
     parser.advanceAfterBlockEnd();
 
-    let content: NunjucksNodeList = parser.parseUntilBlocks('endtest');
-    let tag: CallExtension = new CallExtension(this, 'run', null, [ content ]);
+    let content = parser.parseUntilBlocks('endtest');
+    let tag = new nodes.CallExtension(this, 'run', null, [ content ]);
     parser.advanceAfterBlockEnd();
 
     return tag;

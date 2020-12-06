@@ -1,12 +1,4 @@
-import { ILoader } from '../nunjucks/src/interfaces/ILoader';
-import { IEnvironment } from '../nunjucks/src/interfaces/IEnvironment';
-import { IContext } from '../nunjucks/src/interfaces/IContext';
-import { IExtensionOption } from '../nunjucks/src/interfaces/IExtensionOption';
-import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
-
-
-
-((() => {
+(function() {
   /* eslint-disable vars-on-top */
   let nunjucks;
   let nunjucksFull;
@@ -55,7 +47,7 @@ import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
   });
 
 
-  function equal(str: string, ctx: IContext, opts, str2, env?): void;
+  function equal(str: string, ctx, opts, str2, env?): void;
   function equal(str: string, ctx: string, opts, str2, env?): void;
   function equal(str: string, ctx, opts, str2, env?): void {
     if (typeof ctx === 'string') {
@@ -113,7 +105,7 @@ import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
   }
 
 
-  function configureEnvironmentAux(ctx, cb, opts, env: IEnvironment): { ctx, cb, opts, env: IEnvironment | null } {
+  function configureEnvironmentAux(ctx, cb, opts, env): { ctx, cb, opts, env } {
     if (typeof ctx === 'function') {
       cb = ctx;
       ctx = null;
@@ -136,15 +128,15 @@ import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
   }
 
 
-  function configureEnvironment(ctx: IContext, cb, opts, env: IEnvironment | null):
+  function configureEnvironment(ctx, cb, opts, env):
       {
-        ctx: IContext,
+        ctx,
         cb,
         opts,
-        loader: ILoader,
-        e: IEnvironment
+        loader,
+        e
       } {
-    const __ret: { ctx; cb; opts; env: IEnvironment } = configureEnvironmentAux(ctx, cb, opts, env);
+    const __ret: { ctx; cb; opts; env} = configureEnvironmentAux(ctx, cb, opts, env);
     ctx = __ret.ctx;
     cb = __ret.cb;
     opts = __ret.opts;
@@ -153,8 +145,8 @@ import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
     opts = opts || {};
     opts.dev = true;
 
-    let loader: ILoader;
-    let e: IEnvironment;
+    let loader;
+    let e;
 
     if (isSlim) {
       e = env || new Environment([], opts);
@@ -173,7 +165,7 @@ import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
   }
 
 
-  function loadFilters(opts, e: IEnvironment): void {
+  function loadFilters(opts, e): void {
     if (opts.filters) {
       let name: string | number;
       for (name in opts.filters) {
@@ -185,7 +177,7 @@ import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
   }
 
 
-  function loadAsyncFilters(opts, e: IEnvironment): void {
+  function loadAsyncFilters(opts, e): void {
     if (opts.asyncFilters) {
       let name: string | number;
       for (name in opts.asyncFilters) {
@@ -197,7 +189,7 @@ import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
   }
 
 
-  function loadExtensions(opts: IExtensionOption, e: IEnvironment): void {
+  function loadExtensions(opts, e): void {
     if (opts.extensions) {
       let name: string | number;
       for (name in opts.extensions) {
@@ -209,7 +201,7 @@ import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
   }
 
 
-  function loadTemplate(str: string, e: IEnvironment, ctx: Record<string, any>, loader: ILoader): { t: ITemplate; ctx: IContext } {
+  function loadTemplate(str: string, e, ctx: Record<string, any>, loader): { t; ctx } {
     let tmplName: string;
     if (isSlim) {
       tmplName = randomTemplateName();
@@ -223,7 +215,7 @@ import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
 
     ctx = ctx || {};
 
-    let t: ITemplate;
+    let t;
 
     if (isSlim) {
       const tmplSource = loader.getSource(tmplName);
@@ -235,7 +227,7 @@ import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
   }
 
 
-  function doRender(cb, t: ITemplate, ctx: IContext, opts): string | undefined {
+  function doRender(cb, t, ctx, opts): string | undefined {
     if (cb) {
       numAsyncs++;
       t.render(ctx, function(err, res): void {
@@ -268,15 +260,15 @@ import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
 
 
 // eslint-disable-next-line consistent-return
-  function render(str: string, ctx: IContext, opts, env, cb?) {
-    const environmentConfig: { ctx; cb; opts; loader: ILoader; e: IEnvironment } = configureEnvironment(ctx, cb, opts, env);
+  function render(str: string, ctx, opts, env, cb?) {
+    const environmentConfig: { ctx; cb; opts; loader; e} = configureEnvironment(ctx, cb, opts, env);
     ctx = environmentConfig.ctx;
 
     loadFilters(environmentConfig.opts, environmentConfig.e);
     loadAsyncFilters(environmentConfig.opts, environmentConfig.e);
     loadExtensions(environmentConfig.opts, environmentConfig.e);
 
-    const __ret: { t: ITemplate; ctx: IContext } = loadTemplate(str, environmentConfig.e, ctx, environmentConfig.loader);
+    const __ret: { t; ctx } = loadTemplate(str, environmentConfig.e, ctx, environmentConfig.loader);
     ctx = __ret.ctx;
 
     return doRender(environmentConfig.cb, __ret.t, ctx, environmentConfig.opts);
@@ -302,4 +294,4 @@ import { ITemplate } from '../nunjucks/src/interfaces/ITemplate';
       Loader: Loader,
     };
   }
-})());
+}());

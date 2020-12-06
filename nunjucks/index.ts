@@ -1,9 +1,7 @@
 'use strict';
 
-import { WebLoader, PrecompiledLoader } from './src/loaders/web-loaders';
-import { NodeResolveLoader } from './src/loaders/node-resolve-loader';
-import { FileSystemLoader } from './src/loaders/FileSystemLoader';
 import { Loader } from './src/loaders/loader';
+const loaders = require('./src/loaders/loaders');
 import { Compiler } from './src/compiler/compiler';
 import { precompile, precompileString } from './src/compiler/precompile/precompile';
 import { Parser } from './src/compiler/parser/parser';
@@ -18,6 +16,9 @@ import * as nodes from './src/nodes/nodes';
 import { Environment } from './src/environment/environment';
 import { Template } from './src/environment/template';
 import { IEnvironmentOptions } from './src/interfaces/IEnvironmentOptions';
+import { TokenType } from './src/compiler/lexer/tokenType';
+import { NunjucksNode, NunjucksNodeList, ArrayNode, Dict } from './src/nodes/nodes';
+import { NunjucksSymbol } from './src/runtime/runtime';
 
 // A single instance of an environment, since this is so commonly used
 let e;
@@ -39,13 +40,13 @@ function configure(templatesPath?: string | IEnvironmentOptions, opts?: IEnviron
   }
 
   let TemplateLoader;
-  if (FileSystemLoader) {
-    TemplateLoader = new FileSystemLoader(templatesPath as string, {
+  if (loaders.FileSystemLoader) {
+    TemplateLoader = new loaders.FileSystemLoader(templatesPath as string, {
       watch: opts.watch,
       noCache: opts.noCache
     });
-  } else if (WebLoader) {
-    TemplateLoader = new WebLoader(templatesPath as string, {
+  } else if (loaders.WebLoader) {
+    TemplateLoader = new loaders.WebLoader(templatesPath as string, {
       useCache: opts.web && opts.web.useCache,
       async: opts.web && opts.web.async
     });
@@ -66,10 +67,10 @@ module.exports = {
   Environment: Environment,
   Template: Template,
   Loader: Loader,
-  FileSystemLoader: FileSystemLoader,
-  NodeResolveLoader: NodeResolveLoader,
-  PrecompiledLoader: PrecompiledLoader,
-  WebLoader: WebLoader,
+  FileSystemLoader: loaders.FileSystemLoader,
+  NodeResolveLoader: loaders.NodeResolveLoader,
+  PrecompiledLoader: loaders.PrecompiledLoader,
+  WebLoader: loaders.WebLoader,
   compiler: Compiler,
   Compiler: Compiler,
   parser: Parser,
@@ -115,4 +116,10 @@ module.exports = {
   precompileString: precompileString ?? undefined,
 
   Context: Context,
+  TokenType: TokenType,
+  NunjucksNode: NunjucksNode,
+  NunjucksNodeList: NunjucksNodeList,
+  NunjucksSymbol: NunjucksSymbol,
+  ArrayNode: ArrayNode,
+  Dict: Dict
 };

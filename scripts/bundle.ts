@@ -2,13 +2,14 @@
 /* eslint-disable vars-on-top, func-names */
 
 import * as path from 'path';
-import * as UglifyJsPlugin from 'uglifyjs-webpack-plugin';
-
 import { BannerPlugin, Configuration, DefinePlugin, DevtoolModuleFilenameTemplateInfo, Plugin, Stats } from 'webpack';
-const webpack = require('webpack');
 import { IBundleType } from './IBundleType';
 import { IUglifyJSConfig } from './IUglifyJSConfig';
 import { promiseSequence } from './lib/utils';
+
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+
+const webpack = require('webpack');
 
 
 require('module-alias/register');
@@ -25,11 +26,35 @@ function getPathResolver(opts: IBundleType): (sourcePath: string) => (string | n
     } else if (opts.slim && sourcePath.match(/(nodes|lexer|parser|precompile|transformer|compiler)(\.js)?$/)) {
       return 'node-libs-browser/mock/empty';
     } else if (sourcePath.match(/\/loaders(\.js)?$/)) {
-      return sourcePath.replace('loaders', opts.slim ? 'precompiled-loader' : 'web-loaders');
+      return replaceLast(sourcePath, 'loaders', opts.slim ? 'precompiled-loader' : 'web-loaders');
     } else {
       return null;
     }
   };
+}
+
+
+function replaceLast(str: string | null | undefined,
+                     substring: string | null | undefined, withValue: string | null | undefined): string {
+  const asRegExp: RegExp = new RegExp(substring ?? '');
+  const parts: string[] = (str ?? '').split(asRegExp);
+
+  if (parts.length > 0) {
+    let reassembled: string = '';
+    let lastElementIndex: number = parts.length - 1;
+    for (let i = 0; i < lastElementIndex; i++) {
+      if (i > 0) {
+        reassembled += (substring ?? '');
+      }
+      reassembled += parts[i];
+    }
+    reassembled += withValue;
+    reassembled += parts[lastElementIndex];
+
+    return reassembled;
+  } else {
+    return str;
+  }
 }
 
 

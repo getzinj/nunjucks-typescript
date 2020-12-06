@@ -7,7 +7,7 @@ import * as filters from './filters/filters';
 import * as lib from '../lib';
 import waterfall from 'a-sync-waterfall';
 import { Loader } from '../loaders/loader';
-import { WebLoader, PrecompiledLoader } from '../loaders/web-loaders';
+import { PrecompiledLoader } from '../loaders/web-loaders';
 import { globals } from './globals';
 import { noopTmplSrc } from './noopTmplSrc';
 import { callbackAsap } from './callbackAsap';
@@ -21,6 +21,7 @@ import { Template } from './template';
 import { EventEmitter } from 'events';
 import { ITemplateClass } from '../interfaces/ITemplateClass';
 import { ITest } from '../interfaces/ITest';
+import { WebLoader } from '../loaders/web-loader';
 
 
 export class Environment extends EventEmitter implements IEnvironment {

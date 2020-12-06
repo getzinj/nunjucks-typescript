@@ -1,6 +1,3 @@
-import { Done } from 'mocha';
-import { Loader } from '../nunjucks/src/loaders/loader';
-
 declare var nunjucks;
 
 (((): void => {
@@ -18,8 +15,8 @@ declare var nunjucks;
     expect = require('expect.js');
     Environment = require('../nunjucks/src/environment/environment').Environment;
     WebLoader = require('../nunjucks/src/loaders/web-loaders').WebLoader;
-    FileSystemLoader = require('../nunjucks/src/loaders/FileSystemLoader').FileSystemLoader;
-    NodeResolveLoader = require('../nunjucks/src/loaders/node-resolve-loader').NodeResolveLoader;
+    FileSystemLoader = require('../nunjucks/src/loaders/node-loaders').FileSystemLoader;
+    NodeResolveLoader = require('../nunjucks/src/loaders/node-loaders').NodeResolveLoader;
     templatesPath = 'tests/templates';
   } else {
     expect = window['expect'];
@@ -85,8 +82,8 @@ declare var nunjucks;
       });
 
 
-      it('should emit a "load" event', function(done: Done): void {
-        const loader: Loader = new WebLoader(templatesPath);
+      it('should emit a "load" event', function(done): void {
+        const loader = new WebLoader(templatesPath);
 
         if (typeof window === 'undefined') {
           this.skip();
@@ -111,8 +108,8 @@ declare var nunjucks;
         });
 
 
-        it('should emit a "load" event', (done: Done): void => {
-          const loader: Loader = new FileSystemLoader(templatesPath);
+        it('should emit a "load" event', (done): void => {
+          const loader = new FileSystemLoader(templatesPath);
           loader.on('load', (name, source): void => {
             expect(name).to.equal('simple-base.njk');
             done();
@@ -132,8 +129,8 @@ declare var nunjucks;
         });
 
 
-        it('should emit a "load" event', (done: Done): void => {
-          const loader: Loader = new NodeResolveLoader();
+        it('should emit a "load" event', (done): void => {
+          const loader = new NodeResolveLoader();
           loader.on('load', (name, source): void => {
             expect(name).to.equal('dummy-pkg/simple-template.html');
             done();
@@ -152,8 +149,7 @@ declare var nunjucks;
 
         it('should not allow directory traversal', (): void => {
           const loader = new NodeResolveLoader();
-          const dummyPkgPath: string = require.resolve('dummy-pkg/simple-template.html');
-          expect(loader.getSource(dummyPkgPath)).to.be(null);
+          expect(loader.getSource('dummy-pkg/simple-template.html')).to.be(null);
         });
 
 

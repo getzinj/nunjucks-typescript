@@ -1,5 +1,3 @@
-import { Done } from 'mocha';
-
 declare var nunjucks;
 
 ((() => {
@@ -31,14 +29,14 @@ declare var nunjucks;
 
 
   describe('filter', () => {
-    it('abs', (done: Done) => {
+    it('abs', (done) => {
       equal('{{ -3|abs }}', '3');
       equal('{{ -3.456|abs }}', '3.456');
       finish(done);
     });
 
 
-    it('batch', (done: Done) => {
+    it('batch', (done) => {
       equal(
         [
           '{% for a in [1,2,3,4,5,6]|batch(2) %}',
@@ -52,7 +50,7 @@ declare var nunjucks;
     });
 
 
-    it('capitalize', (done: Done) => {
+    it('capitalize', (done) => {
       equal('{{ "foo" | capitalize }}', 'Foo');
       equal('{{ str | capitalize }}', { str: r.markSafe('foo') }, 'Foo');
       equal('{{ undefined | capitalize }}', '');
@@ -62,7 +60,7 @@ declare var nunjucks;
     });
 
 
-    it('center', (done: Done) => {
+    it('center', (done) => {
       equal('{{ "fooo" | center }}',
         lib.repeat(' ', 38) + 'fooo' +
         lib.repeat(' ', 38));
@@ -90,7 +88,7 @@ declare var nunjucks;
     });
 
 
-    it('default', (done: Done) => {
+    it('default', (done) => {
       equal('{{ undefined | default("foo") }}', 'foo');
       equal('{{ bar | default("foo") }}', { bar: null }, '');
       equal('{{ false | default("foo") }}', 'false');
@@ -183,7 +181,7 @@ declare var nunjucks;
     });
 
 
-    it('dictsort', (done: Done) => {
+    it('dictsort', (done) => {
       // no real foolproof way to test that a js obj has been transformed
       // from unsorted -> sorted, as its enumeration ordering is undefined
       // and might fluke being sorted originally .. lets just init with some jumbled
@@ -233,7 +231,7 @@ declare var nunjucks;
     });
 
 
-    it('first', (done: Done) => {
+    it('first', (done) => {
       equal('{{ [1,2,3] | first }}', '1');
       finish(done);
     });
@@ -245,7 +243,7 @@ declare var nunjucks;
     });
 
 
-    it('forceescape', (done: Done) => {
+    it('forceescape', (done) => {
       equal('{{ str | forceescape }}', { str: r.markSafe('<html>') }, '&lt;html&gt;');
       equal('{{ "<html>" | safe | forceescape }}', '&lt;html&gt;');
       finish(done);
@@ -271,7 +269,7 @@ declare var nunjucks;
     });
 
 
-    it('groupby', (done: Done) => {
+    it('groupby', (done) => {
       const namesContext = {
         items: [ {
           name: 'james',
@@ -414,7 +412,7 @@ declare var nunjucks;
     });
 
 
-    it('indent', (done: Done) => {
+    it('indent', (done) => {
       equal('{{ "one\ntwo\nthree" | indent }}',
         'one\n    two\n    three');
       equal('{{ "one\ntwo\nthree" | indent(2) }}',
@@ -440,7 +438,7 @@ declare var nunjucks;
     });
 
 
-    it('join', (done: Done) => {
+    it('join', (done) => {
       equal('{{ items | join }}',
         { items: [ 1, 2, 3 ] },
         '123');
@@ -460,7 +458,7 @@ declare var nunjucks;
     });
 
 
-    it('last', (done: Done) => {
+    it('last', (done) => {
       equal('{{ [1,2,3] | last }}', '3');
       finish(done);
     });
@@ -560,7 +558,7 @@ declare var nunjucks;
     });
 
 
-    it('list', (done: Done) => {
+    it('list', (done) => {
       const person = {
         name: 'Joe',
         age: 83
@@ -574,7 +572,7 @@ declare var nunjucks;
     });
 
 
-    it('lower', (done: Done) => {
+    it('lower', (done) => {
       equal('{{ "fOObAr" | lower }}', 'foobar');
       equal('{{ str | lower }}', { str: r.markSafe('fOObAr') }, 'foobar');
       equal('{{ null | lower }}', '');
@@ -584,7 +582,7 @@ declare var nunjucks;
     });
 
 
-    it('nl2br', (done: Done) => {
+    it('nl2br', (done) => {
       equal('{{ null | nl2br }}', '');
       equal('{{ undefined | nl2br }}', '');
       equal('{{ nothing | nl2br }}', '');
@@ -596,7 +594,7 @@ declare var nunjucks;
     });
 
 
-    it('random', (done: Done) => {
+    it('random', (done) => {
       let i;
       for (i = 0; i < 100; i++) {
         render('{{ [1,2,3,4,5,6,7,8,9] | random }}', (err, res) => {
@@ -609,7 +607,7 @@ declare var nunjucks;
     });
 
 
-    it('reject', (done: Done) => {
+    it('reject', (done) => {
       const context = { numbers: [ 0, 1, 2, 3, 4, 5 ] };
 
       equal('{{ numbers | reject("odd") | join }}', context, '024');
@@ -624,14 +622,14 @@ declare var nunjucks;
     });
 
 
-    it('rejectattr', (done: Done) => {
+    it('rejectattr', (done) => {
       const foods = [ { tasty: true }, { tasty: false }, { tasty: true } ];
       equal('{{ foods | rejectattr("tasty") | length }}', { foods: foods }, '1');
       finish(done);
     });
 
 
-    it('select', (done: Done) => {
+    it('select', (done) => {
       const context = { numbers: [ 0, 1, 2, 3, 4, 5 ] };
 
       equal('{{ numbers | select("odd") | join }}', context, '135');
@@ -646,14 +644,14 @@ declare var nunjucks;
     });
 
 
-    it('selectattr', (done: Done) => {
+    it('selectattr', (done) => {
       const foods = [ { tasty: true }, { tasty: false }, { tasty: true } ];
       equal('{{ foods | selectattr("tasty") | length }}', { foods: foods }, '2');
       finish(done);
     });
 
 
-    it('replace', (done: Done) => {
+    it('replace', (done) => {
       equal('{{ 123456 | replace("4", ".") }}', '123.56');
       equal('{{ 123456 | replace("4", ".") }}', '123.56');
       equal('{{ 12345.6 | replace("4", ".") }}', '123.5.6');
@@ -704,14 +702,14 @@ declare var nunjucks;
     });
 
 
-    it('reverse', (done: Done) => {
+    it('reverse', (done) => {
       equal('{{ "abcdef" | reverse }}', 'fedcba');
       equal('{% for i in [1, 2, 3, 4] | reverse %}{{ i }}{% endfor %}', '4321');
       finish(done);
     });
 
 
-    it('round', (done: Done) => {
+    it('round', (done) => {
       equal('{{ 4.5 | round }}', '5');
       equal('{{ 4.5 | round(0, "floor") }}', '4');
       equal('{{ 4.12345 | round(4) }}', '4.1235');
@@ -720,7 +718,7 @@ declare var nunjucks;
     });
 
 
-    it('slice', (done: Done) => {
+    it('slice', (done) => {
       const tmpl = '{% for items in arr | slice(3) %}' +
           '--' +
           '{% for item in items %}' +
@@ -741,7 +739,7 @@ declare var nunjucks;
     });
 
 
-    it('sum', (done: Done) => {
+    it('sum', (done) => {
       equal('{{ items | sum }}',
         { items: [ 1, 2, 3 ] },
         '6');
@@ -768,7 +766,7 @@ declare var nunjucks;
     });
 
 
-    it('sort', (done: Done) => {
+    it('sort', (done) => {
       equal('{% for i in [3,5,2,1,4,6] | sort %}{{ i }}{% endfor %}',
         '123456');
 
@@ -825,14 +823,14 @@ declare var nunjucks;
     });
 
 
-    it('string', (done: Done) => {
+    it('string', (done) => {
       equal('{% for i in 1234 | string | list %}{{ i }},{% endfor %}',
         '1,2,3,4,');
       finish(done);
     });
 
 
-    it('striptags', (done: Done) => {
+    it('striptags', (done) => {
       equal('{{ html | striptags }}', { html: '<foo>bar' }, 'bar');
       equal('{{ html | striptags }}',
         {
@@ -853,7 +851,7 @@ declare var nunjucks;
     });
 
 
-    it('title', (done: Done) => {
+    it('title', (done) => {
       equal('{{ "foo bar baz" | title }}', 'Foo Bar Baz');
       equal('{{ str | title }}', { str: r.markSafe('foo bar baz') }, 'Foo Bar Baz');
       equal('{{ undefined | title }}', '');
@@ -863,14 +861,14 @@ declare var nunjucks;
     });
 
 
-    it('trim', (done: Done) => {
+    it('trim', (done) => {
       equal('{{ "  foo " | trim }}', 'foo');
       equal('{{ str | trim }}', { str: r.markSafe('  foo ') }, 'foo');
       finish(done);
     });
 
 
-    it('truncate', (done: Done) => {
+    it('truncate', (done) => {
       equal('{{ "foo bar" | truncate(3) }}', 'foo...');
       equal('{{ "foo bar baz" | truncate(6) }}', 'foo...');
       equal('{{ "foo bar baz" | truncate(7) }}', 'foo bar...');
@@ -900,7 +898,7 @@ declare var nunjucks;
     });
 
 
-    it('upper', (done: Done) => {
+    it('upper', (done) => {
       equal('{{ "foo" | upper }}', 'FOO');
       equal('{{ str | upper }}', { str: r.markSafe('foo') }, 'FOO');
       equal('{{ null | upper }}', '');
@@ -911,7 +909,7 @@ declare var nunjucks;
 
 
     describe('urlencode()', () => {
-      it('urlencode', (done: Done) => {
+      it('urlencode', (done) => {
         equal('{{ "&" | urlencode }}', '%26');
         equal('{{ arr | urlencode | safe }}', { arr: [ [ 1, 2 ], [ '&1', '&2' ] ] }, '1=2&%261=%262');
         equal('{{ obj | urlencode | safe }}', {
@@ -924,7 +922,7 @@ declare var nunjucks;
       });
 
 
-      it('urlencode - object without prototype', (done: Done) => {
+      it('urlencode - object without prototype', (done) => {
         const obj = Object.create(null);
         obj['1'] = 2;
         obj['&1'] = '&2';
@@ -936,19 +934,19 @@ declare var nunjucks;
 
 
     describe('entities()', () => {
-      it('entities1', (done: Done) => {
+      it('entities1', (done) => {
         equal('{{ "He ain\'t at the A&P!™" | entities }}', 'He ain&apos;t at the A&amp;P!&trade;');
         finish(done);
       });
 
 
-      it('array', (done: Done) => {
+      it('array', (done) => {
         equal('{{ arr | entities | safe }}', { arr: [ [ 1, 2 ], [ '&1', '&2' ] ] }, '1=2,&amp;1=&amp;2');
         finish(done);
       });
 
 
-      it('object', (done: Done) => {
+      it('object', (done) => {
         equal('{{ obj | entities | safe }}', {
           obj: {
             1: 2,
@@ -959,7 +957,7 @@ declare var nunjucks;
       });
 
 
-      it('entities - object without prototype', (done: Done) => {
+      it('entities - object without prototype', (done) => {
         const obj = Object.create(null);
         obj['1'] = 2;
         obj['&1'] = '&2';
@@ -970,7 +968,7 @@ declare var nunjucks;
     });
 
 
-    it('urlize', (done: Done) => {
+    it('urlize', (done) => {
       // from jinja test suite:
       // https://github.com/mitsuhiko/jinja2/blob/8db47916de0e888dd8664b2511e220ab5ecf5c15/jinja2/testsuite/filters.py#L236-L239
       equal('{{ "foo http://www.example.com/ bar" | urlize | safe }}',
@@ -1054,7 +1052,7 @@ declare var nunjucks;
     });
 
 
-    it('wordcount', (done: Done) => {
+    it('wordcount', (done) => {
       equal('{{ "foo bar baz" | wordcount }}', '3');
       equal(
         '{{ str | wordcount }}',

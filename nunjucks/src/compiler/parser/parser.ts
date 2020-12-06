@@ -2,6 +2,7 @@
 
 import { indexOf } from '../../lib';
 import { TemplateError } from '../../templateError';
+import * as Nodes from '../../nodes/nodes';
 import { Root } from '../../nodes/root';
 import { Literal } from '../../nodes/literal';
 import { NunjucksSymbol } from '../../nodes/nunjucksSymbol';
@@ -73,22 +74,12 @@ export class Parser implements IParser {
   public tokens: ITokenizer;
 
 
-  public parseSource(src: string, extensions?: IExtension[], opts?: IParserOptions): Root {
-    this.tokens = new Tokenizer(src, opts);
-    this.parserTokenStream = new ParserTokenStream(this.tokens);
-    if (extensions !== undefined) {
-      this.extensions = extensions;
-    }
-    return this.parseAsRoot();
-  }
-
-
   private parse(): NunjucksNodeList {
     return new NunjucksNodeList(0, 0, this.parseNodes());
   }
 
 
-  private error(msg: string, lineno, colno): TemplateError {
+  private error(msg: string, lineno, colno): Error {
     if (lineno === undefined || colno === undefined) {
       const tok: Token<any> | { lineno: undefined; colno: undefined }
           = this.parserTokenStream.peekToken() || { lineno: undefined, colno: undefined };
@@ -690,7 +681,7 @@ export class Parser implements IParser {
           for (let i: number = 0; i < this.extensions.length; i++) {
             const ext: IExtension = this.extensions[i];
             if (indexOf(ext.tags || [], tok.value) !== -1) {
-              return ext.parse(this, undefined); // TODO: Handle missing nodes declaration
+              return ext.parse(this, Nodes);
             }
           }
         }
@@ -1436,7 +1427,18 @@ export class Parser implements IParser {
   }
 
 
-  private parseAsRoot(): Root {
+  public parseAsRoot(): Root {
     return new Root(0, 0, this.parseNodes());
+  }
+
+
+  public static parse(src: string, extensions?: IExtension[], opts?: IParserOptions): Root {
+    const p: Parser = new Parser();
+    p.tokens = new Tokenizer(src, opts);
+    p.parserTokenStream = new ParserTokenStream(p.tokens);
+    if (extensions !== undefined) {
+      p.extensions = extensions;
+    }
+    return p.parseAsRoot();
   }
 }

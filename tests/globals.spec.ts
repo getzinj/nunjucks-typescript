@@ -1,5 +1,3 @@
-import { Done } from 'mocha';
-
 declare var nunjucks;
 
 (function() {
@@ -24,7 +22,7 @@ declare var nunjucks;
   const finish = util.finish;
 
   describe('global', () => {
-    it('should have range', (done: Done) => {
+    it('should have range', (done) => {
       equal('{% for i in range(0, 10) %}{{ i }}{% endfor %}', '0123456789');
       equal('{% for i in range(10) %}{{ i }}{% endfor %}', '0123456789');
       equal('{% for i in range(5, 10) %}{{ i }}{% endfor %}', '56789');

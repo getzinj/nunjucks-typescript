@@ -1,16 +1,12 @@
-import { INunjucksNode } from '../nunjucks/src/nodes/INunjucksNode';
-import { NunjucksNode } from '../nunjucks/src/nodes/nunjucksNode';
-import { IExtension } from '../nunjucks/src/interfaces/IExtension';
-import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
-
-
 (function(): void {
   'use strict';
 
-  let Parser;
-  let parser;
   let expect;
   let lib;
+  let nodes;
+  let parser;
+
+  let Parser;
   let Root;
   let Group;
   let Or;
@@ -40,13 +36,17 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
   let NunjucksSymbol;
   let ArrayNode;
   let Dict;
+  let NunjucksNode;
+  let NunjucksNodeList;
 
 
 
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
     lib = require('../nunjucks/src/lib');
+    nodes = require('../nunjucks/src/nodes');
     Parser = require('../nunjucks/src/compiler/parser/parser').Parser;
+    parser = require('../nunjucks/src/parser').parse;
     Root = require('../nunjucks/src/nodes/root').Root;
     Group = require('../nunjucks/src/nodes/group').Group;
     Or = require('../nunjucks/src/nodes/operators/or').Or;
@@ -74,53 +74,59 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     KeywordArgs = require('../nunjucks/src/nodes/keywordArgs').KeywordArgs;
     If = require('../nunjucks/src/nodes/if').If;
     NunjucksSymbol = require('../nunjucks/src/nodes/nunjucksSymbol').NunjucksSymbol;
+    NunjucksNode = require('../nunjucks/src/nodes/nunjucksNode').NunjucksNode;
+    NunjucksNodeList = require('../nunjucks/src/nodes/nunjucksNodeList').NunjucksNodeList;
     ArrayNode = require('../nunjucks/src/nodes/arrayNode').ArrayNode;
     Dict = require('../nunjucks/src/nodes/dict').Dict;
   } else {
     expect = window['expect'];
     lib = nunjucks.lib;
+    nodes = nunjucks.nodes;
     Parser = nunjucks.Parser;
-    Root = nunjucks.Root;
-    Group = nunjucks.Group;
-    Or = nunjucks.Or;
-    Import = nunjucks.Import;
-    In = nunjucks.In;
-    Macro = nunjucks.Macro;
-    Is = nunjucks.Is;
-    Case = nunjucks.Case;
-    Concat = nunjucks.Concat;
-    FunCall = nunjucks.FunCall;
-    Output = nunjucks.Output;
-    Literal = nunjucks.Literal;
-    Compare = nunjucks.Compare;
-    Pair = nunjucks.Pair;
-    CallExtension = nunjucks.CallExtension;
-    CompareOperand = nunjucks.CompareOperand;
-    For = nunjucks.For;
-    FromImport = nunjucks.FromImport;
-    Not = nunjucks.Not;
-    TemplateData = nunjucks.TemplateData;
-    Switch = nunjucks.Switch;
-    Filter = nunjucks.Filter;
-    Caller = nunjucks.Caller;
-    And = nunjucks.And;
-    KeywordArgs = nunjucks.KeywordArgs;
-    If = nunjucks.If;
-    NunjucksSymbol = nunjucks.NunjucksSymbol;
-    ArrayNode = nunjucks.ArrayNode;
-    Dict = nunjucks.Dict;
+    parser = nunjucks.parser;
+
+    Root = nodes.Root;
+    Group = nodes.Group;
+    Or = nodes.Or;
+    Import = nodes.Import;
+    In = nodes.In;
+    Macro = nodes.Macro;
+    Is = nodes.Is;
+    Case = nodes.Case;
+    Concat = nodes.Concat;
+    FunCall = nodes.FunCall;
+    Output = nodes.Output;
+    Literal = nodes.Literal;
+    Compare = nodes.Compare;
+    Pair = nodes.Pair;
+    CallExtension = nodes.CallExtension;
+    CompareOperand = nodes.CompareOperand;
+    For = nodes.For;
+    FromImport = nodes.FromImport;
+    Not = nodes.Not;
+    TemplateData = nodes.TemplateData;
+    Switch = nodes.Switch;
+    Filter = nodes.Filter;
+    Caller = nodes.Caller;
+    And = nodes.And;
+    KeywordArgs = nodes.KeywordArgs;
+    If = nodes.If;
+    NunjucksSymbol = nodes.NunjucksSymbol;
+    NunjucksNode = nodes.NunjucksNode;
+    NunjucksNodeList = nodes.NunjucksNodeList;
+    ArrayNode = nodes.ArrayNode;
+    Dict = nodes.Dict;
   }
-  parser = new Parser();
 
 
-  function _isAST(node1: INunjucksNode, node2: INunjucksNode): void {
+  function _isAST(node1, node2): void {
     // Compare ASTs
     // TODO: Clean this up (seriously, really)
     /* eslint-disable vars-on-top */
 
     expect(node1.typename).to.be(node2.typename);
 
-    if (node2 instanceof NunjucksNodeList) {
+    if (node2?.typename === 'NunjucksNodeList') {
       const lit: string = ': num-children: ';
       const sig2: string = (node2.typename + lit + node2.children.length);
 
@@ -138,13 +144,13 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       node2.iterFields(function(value, field): void {
         const ofield = node1[field];
 
-        if (value instanceof NunjucksNode) {
+        if (value instanceof nodes.NunjucksNode) {
           _isAST(ofield, value);
         } else if (lib.isArray(ofield) && lib.isArray(value)) {
           expect('num-children: ' + ofield.length).to.be('num-children: ' + value.length);
 
           lib.each(ofield, function(v, i): void {
-            if (ofield[i] instanceof NunjucksNode) {
+            if (ofield[i] instanceof nodes.NunjucksNode) {
               _isAST(ofield[i], value[i]);
             } else if (ofield[i] !== null && value[i] !== null) {
               expect(ofield[i]).to.be(value[i]);
@@ -176,6 +182,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       });
     }
   }
+
 
   function isAST(node1, ast): void {
     // Compare the ASTs, the second one is an AST literal so transform
@@ -255,26 +262,27 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
   }
 
 
+// We'll be doing a lot of AST comparisons, so this defines a kind
+  // of "AST literal" that you can specify with arrays. This
   // transforms it into a real AST.
   function toNodes(ast) {
-    if (!(ast && lib.isArray(ast))) { // TODO: Maybe this needs to be fixed
+    if (!(ast && lib.isArray(ast))) {
       return ast;
     }
 
     const Type = ast[0];
     // some nodes have fields (e.g. Compare.ops) which are plain arrays
     if (Type instanceof Array) {
-      return lib.map(ast, toNodes); // TODO: Maybe this needs to be fixed
+      return lib.map(ast, toNodes);
     }
-    const F: () => void = function(): void {
-    };
+    var F = function() { };
     F.prototype = Type.prototype;
 
-    const dummy = new F();
+    var dummy = new F();
 
-    if (dummy instanceof NunjucksNodeList) {
+    if (dummy instanceof nodes.NunjucksNodeList) {
       return createInstanceOfType(Type, 0, 0, lib.map(ast.slice(1), toNodes));
-    } else if (dummy instanceof CallExtension) {
+    } else if (dummy instanceof nodes.CallExtension) {
       return createInstanceOfType(Type, ast[1], ast[2], ast[3] ? toNodes(ast[3]) : ast[3],
         lib.isArray(ast[4]) ? lib.map(ast[4], toNodes) : ast[4]);
     } else {
@@ -287,50 +295,49 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
     }
   }
 
-
   describe('parser', function(): void {
     it('should parse basic types', function(): void {
-      isAST(parser.parseSource('{{ 1 }}'),
+      isAST(Parser.parse('{{ 1 }}'),
         [ Root,
           [ Output,
             [ Literal, 1 ] ] ]);
 
-      isAST(parser.parseSource('{{ 4.567 }}'),
+      isAST(Parser.parse('{{ 4.567 }}'),
         [ Root,
           [ Output,
             [ Literal, 4.567 ] ] ]);
 
-      isAST(parser.parseSource('{{ "foo" }}'),
+      isAST(Parser.parse('{{ "foo" }}'),
         [ Root,
           [ Output,
             [ Literal, 'foo' ] ] ]);
 
-      isAST(parser.parseSource('{{ \'foo\' }}'),
+      isAST(Parser.parse('{{ \'foo\' }}'),
         [ Root,
           [ Output,
             [ Literal, 'foo' ] ] ]);
 
-      isAST(parser.parseSource('{{ true }}'),
+      isAST(Parser.parse('{{ true }}'),
         [ Root,
           [ Output,
             [ Literal, true ] ] ]);
 
-      isAST(parser.parseSource('{{ false }}'),
+      isAST(Parser.parse('{{ false }}'),
         [ Root,
           [ Output,
             [ Literal, false ] ] ]);
 
-      isAST(parser.parseSource('{{ none }}'),
+      isAST(Parser.parse('{{ none }}'),
         [ Root,
           [ Output,
             [ Literal, null ] ] ]);
 
-      isAST(parser.parseSource('{{ foo }}'),
+      isAST(Parser.parse('{{ foo }}'),
         [ Root,
           [ Output,
             [ NunjucksSymbol, 'foo' ] ] ]);
 
-      isAST(parser.parseSource('{{ r/23/gi }}'),
+      isAST(Parser.parse('{{ r/23/gi }}'),
         [ Root,
           [ Output,
             [ Literal, new RegExp('23', 'gi') ] ] ]);
@@ -338,7 +345,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse aggregate types', function(): void {
-      isAST(parser.parseSource('{{ [1,2,3] }}'),
+      isAST(Parser.parse('{{ [1,2,3] }}'),
         [ Root,
           [ Output,
             [ ArrayNode,
@@ -346,7 +353,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
               [ Literal, 2 ],
               [ Literal, 3 ] ] ] ]);
 
-      isAST(parser.parseSource('{{ (1,2,3) }}'),
+      isAST(Parser.parse('{{ (1,2,3) }}'),
         [ Root,
           [ Output,
             [ Group,
@@ -354,7 +361,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
               [ Literal, 2 ],
               [ Literal, 3 ] ] ] ]);
 
-      isAST(parser.parseSource('{{ {foo: 1, \'two\': 2} }}'),
+      isAST(Parser.parse('{{ {foo: 1, \'two\': 2} }}'),
         [ Root,
           [ Output,
             [ Dict,
@@ -368,7 +375,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse variables', function(): void {
-      isAST(parser.parseSource('hello {{ foo }}, how are you'),
+      isAST(Parser.parse('hello {{ foo }}, how are you'),
         [ Root,
           [ Output, [ TemplateData, 'hello ' ] ],
           [ Output, [ NunjucksSymbol, 'foo' ] ],
@@ -377,28 +384,28 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse operators', function(): void {
-      isAST(parser.parseSource('{{ x == y }}'),
+      isAST(Parser.parse('{{ x == y }}'),
         [ Root,
           [ Output,
             [ Compare,
               [ NunjucksSymbol, 'x' ],
               [ [ CompareOperand, [ NunjucksSymbol, 'y' ], '==' ] ] ] ] ]);
 
-      isAST(parser.parseSource('{{ x or y }}'),
+      isAST(Parser.parse('{{ x or y }}'),
         [ Root,
           [ Output,
             [ Or,
               [ NunjucksSymbol, 'x' ],
               [ NunjucksSymbol, 'y' ] ] ] ]);
 
-      isAST(parser.parseSource('{{ x in y }}'),
+      isAST(Parser.parse('{{ x in y }}'),
         [ Root,
           [ Output,
             [ In,
               [ NunjucksSymbol, 'x' ],
               [ NunjucksSymbol, 'y' ] ] ] ]);
 
-      isAST(parser.parseSource('{{ x not in y }}'),
+      isAST(Parser.parse('{{ x not in y }}'),
         [ Root,
           [ Output,
             [ Not,
@@ -406,14 +413,14 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
                 [ NunjucksSymbol, 'x' ],
                 [ NunjucksSymbol, 'y' ] ] ] ] ]);
 
-      isAST(parser.parseSource('{{ x is callable }}'),
+      isAST(Parser.parse('{{ x is callable }}'),
         [ Root,
           [ Output,
             [ Is,
               [ NunjucksSymbol, 'x' ],
               [ NunjucksSymbol, 'callable' ] ] ] ]);
 
-      isAST(parser.parseSource('{{ x is not callable }}'),
+      isAST(Parser.parse('{{ x is not callable }}'),
         [ Root,
           [ Output,
             [ Not,
@@ -424,7 +431,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse tilde', function(): void {
-      isAST(parser.parseSource('{{ 2 ~ 3 }}'),
+      isAST(Parser.parse('{{ 2 ~ 3 }}'),
         [ Root,
           [ Output,
             [ Concat,
@@ -436,7 +443,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse operators with correct precedence', function(): void {
-      isAST(parser.parseSource('{{ x in y and z }}'),
+      isAST(Parser.parse('{{ x in y and z }}'),
         [ Root,
           [ Output,
             [ And,
@@ -445,7 +452,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
                 [ NunjucksSymbol, 'y' ] ],
               [ NunjucksSymbol, 'z' ] ] ] ]);
 
-      isAST(parser.parseSource('{{ x not in y or z }}'),
+      isAST(Parser.parse('{{ x not in y or z }}'),
         [ Root,
           [ Output,
             [ Or,
@@ -455,7 +462,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
                   [ NunjucksSymbol, 'y' ] ] ],
               [ NunjucksSymbol, 'z' ] ] ] ]);
 
-      isAST(parser.parseSource('{{ x or y and z }}'),
+      isAST(Parser.parse('{{ x or y and z }}'),
         [ Root,
           [ Output,
             [ Or,
@@ -467,61 +474,61 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse blocks', function(): void {
-      let n = parser.parseSource('want some {% if hungry %}pizza{% else %}' +
+      let n = Parser.parse('want some {% if hungry %}pizza{% else %}' +
           'water{% endif %}?');
       expect(n.children[1].typename).to.be('If');
 
-      n = parser.parseSource('{% block foo %}stuff{% endblock %}');
+      n = Parser.parse('{% block foo %}stuff{% endblock %}');
       expect(n.children[0].typename).to.be('Block');
 
-      n = parser.parseSource('{% block foo %}stuff{% endblock foo %}');
+      n = Parser.parse('{% block foo %}stuff{% endblock foo %}');
       expect(n.children[0].typename).to.be('Block');
 
-      n = parser.parseSource('{% extends "test.njk" %}stuff');
+      n = Parser.parse('{% extends "test.njk" %}stuff');
       expect(n.children[0].typename).to.be('Extends');
 
-      n = parser.parseSource('{% include "test.njk" %}');
+      n = Parser.parse('{% include "test.njk" %}');
       expect(n.children[0].typename).to.be('Include');
     });
 
 
     it('should accept attributes and methods of static arrays, objects and primitives', function(): void {
       expect(function(): void {
-        parser.parseSource('{{ ([1, 2, 3]).indexOf(1) }}');
+        Parser.parse('{{ ([1, 2, 3]).indexOf(1) }}');
       }).to.not.throwException();
 
       expect(function(): void {
-        parser.parseSource('{{ [1, 2, 3].length }}');
+        Parser.parse('{{ [1, 2, 3].length }}');
       }).to.not.throwException();
 
       expect(function(): void {
-        parser.parseSource('{{ "Some String".replace("S", "$") }}');
+        Parser.parse('{{ "Some String".replace("S", "$") }}');
       }).to.not.throwException();
 
       expect(function(): void {
-        parser.parseSource('{{ ({ name : "Khalid" }).name }}');
+        Parser.parse('{{ ({ name : "Khalid" }).name }}');
       }).to.not.throwException();
 
       expect(function(): void {
-        parser.parseSource('{{ 1.618.toFixed(2) }}');
+        Parser.parse('{{ 1.618.toFixed(2) }}');
       }).to.not.throwException();
     });
 
 
     it('should parse include tags', function(): void {
-      let n = parser.parseSource('{% include "test.njk" %}');
+      let n = Parser.parse('{% include "test.njk" %}');
       expect(n.children[0].typename).to.be('Include');
 
-      n = parser.parseSource('{% include "test.html"|replace("html","j2") %}');
+      n = Parser.parse('{% include "test.html"|replace("html","j2") %}');
       expect(n.children[0].typename).to.be('Include');
 
-      n = parser.parseSource('{% include ""|default("test.njk") %}');
+      n = Parser.parse('{% include ""|default("test.njk") %}');
       expect(n.children[0].typename).to.be('Include');
     });
 
 
     it('should parse for loops', function(): void {
-      isAST(parser.parseSource('{% for x in [1, 2] %}{{ x }}{% endfor %}'),
+      isAST(Parser.parse('{% for x in [1, 2] %}{{ x }}{% endfor %}'),
         [ Root,
           [ For,
             [ ArrayNode,
@@ -535,7 +542,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse for loops with else', function(): void {
-      isAST(parser.parseSource('{% for x in [] %}{{ x }}{% else %}empty{% endfor %}'),
+      isAST(Parser.parse('{% for x in [] %}{{ x }}{% else %}empty{% endfor %}'),
         [ Root,
           [ For,
             [ ArrayNode ],
@@ -550,7 +557,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse filters', function(): void {
-      isAST(parser.parseSource('{{ foo | bar }}'),
+      isAST(Parser.parse('{{ foo | bar }}'),
         [ Root,
           [ Output,
             [ Filter,
@@ -558,7 +565,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
               [ NunjucksNodeList,
                 [ NunjucksSymbol, 'foo' ] ] ] ] ]);
 
-      isAST(parser.parseSource('{{ foo | bar | baz }}'),
+      isAST(Parser.parse('{{ foo | bar | baz }}'),
         [ Root,
           [ Output,
             [ Filter,
@@ -569,7 +576,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
                   [ NunjucksNodeList,
                     [ NunjucksSymbol, 'foo' ] ] ] ] ] ] ]);
 
-      isAST(parser.parseSource('{{ foo | bar(3) }}'),
+      isAST(Parser.parse('{{ foo | bar(3) }}'),
         [ Root,
           [ Output,
             [ Filter,
@@ -581,7 +588,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse macro definitions', function(): void {
-      const ast = parser.parseSource('{% macro foo(bar, baz="foobar") %}' +
+      const ast = Parser.parse('{% macro foo(bar, baz="foobar") %}' +
           'This is a macro' +
           '{% endmacro %}');
       isAST(ast,
@@ -600,7 +607,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse call blocks', function(): void {
-      const ast = parser.parseSource('{% call foo("bar") %}' +
+      const ast = Parser.parse('{% call foo("bar") %}' +
           'This is the caller' +
           '{% endcall %}');
       isAST(ast,
@@ -623,7 +630,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse call blocks with args', function(): void {
-      const ast = parser.parseSource('{% call(i) foo("bar", baz="foobar") %}' +
+      const ast = Parser.parse('{% call(i) foo("bar", baz="foobar") %}' +
           'This is {{ i }}' +
           '{% endcall %}');
       isAST(ast,
@@ -650,7 +657,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse raw', function(): void {
-      isAST(parser.parseSource('{% raw %}hello {{ {% %} }}{% endraw %}'),
+      isAST(Parser.parse('{% raw %}hello {{ {% %} }}{% endraw %}'),
         [ Root,
           [ Output,
             [ TemplateData, 'hello {{ {% %} }}' ] ] ]);
@@ -658,7 +665,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse raw with broken variables', function(): void {
-      isAST(parser.parseSource('{% raw %}{{ x }{% endraw %}'),
+      isAST(Parser.parse('{% raw %}{{ x }{% endraw %}'),
         [ Root,
           [ Output,
             [ TemplateData, '{{ x }' ] ] ]);
@@ -666,7 +673,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse raw with broken blocks', function(): void {
-      isAST(parser.parseSource('{% raw %}{% if i_am_stupid }Still do your job well{% endraw %}'),
+      isAST(Parser.parse('{% raw %}{% if i_am_stupid }Still do your job well{% endraw %}'),
         [ Root,
           [ Output,
             [ TemplateData, '{% if i_am_stupid }Still do your job well' ] ] ]);
@@ -674,7 +681,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse raw with pure text', function(): void {
-      isAST(parser.parseSource('{% raw %}abc{% endraw %}'),
+      isAST(Parser.parse('{% raw %}abc{% endraw %}'),
         [ Root,
           [ Output,
             [ TemplateData, 'abc' ] ] ]);
@@ -683,7 +690,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse raw with raw blocks', function(): void {
-      isAST(parser.parseSource('{% raw %}{% raw %}{{ x }{% endraw %}{% endraw %}'),
+      isAST(Parser.parse('{% raw %}{% raw %}{{ x }{% endraw %}{% endraw %}'),
         [ Root,
           [ Output,
             [ TemplateData, '{% raw %}{{ x }{% endraw %}' ] ] ]);
@@ -691,7 +698,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse raw with comment blocks', function(): void {
-      isAST(parser.parseSource('{% raw %}{# test {% endraw %}'),
+      isAST(Parser.parse('{% raw %}{# test {% endraw %}'),
         [ Root,
           [ Output,
             [ TemplateData, '{# test ' ] ] ]);
@@ -699,7 +706,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse multiple raw blocks', function(): void {
-      isAST(parser.parseSource('{% raw %}{{ var }}{% endraw %}{{ var }}{% raw %}{{ var }}{% endraw %}'),
+      isAST(Parser.parse('{% raw %}{{ var }}{% endraw %}{{ var }}{% raw %}{{ var }}{% endraw %}'),
         [ Root,
           [ Output, [ TemplateData, '{{ var }}' ] ],
           [ Output, [ NunjucksSymbol, 'var' ] ],
@@ -708,7 +715,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse multiline multiple raw blocks', function(): void {
-      isAST(parser.parseSource('\n{% raw %}{{ var }}{% endraw %}\n{{ var }}\n{% raw %}{{ var }}{% endraw %}\n'),
+      isAST(Parser.parse('\n{% raw %}{{ var }}{% endraw %}\n{{ var }}\n{% raw %}{{ var }}{% endraw %}\n'),
         [ Root,
           [ Output, [ TemplateData, '\n' ] ],
           [ Output, [ TemplateData, '{{ var }}' ] ],
@@ -721,7 +728,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse verbatim', function(): void {
-      isAST(parser.parseSource('{% verbatim %}hello {{ {% %} }}{% endverbatim %}'),
+      isAST(Parser.parse('{% verbatim %}hello {{ {% %} }}{% endverbatim %}'),
         [ Root,
           [ Output,
             [ TemplateData, 'hello {{ {% %} }}' ] ] ]);
@@ -729,7 +736,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse verbatim with broken variables', function(): void {
-      isAST(parser.parseSource('{% verbatim %}{{ x }{% endverbatim %}'),
+      isAST(Parser.parse('{% verbatim %}{{ x }{% endverbatim %}'),
         [ Root,
           [ Output,
             [ TemplateData, '{{ x }' ] ] ]);
@@ -737,7 +744,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse verbatim with broken blocks', function(): void {
-      isAST(parser.parseSource('{% verbatim %}{% if i_am_stupid }Still do your job well{% endverbatim %}'),
+      isAST(Parser.parse('{% verbatim %}{% if i_am_stupid }Still do your job well{% endverbatim %}'),
         [ Root,
           [ Output,
             [ TemplateData, '{% if i_am_stupid }Still do your job well' ] ] ]);
@@ -745,7 +752,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse verbatim with pure text', function(): void {
-      isAST(parser.parseSource('{% verbatim %}abc{% endverbatim %}'),
+      isAST(Parser.parse('{% verbatim %}abc{% endverbatim %}'),
         [ Root,
           [ Output,
             [ TemplateData, 'abc' ] ] ]);
@@ -754,7 +761,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse verbatim with verbatim blocks', function(): void {
-      isAST(parser.parseSource('{% verbatim %}{% verbatim %}{{ x }{% endverbatim %}{% endverbatim %}'),
+      isAST(Parser.parse('{% verbatim %}{% verbatim %}{{ x }{% endverbatim %}{% endverbatim %}'),
         [ Root,
           [ Output,
             [ TemplateData, '{% verbatim %}{{ x }{% endverbatim %}' ] ] ]);
@@ -762,7 +769,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse verbatim with comment blocks', function(): void {
-      isAST(parser.parseSource('{% verbatim %}{# test {% endverbatim %}'),
+      isAST(Parser.parse('{% verbatim %}{# test {% endverbatim %}'),
         [ Root,
           [ Output,
             [ TemplateData, '{# test ' ] ] ]);
@@ -770,7 +777,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse multiple verbatim blocks', function(): void {
-      isAST(parser.parseSource('{% verbatim %}{{ var }}{% endverbatim %}{{ var }}{% verbatim %}{{ var }}{% endverbatim %}'),
+      isAST(Parser.parse('{% verbatim %}{{ var }}{% endverbatim %}{{ var }}{% verbatim %}{{ var }}{% endverbatim %}'),
         [ Root,
           [ Output, [ TemplateData, '{{ var }}' ] ],
           [ Output, [ NunjucksSymbol, 'var' ] ],
@@ -779,7 +786,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse multiline multiple verbatim blocks', function(): void {
-      isAST(parser.parseSource('\n{% verbatim %}{{ var }}{% endverbatim %}\n{{ var }}\n{% verbatim %}{{ var }}{% endverbatim %}\n'),
+      isAST(Parser.parse('\n{% verbatim %}{{ var }}{% endverbatim %}\n{{ var }}\n{% verbatim %}{{ var }}{% endverbatim %}\n'),
         [ Root,
           [ Output, [ TemplateData, '\n' ] ],
           [ Output, [ TemplateData, '{{ var }}' ] ],
@@ -793,7 +800,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
     it('should parse switch statements', function(): void {
       const tpl: string = '{% switch foo %}{% case "bar" %}BAR{% case "baz" %}BAZ{% default %}NEITHER FOO NOR BAR{% endswitch %}';
-      isAST(parser.parseSource(tpl),
+      isAST(Parser.parse(tpl),
         [ Root,
           [ Switch,
             [ NunjucksSymbol, 'foo' ],
@@ -815,7 +822,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse keyword and non-keyword arguments', function(): void {
-      isAST(parser.parseSource('{{ foo("bar", falalalala, baz="foobar") }}'),
+      isAST(Parser.parse('{{ foo("bar", falalalala, baz="foobar") }}'),
         [ Root,
           [ Output,
             [ FunCall,
@@ -831,13 +838,13 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
 
     it('should parse imports', function(): void {
-      isAST(parser.parseSource('{% import "foo/bar.njk" as baz %}'),
+      isAST(Parser.parse('{% import "foo/bar.njk" as baz %}'),
         [ Root,
           [ Import,
             [ Literal, 'foo/bar.njk' ],
             [ NunjucksSymbol, 'baz' ] ] ]);
 
-      isAST(parser.parseSource('{% from "foo/bar.njk" import baz, foobar as foobarbaz %}'),
+      isAST(Parser.parse('{% from "foo/bar.njk" import baz, foobar as foobarbaz %}'),
         [ Root,
           [ FromImport,
             [ Literal, 'foo/bar.njk' ],
@@ -847,7 +854,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
                 [ NunjucksSymbol, 'foobar' ],
                 [ NunjucksSymbol, 'foobarbaz' ] ] ] ] ]);
 
-      isAST(parser.parseSource('{% import "foo/bar.html"|replace("html", "j2") as baz %}'),
+      isAST(Parser.parse('{% import "foo/bar.html"|replace("html", "j2") as baz %}'),
         [ Root,
           [ Import,
             [ Filter,
@@ -860,7 +867,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
             ],
             [ NunjucksSymbol, 'baz' ] ] ]);
 
-      isAST(parser.parseSource('{% from ""|default("foo/bar.njk") import baz, foobar as foobarbaz %}'),
+      isAST(Parser.parse('{% from ""|default("foo/bar.njk") import baz, foobar as foobarbaz %}'),
         [ Root,
           [ FromImport,
             [ Filter,
@@ -882,7 +889,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
       // Every start/end tag with "-" should trim the whitespace
       // before or after it
 
-      isAST(parser.parseSource('{% if x %}\n  hi \n{% endif %}'),
+      isAST(Parser.parse('{% if x %}\n  hi \n{% endif %}'),
         [ Root,
           [ If,
             [ NunjucksSymbol, 'x' ],
@@ -890,7 +897,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
               [ Output,
                 [ TemplateData, '\n  hi \n' ] ] ] ] ]);
 
-      isAST(parser.parseSource('{% if x -%}\n  hi \n{% endif %}'),
+      isAST(Parser.parse('{% if x -%}\n  hi \n{% endif %}'),
         [ Root,
           [ If,
             [ NunjucksSymbol, 'x' ],
@@ -898,7 +905,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
               [ Output,
                 [ TemplateData, 'hi \n' ] ] ] ] ]);
 
-      isAST(parser.parseSource('{% if x %}\n  hi \n{%- endif %}'),
+      isAST(Parser.parse('{% if x %}\n  hi \n{%- endif %}'),
         [ Root,
           [ If,
             [ NunjucksSymbol, 'x' ],
@@ -906,7 +913,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
               [ Output,
                 [ TemplateData, '\n  hi' ] ] ] ] ]);
 
-      isAST(parser.parseSource('{% if x -%}\n  hi \n{%- endif %}'),
+      isAST(Parser.parse('{% if x -%}\n  hi \n{%- endif %}'),
         [ Root,
           [ If,
             [ NunjucksSymbol, 'x' ],
@@ -914,7 +921,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
               [ Output,
                 [ TemplateData, 'hi' ] ] ] ] ]);
 
-      isAST(parser.parseSource('poop  \n{%- if x -%}\n  hi \n{%- endif %}'),
+      isAST(Parser.parse('poop  \n{%- if x -%}\n  hi \n{%- endif %}'),
         [ Root,
           [ Output,
             [ TemplateData, 'poop' ] ],
@@ -924,24 +931,24 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
               [ Output,
                 [ TemplateData, 'hi' ] ] ] ] ]);
 
-      isAST(parser.parseSource('hello \n{#- comment #}'),
+      isAST(Parser.parse('hello \n{#- comment #}'),
         [ Root,
           [ Output,
             [ TemplateData, 'hello' ] ] ]);
 
-      isAST(parser.parseSource('{# comment -#} \n world'),
+      isAST(Parser.parse('{# comment -#} \n world'),
         [ Root,
           [ Output,
             [ TemplateData, 'world' ] ] ]);
 
-      isAST(parser.parseSource('hello \n{#- comment -#} \n world'),
+      isAST(Parser.parse('hello \n{#- comment -#} \n world'),
         [ Root,
           [ Output,
             [ TemplateData, 'hello' ] ],
           [ Output,
             [ TemplateData, 'world' ] ] ]);
 
-      isAST(parser.parseSource('hello \n{# - comment - #} \n world'),
+      isAST(Parser.parse('hello \n{# - comment - #} \n world'),
         [ Root,
           [ Output,
             [ TemplateData, 'hello \n' ] ],
@@ -950,7 +957,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
       // The from statement required a special case so make sure to
       // test it
-      isAST(parser.parseSource('{% from x import y %}\n  hi \n'),
+      isAST(Parser.parse('{% from x import y %}\n  hi \n'),
         [ Root,
           [ FromImport,
             [ NunjucksSymbol, 'x' ],
@@ -959,7 +966,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
           [ Output,
             [ TemplateData, '\n  hi \n' ] ] ]);
 
-      isAST(parser.parseSource('{% from x import y -%}\n  hi \n'),
+      isAST(Parser.parse('{% from x import y -%}\n  hi \n'),
         [ Root,
           [ FromImport,
             [ NunjucksSymbol, 'x' ],
@@ -968,7 +975,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
           [ Output,
             [ TemplateData, 'hi \n' ] ] ]);
 
-      isAST(parser.parseSource('{% if x -%}{{y}} {{z}}{% endif %}'),
+      isAST(Parser.parse('{% if x -%}{{y}} {{z}}{% endif %}'),
         [ Root,
           [ If,
             [ NunjucksSymbol, 'x' ],
@@ -981,7 +988,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
               [ Output,
                 [ NunjucksSymbol, 'z' ] ] ] ] ]);
 
-      isAST(parser.parseSource('{% if x -%}{% if y %} {{z}}{% endif %}{% endif %}'),
+      isAST(Parser.parse('{% if x -%}{% if y %} {{z}}{% endif %}{% endif %}'),
         [ Root,
           [ If,
             [ NunjucksSymbol, 'x' ],
@@ -996,7 +1003,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
                     [ NunjucksSymbol, 'z' ] ]
                 ] ] ] ] ]);
 
-      isAST(parser.parseSource('{% if x -%}{# comment #} {{z}}{% endif %}'),
+      isAST(Parser.parse('{% if x -%}{# comment #} {{z}}{% endif %}'),
         [ Root,
           [ If,
             [ NunjucksSymbol, 'x' ],
@@ -1011,55 +1018,55 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
 
     it('should throw errors', function(): void {
       expect(function(): void {
-        parser.parseSource('hello {{ foo');
+        Parser.parse('hello {{ foo');
       }).to.throwException(/expected variable end/);
 
       expect(function(): void {
-        parser.parseSource('hello {% if');
+        Parser.parse('hello {% if');
       }).to.throwException(/expected expression/);
 
       expect(function(): void {
-        parser.parseSource('hello {% if sdf zxc');
+        Parser.parse('hello {% if sdf zxc');
       }).to.throwException(/expected block end/);
 
       expect(function(): void {
-        parser.parseSource('{% include "foo %}');
+        Parser.parse('{% include "foo %}');
       }).to.throwException(/expected block end/);
 
       expect(function(): void {
-        parser.parseSource('hello {% if sdf %} data');
+        Parser.parse('hello {% if sdf %} data');
       }).to.throwException(/expected elif, else, or endif/);
 
       expect(function(): void {
-        parser.parseSource('hello {% block sdf %} data');
+        Parser.parse('hello {% block sdf %} data');
       }).to.throwException(/expected endblock/);
 
       expect(function(): void {
-        parser.parseSource('hello {% block sdf %} data{% endblock foo %}');
+        Parser.parse('hello {% block sdf %} data{% endblock foo %}');
       }).to.throwException(/expected block end/);
 
       expect(function(): void {
-        parser.parseSource('hello {% bar %} dsfsdf');
+        Parser.parse('hello {% bar %} dsfsdf');
       }).to.throwException(/unknown block tag/);
 
       expect(function(): void {
-        parser.parseSource('{{ foo(bar baz) }}');
+        Parser.parse('{{ foo(bar baz) }}');
       }).to.throwException(/expected comma after expression/);
 
       expect(function(): void {
-        parser.parseSource('{% import "foo" %}');
+        Parser.parse('{% import "foo" %}');
       }).to.throwException(/expected "as" keyword/);
 
       expect(function(): void {
-        parser.parseSource('{% from "foo" %}');
+        Parser.parse('{% from "foo" %}');
       }).to.throwException(/expected import/);
 
       expect(function(): void {
-        parser.parseSource('{% from "foo" import bar baz %}');
+        Parser.parse('{% from "foo" import bar baz %}');
       }).to.throwException(/expected comma/);
 
       expect(function(): void {
-        parser.parseSource('{% from "foo" import _bar %}');
+        Parser.parse('{% from "foo" import _bar %}');
       }).to.throwException(/names starting with an underscore cannot be imported/);
     });
 
@@ -1088,7 +1095,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
           parser.parserTokenStream.peekToken();
           parser.advanceAfterBlockEnd();
 
-          const content: NunjucksNodeList = parser.parseUntilBlocks('endtestblocktag');
+          const content = parser.parseUntilBlocks('endtestblocktag');
           const tag = new CallExtension(this, 'bar', null, [ 1, content ]);
           parser.advanceAfterBlockEnd();
 
@@ -1115,29 +1122,29 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
         };
       }
 
-      const extensions: IExtension[] = [ new TestTagExtension(),
+      const extensions = [ new TestTagExtension(),
         new TestBlockTagExtension(),
         new TestArgsExtension() ];
 
-      isAST(parser.parseSource('{% testtag %}', extensions),
+      isAST(Parser.parse('{% testtag %}', extensions),
         [ Root,
           [ CallExtension, extensions[0], 'foo', undefined, undefined ] ]);
 
-      isAST(parser.parseSource('{% testblocktag %}sdfd{% endtestblocktag %}', extensions),
+      isAST(Parser.parse('{% testblocktag %}sdfd{% endtestblocktag %}', extensions),
         [ Root,
           [ CallExtension, extensions[1], 'bar', null,
             [ 1, [ NunjucksNodeList,
               [ Output,
                 [ TemplateData, 'sdfd' ] ] ] ] ] ]);
 
-      isAST(parser.parseSource('{% testblocktag %}{{ 123 }}{% endtestblocktag %}', extensions),
+      isAST(Parser.parse('{% testblocktag %}{{ 123 }}{% endtestblocktag %}', extensions),
         [ Root,
           [ CallExtension, extensions[1], 'bar', null,
             [ 1, [ NunjucksNodeList,
               [ Output,
                 [ Literal, 123 ] ] ] ] ] ]);
 
-      isAST(parser.parseSource('{% testargs(123, "abc", foo="bar") %}', extensions),
+      isAST(Parser.parse('{% testargs(123, "abc", foo="bar") %}', extensions),
         [ Root,
           [ CallExtension, extensions[2], 'biz',
 
@@ -1151,7 +1158,7 @@ import { NunjucksNodeList } from '../nunjucks/src/nodes/nunjucksNodeList';
                   [ NunjucksSymbol, 'foo' ],
                   [ Literal, 'bar' ] ] ] ] ] ]);
 
-      isAST(parser.parseSource('{% testargs %}', extensions),
+      isAST(Parser.parse('{% testargs %}', extensions),
         [ Root,
           [ CallExtension, extensions[2], 'biz', null ] ]);
     });

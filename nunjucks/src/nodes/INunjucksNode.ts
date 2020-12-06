@@ -1,4 +1,5 @@
 export interface INunjucksNode {
+  fields;
   colno: number;
   lineno: number;
   children: INunjucksNode[] | undefined;

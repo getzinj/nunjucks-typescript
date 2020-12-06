@@ -26,7 +26,7 @@ export class Compiler {
 
 
   private parseSource(processedSrc: string, extensions: IExtension[], opts: ICompilerOptions): Root {
-    return new Parser().parseSource(processedSrc, extensions, opts);
+    return Parser.parse(processedSrc, extensions, opts);
   }
 
 

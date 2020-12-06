@@ -1,6 +1,3 @@
-import { Environment } from '../nunjucks/src/environment/environment';
-
-
 declare var nunjucks;
 
 (function(): void {
@@ -11,6 +8,7 @@ declare var nunjucks;
   let Loader;
   let templatesPath;
   let path;
+  let Environment;
 
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
@@ -18,10 +16,12 @@ declare var nunjucks;
     Loader = require('../nunjucks/src/loaders/FileSystemLoader').FileSystemLoader;
     templatesPath = 'tests/templates';
     path = require('path');
+    Environment = require('../nunjucks/src/environment/environment');
   } else {
     expect = window['expect'];
     Loader = nunjucks.WebLoader;
     templatesPath = '../templates';
+    Environment = nunjucks.Environment;
   }
 
 
@@ -64,7 +64,7 @@ declare var nunjucks;
         this.skip();
         return;
       }
-      const env: Environment = new Environment(new Loader(templatesPath));
+      const env = new Environment(new Loader(templatesPath));
       const test = env.getTemplate('relative/test-cache.njk');
 
       expect(util.normEOL(test.render())).to.be('Test1\nTest2');
@@ -82,7 +82,7 @@ declare var nunjucks;
 
 
     it('should emit "load" event on Environment instance', function(done: (err?) => void): void {
-      const env: Environment = new Environment(new Loader(templatesPath));
+      const env = new Environment(new Loader(templatesPath));
       env.on('load', function(name: string, source): void {
         expect(name).to.equal('item.njk');
         done();

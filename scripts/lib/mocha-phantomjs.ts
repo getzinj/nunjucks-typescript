@@ -26,7 +26,7 @@ export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Prom
         url,
         options.reporter || 'dot',
         JSON.stringify(Object.assign({
-          useColors: true,
+          colors: true,
           hooks: 'mocha-phantomjs-istanbul',
           coverageFile: coverageFile,
         }, options.phantomjs || { })),
@@ -41,6 +41,8 @@ export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Prom
       const runDir: string = path.join(__dirname, '../..');
       const opts: SpawnOptionsWithoutStdio = { cwd: runDir };
       const proc: ChildProcess = spawn(phantomjsPath, args, opts);
+
+      console.error(`Executing spawn('${ phantomjsPath }', ${ JSON.stringify(args) }, ${ JSON.stringify(opts) }`);
 
       proc.stdout.pipe(process.stdout);
       proc.stderr.pipe(process.stderr);

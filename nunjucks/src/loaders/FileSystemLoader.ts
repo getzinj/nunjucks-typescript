@@ -29,11 +29,11 @@ export class FileSystemLoader extends Loader implements ILoader {
     this.noCache = !!opts.noCache;
 
     if (searchPaths) {
-      searchPaths = Array.isArray(searchPaths) ? searchPaths : [searchPaths];
+      searchPaths = Array.isArray(searchPaths) ? searchPaths : [ searchPaths ];
       // For windows, convert to forward slashes
       this.searchPaths = searchPaths.map(path.normalize);
     } else {
-      this.searchPaths = ['.'];
+      this.searchPaths = [ '.' ];
     }
 
     if (opts.watch) {

@@ -85,7 +85,7 @@ export class Template implements ITemplateClass {
     try {
       this.compile();
     } catch (e) {
-      const err: TemplateError = lib._prettifyError(this.path, this.env.opts.dev, e);
+      const err: Error = lib._prettifyError(this.path, this.env.opts.dev, e);
       if (cb) {
         return callbackAsap(cb, err);
       } else {
