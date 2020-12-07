@@ -13,7 +13,7 @@ declare var nunjucks;
     expect = require('expect.js');
     lib = require('../nunjucks/src/lib');
     Tokenizer = require('../nunjucks/src/compiler/lexer/tokenizer').Tokenizer;
-    TokenType = require('../nunjucks/src/compiler/lexer/tokenType');
+    TokenType = require('../nunjucks/src/compiler/lexer/tokenType').TokenType;
   } else {
     expect = window['expect'];
     lib = nunjucks.lib;

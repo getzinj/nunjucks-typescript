@@ -7,11 +7,9 @@ import * as filters from './filters/filters';
 import * as lib from '../lib';
 import waterfall from 'a-sync-waterfall';
 import { Loader } from '../loaders/loader';
-import { PrecompiledLoader } from '../loaders/web-loaders';
 import { globals } from './globals';
 import { noopTmplSrc } from './noopTmplSrc';
 import { callbackAsap } from './callbackAsap';
-import { FileSystemLoader } from '../loaders/FileSystemLoader';
 import { IExtension } from '../interfaces/IExtension';
 import { IEnvironmentOptions } from '../interfaces/IEnvironmentOptions';
 import { IFilterFunction } from '../interfaces/IFilterFunction';
@@ -21,7 +19,8 @@ import { Template } from './template';
 import { EventEmitter } from 'events';
 import { ITemplateClass } from '../interfaces/ITemplateClass';
 import { ITest } from '../interfaces/ITest';
-import { WebLoader } from '../loaders/web-loader';
+
+const loadersModule = require('../loaders/loaders');
 
 
 export class Environment extends EventEmitter implements IEnvironment {
@@ -63,10 +62,10 @@ export class Environment extends EventEmitter implements IEnvironment {
 
     if (!loaders) {
       // The filesystem loader is only available server-side
-      if (FileSystemLoader) {
-        this.loaders = [ new FileSystemLoader('views') ];
-      } else if (WebLoader) {
-        this.loaders = [ new WebLoader('/views') ];
+      if (loadersModule.FileSystemLoader) {
+        this.loaders = [ new loadersModule.FileSystemLoader('views') ];
+      } else if (loadersModule.WebLoader) {
+        this.loaders = [ new loadersModule.WebLoader('/views') ];
       }
     } else {
       this.loaders = lib.isArray(loaders) ? loaders : [ loaders ];
@@ -77,7 +76,7 @@ export class Environment extends EventEmitter implements IEnvironment {
     // pick it up and use it
     if (typeof window !== 'undefined' && window['nunjucksPrecompiled']) {
       this.loaders.unshift(
-          new PrecompiledLoader(window['nunjucksPrecompiled'])
+          new loadersModule.PrecompiledLoader(window['nunjucksPrecompiled'])
       );
     }
 

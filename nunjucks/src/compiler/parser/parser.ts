@@ -1,37 +1,46 @@
 'use strict';
 
+import * as Nodes from '../../nodes/nodes';
+import {
+  Root,
+  Literal,
+  NunjucksSymbol,
+  Group,
+  Pair,
+  Dict,
+  ArrayNode,
+  LookupVal,
+  If,
+  IfAsync,
+  InlineIf,
+  For,
+  AsyncEach,
+  AsyncAll,
+  Macro,
+  Caller,
+  Import,
+  FunCall,
+  Filter,
+  KeywordArgs,
+  Block,
+  Extends,
+  Include,
+  Set,
+  Switch,
+  Case,
+  FromImport,
+  Output,
+  Capture,
+  Compare,
+  CompareOperand,
+  TemplateData,
+  NunjucksNode,
+  NunjucksNodeList
+} from '../../nodes/nodes';
+
 import { indexOf } from '../../lib';
 import { TemplateError } from '../../templateError';
-import * as Nodes from '../../nodes/nodes';
-import { Root } from '../../nodes/root';
-import { Literal } from '../../nodes/literal';
-import { NunjucksSymbol } from '../../nodes/nunjucksSymbol';
-import { Group } from '../../nodes/group';
-import { ArrayNode } from '../../nodes/arrayNode';
-import { Pair } from '../../nodes/pair';
-import { Dict } from '../../nodes/dict';
-import { LookupVal } from '../../nodes/lookupVal';
-import { If } from '../../nodes/if';
-import { IfAsync } from '../../nodes/ifAsync';
-import { InlineIf } from '../../nodes/inlineIf';
-import { For } from '../../nodes/for';
-import { AsyncEach } from '../../nodes/asyncEach';
-import { AsyncAll } from '../../nodes/asyncAll';
-import { Macro } from '../../nodes/macro';
-import { Caller } from '../../nodes/caller';
-import { Import } from '../../nodes/import';
-import { FunCall } from '../../nodes/funCall';
-import { Filter } from '../../nodes/filter';
-import { KeywordArgs } from '../../nodes/keywordArgs';
-import { Block } from '../../nodes/block';
-import { Extends } from '../../nodes/extends';
-import { Include } from '../../nodes/include';
-import { Set } from '../../nodes/set';
-import { Switch } from '../../nodes/switch';
-import { Case } from '../../nodes/case';
-import { FromImport } from '../../nodes/fromImport';
-import { Output } from '../../nodes/output';
-import { Capture } from '../../nodes/capture';
+
 import {
   In,
   Add,
@@ -49,19 +58,15 @@ import {
   Pow,
   Sub
 } from '../../nodes/operators/operators';
-import { Compare } from '../../nodes/compare';
-import { CompareOperand } from '../../nodes/compareOperand';
+
 import { Tokenizer } from '../lexer/tokenizer';
 import { Token } from '../lexer/token';
 import { TokenType } from '../lexer/tokenType';
-import { TemplateData } from '../../nodes/templateData';
-import { NunjucksNode } from '../../nodes/nunjucksNode';
 import { ParserTokenStream } from './parserTokenStream';
 import { IParser } from '../../interfaces/IParser';
 import { IExtension } from '../../interfaces/IExtension';
 import { IParserOptions } from '../../interfaces/IParserOptions';
 import { ITokenizer } from '../../interfaces/ITokenizer';
-import { NunjucksNodeList } from '../../nodes/nunjucksNodeList';
 import { INunjucksNode } from '../../nodes/INunjucksNode';
 
 

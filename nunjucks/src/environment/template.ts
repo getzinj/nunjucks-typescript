@@ -9,7 +9,6 @@ import { Compiler } from '../compiler/compiler';
 import { IContext } from '../interfaces/IContext';
 import { Environment } from './environment';
 import { Context } from './context';
-import { TemplateError } from '../runtime/runtime';
 
 
 

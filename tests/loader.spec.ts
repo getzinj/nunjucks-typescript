@@ -149,7 +149,8 @@ declare var nunjucks;
 
         it('should not allow directory traversal', (): void => {
           const loader = new NodeResolveLoader();
-          expect(loader.getSource('dummy-pkg/simple-template.html')).to.be(null);
+          const dummyPkgPath = require.resolve('dummy-pkg/simple-template.html');
+          expect(loader.getSource(dummyPkgPath)).to.be(null);
         });
 
 

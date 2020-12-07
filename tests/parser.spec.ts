@@ -44,9 +44,8 @@
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
     lib = require('../nunjucks/src/lib');
-    nodes = require('../nunjucks/src/nodes');
+    nodes = require('../nunjucks/src/nodes/nodes');
     Parser = require('../nunjucks/src/compiler/parser/parser').Parser;
-    parser = require('../nunjucks/src/parser').parse;
     Root = require('../nunjucks/src/nodes/root').Root;
     Group = require('../nunjucks/src/nodes/group').Group;
     Or = require('../nunjucks/src/nodes/operators/or').Or;
@@ -83,7 +82,6 @@
     lib = nunjucks.lib;
     nodes = nunjucks.nodes;
     Parser = nunjucks.Parser;
-    parser = nunjucks.parser;
 
     Root = nodes.Root;
     Group = nodes.Group;

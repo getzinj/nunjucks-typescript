@@ -11,8 +11,8 @@
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
     util = require('./util.spec');
-    Template = require('../nunjucks/src/environment').Template;
-    Environment = require('../nunjucks/src/environment').Environment;
+    Template = require('../nunjucks/src/environment/template').Template;
+    Environment = require('../nunjucks/src/environment/environment').Environment;
     fs = require('fs');
     TokenType = require('../nunjucks/src/compiler/lexer/tokenType');
   } else {
