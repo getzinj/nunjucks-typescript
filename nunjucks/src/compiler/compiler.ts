@@ -6,13 +6,12 @@ import { ICompilerOptions } from '../interfaces/ICompilerOptions';
 import { Transformer } from './transformer';
 import { Parser } from './parser/parser';
 import { CodeGenerator } from './codeGenerator/codeGenerator';
-import { NunjucksNode } from '../nodes/nunjucksNode';
 import { Root } from '../nodes/root';
+import { INunjucksNode } from '../nodes/INunjucksNode';
 
 
 
 export class Compiler {
-
   constructor(private readonly templateName: string, private readonly throwOnUndefined: boolean = false) { }
 
 
@@ -30,7 +29,7 @@ export class Compiler {
   }
 
 
-  private getTransformedSource(parsedCode: Root, asyncFilters, name: string): NunjucksNode {
+  private getTransformedSource(parsedCode: Root, asyncFilters, name: string): INunjucksNode {
     return new Transformer().transform(
         parsedCode,
         asyncFilters,
@@ -39,7 +38,7 @@ export class Compiler {
   }
 
 
-  private generateCode(transformedCode: NunjucksNode): string {
+  private generateCode(transformedCode: INunjucksNode): string {
     return new CodeGenerator(this.templateName, this.throwOnUndefined)
         .compile(transformedCode)
         .getCode();
@@ -53,7 +52,7 @@ export class Compiler {
                   opts: ICompilerOptions = { throwOnUndefined: undefined }): string {
     const processedSrc: string = this.getPreprocessedSource(extensions, src);
     const parsedCode: Root = this.parseSource(processedSrc, extensions, opts);
-    const transformedCode: NunjucksNode = this.getTransformedSource(parsedCode, asyncFilters, name);
+    const transformedCode: INunjucksNode = this.getTransformedSource(parsedCode, asyncFilters, name);
     return this.generateCode(transformedCode);
   }
 }

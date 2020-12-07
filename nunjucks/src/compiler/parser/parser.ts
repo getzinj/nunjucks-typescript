@@ -1377,7 +1377,7 @@ export class Parser implements IParser {
       if (tok.type === TokenType.TOKEN_DATA) {
         let data: string = tok.value;
         const nextToken: Token<any> = this.parserTokenStream.peekToken();
-        const nextVal: string = nextToken && nextToken.value;
+        const nextVal: string = nextToken?.value;
 
         // If the last token has "-" we need to trim the
         // leading whitespace of the data. This is marked with
