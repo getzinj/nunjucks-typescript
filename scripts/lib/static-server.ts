@@ -1,8 +1,8 @@
-import * as connect from 'connect';
-import * as getPort from 'get-port';
-import * as serveStatic from 'serve-static';
-import * as http from 'http';
-import * as path from 'path';
+const connect = require('connect');
+const getPort = require('get-port');
+const serveStatic = require('serve-static');
+const http = require('http');
+const path = require('path');
 
 import { Server, RequestListener } from 'http';
 

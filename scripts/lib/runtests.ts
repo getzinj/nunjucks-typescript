@@ -60,17 +60,11 @@ function getMochaRunExecutor(bin: string, cmd_args: string[]): IPromiseExecutor<
       proc.stdout.pipe(process.stdout);
       proc.stderr.pipe(process.stderr);
 
-      proc.on('message', (msg: any): void => {
-        console.error(`${bin} ${cmd_args.join(' ')}: ${ msg }`);
-      });
-
       proc.on('error', (err: any): void => {
-        console.error(`${bin} ${cmd_args.join(' ')}: ${ err }`);
         reject(err);
       });
 
       proc.on('exit', (code: any): void => {
-        console.error(`${bin} ${cmd_args.join(' ')}`);
         if (code === 0) {
           resolve();
         } else {
