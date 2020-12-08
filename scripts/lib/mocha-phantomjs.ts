@@ -42,8 +42,6 @@ export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Prom
       const opts: SpawnOptionsWithoutStdio = { cwd: runDir };
       const proc: ChildProcess = spawn(phantomjsPath, args, opts);
 
-      console.error(`Executing spawn('${ phantomjsPath }', ${ JSON.stringify(args) }, ${ JSON.stringify(opts) }`);
-
       proc.stdout.pipe(process.stdout);
       proc.stderr.pipe(process.stderr);
 
