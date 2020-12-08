@@ -24,10 +24,11 @@
   }
 
   const render = util.render;
-  const equal = util.equal;
-  const finish = util.finish;
+  const equal: (a, b, c?, d?) => void = util.equal;
+  const finish: (a) => void = util.finish;
   const isSlim: boolean = util.isSlim;
-  const Loader = util.Loader;
+  const Loader: new (a) => any = util.Loader;
+
 
   describe('compiler', (): void => {
     it('should compile templates', (done): void => {
@@ -2281,20 +2282,25 @@ class ShouldAllowCustomTagWithArgsCompilationExtension {
 
 
 
+// noinspection TypeScriptExplicitMemberType
 class ShouldAllowComplicatedCustomTagCompilationExtension {
+  // jshint validthis: true
   readonly tags: string[] = [ 'test' ];
-  readonly _name: Function = this.constructor;
+  readonly _name: Function = this.constructor; // normally this is automatically done by Environment
+
 
   constructor(private readonly TokenType) { }
+
 
   public parse(parser, nodes) {
     let intermediate = null;
 
     parser.advanceAfterBlockEnd();
 
-    let body = parser.parseUntilBlocks('intermediate', 'endtest');
+    const body = parser.parseUntilBlocks('intermediate', 'endtest');
+
     if (parser.skipSymbol('intermediate')) {
-      parser.skip(this.TokenType.TOKEN_BLOCK_END);
+      parser.skip(this.TokenType.TokenType.TOKEN_BLOCK_END);
       intermediate = parser.parseUntilBlocks('endtest');
     }
 
@@ -2316,6 +2322,7 @@ class ShouldAllowComplicatedCustomTagCompilationExtension {
 
 
 
+// noinspection TypeScriptExplicitMemberType
 class ShouldAllowCustomTagCompilationExtension {
   readonly tags: string[] = [ 'test' ];
 
