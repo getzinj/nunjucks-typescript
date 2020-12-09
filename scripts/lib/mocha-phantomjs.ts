@@ -1,6 +1,6 @@
 var spawn = require('child_process').spawn;
 var path = require('path');
-// var lookup = require('./utils').lookup;
+var lookup = require('./utils').lookup;
 const chromiumPath = require('chromium').path;
 
 import { ChildProcess, SpawnOptionsWithoutStdio } from 'child_process';
@@ -17,7 +17,7 @@ export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Prom
 
   return new Promise((resolve: IPromiseResolveFn<void>, reject: IPromiseRejectFn<void>): void => {
     try {
-//      const scriptPath: string = lookup('mocha-chrome');
+     const scriptPath: string = lookup('.bin/mocha-headless-chrome', true);
 
       const mochaArguments: string = ('$$$' + JSON.stringify(Object.assign({
         exit: true,
@@ -31,10 +31,12 @@ export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Prom
 
 
       const args: string[] = [
+          '--file',
         url,
-        '--exit',
-        options.reporter || 'dot',
-        mochaArguments,
+        `--reporter`,
+        `${ options.reporter || 'dot'}`,
+        // `--mocha`,
+        // `${ mochaArguments }`,
       ];
 
       if (!chromiumPath) {
@@ -45,10 +47,10 @@ export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Prom
       const runDir: string = path.join(__dirname, '../..');
       const opts: SpawnOptionsWithoutStdio = { cwd: runDir };
 
-      const command: string = `"${ chromiumPath } ${ (args ?? [ ]).join(' ') }" in ${ opts?.cwd }`;
+      const command: string = `"${ scriptPath } ${ (args ?? [ ]).join(' ') }" in ${ opts?.cwd }`;
       console.info(`Executing: ${ command }.`);
 
-      const proc: ChildProcess = spawn(chromiumPath, args, opts);
+      const proc: ChildProcess = spawn(scriptPath, args, opts);
 
       proc.stdout.pipe(process.stdout);
       proc.stderr.pipe(process.stderr);
