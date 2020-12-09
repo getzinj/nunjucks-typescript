@@ -1,9 +1,12 @@
-import { spawn, ChildProcess, SpawnOptionsWithoutStdio } from 'child_process';
-import * as path from 'path';
+var spawn = require('child_process').spawn;
+var path = require('path');
+// var lookup = require('./utils').lookup;
+const chromiumPath = require('chromium').path;
+
+import { ChildProcess, SpawnOptionsWithoutStdio } from 'child_process';
 import { IPromiseRejectFn } from './IPromiseRejectFn';
 import { IPromiseResolveFn } from './IPromiseResolveFn';
 import { IMochaPhantomJsOptions } from './i-mocha-phantom-js-options';
-import { lookup } from './utils';
 
 
 
@@ -14,44 +17,51 @@ export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Prom
 
   return new Promise((resolve: IPromiseResolveFn<void>, reject: IPromiseRejectFn<void>): void => {
     try {
-      const scriptPath: string = require.resolve('mocha-phantomjs-core/mocha-phantomjs-core.js');
+//      const scriptPath: string = lookup('mocha-chrome');
 
-      if (!scriptPath) {
-        // noinspection ExceptionCaughtLocallyJS
-        throw new Error('mocha-phantomjs-core.js not found');
-      }
+      const mochaArguments: string = ('$$$' + JSON.stringify(Object.assign({
+        exit: true,
+        logLevel: 'trace', // DEBUG ONLY $$$
+        fullTrace: true, // DEBUG ONLY $$$$
+        isWorker: true, // DEBUG ONLY $$$$
+        color: true,
+        hooks: 'mocha-phantomjs-istanbul',
+        coverageFile: coverageFile,
+      }, options.phantomjs || {})) + '$$$').replace(/"/g, '\\"').replace(/\$\$\$/g, '"');
+
 
       const args: string[] = [
-        scriptPath,
         url,
+        '--exit',
         options.reporter || 'dot',
-        JSON.stringify(Object.assign({
-          colors: true,
-          hooks: 'mocha-phantomjs-istanbul',
-          coverageFile: coverageFile,
-        }, options.phantomjs || { })),
+        mochaArguments,
       ];
-      const phantomjsPath: string = lookup('.bin/phantomjs', true) || lookup('phantomjs-prebuilt/bin/phantomjs', true);
 
-      if (!phantomjsPath) {
+      if (!chromiumPath) {
         // noinspection ExceptionCaughtLocallyJS
-        throw new Error('PhantomJS not found');
+        throw new Error('Chrome not found');
       }
 
       const runDir: string = path.join(__dirname, '../..');
       const opts: SpawnOptionsWithoutStdio = { cwd: runDir };
-      const proc: ChildProcess = spawn(phantomjsPath, args, opts);
+
+      const command: string = `"${ chromiumPath } ${ (args ?? [ ]).join(' ') }" in ${ opts?.cwd }`;
+      console.info(`Executing: ${ command }.`);
+
+      const proc: ChildProcess = spawn(chromiumPath, args, opts);
 
       proc.stdout.pipe(process.stdout);
       proc.stderr.pipe(process.stderr);
 
-      proc.on('error', reject);
+      proc.on('error', (reason: any): void => {
+        reject(reason);
+      });
 
       proc.on('exit', (code: number): void => {
         if (code === 0) {
           resolve();
         } else {
-          reject(new Error(`test failed. phantomjs exit code: ${ code }`));
+          reject(new Error(`test failed executing ${ command }. chromium exit code: ${ code }`));
         }
       });
     } catch (err) {

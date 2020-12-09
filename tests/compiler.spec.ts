@@ -14,7 +14,7 @@
     Template = require('../nunjucks/src/environment/template').Template;
     Environment = require('../nunjucks/src/environment/environment').Environment;
     fs = require('fs');
-    TokenType = require('../nunjucks/src/compiler/lexer/tokenType');
+    TokenType = require('../nunjucks/src/compiler/lexer/tokenType').TokenType;
   } else {
     expect = window['expect'];
     util = window['util'];
@@ -2300,7 +2300,7 @@ class ShouldAllowComplicatedCustomTagCompilationExtension {
     const body = parser.parseUntilBlocks('intermediate', 'endtest');
 
     if (parser.skipSymbol('intermediate')) {
-      parser.skip(this.TokenType.TokenType.TOKEN_BLOCK_END);
+      parser.skip(this.TokenType.TOKEN_BLOCK_END);
       intermediate = parser.parseUntilBlocks('endtest');
     }
 

@@ -31,14 +31,15 @@ function mochaRun({ cliTest = false }: { cliTest?: boolean } = { }): Promise<voi
 
   const mochaArgs: string[] = cliTest
       ? [ 'tests/cli.spec.js' ]
-      : [ '--grep', 'precompile cli',
-        '--invert', 'tests' ];
+      : [ '--grep', '"precompile cli"',
+        '--invert',
+        'tests' ];
 
   const cmd_args: string[] = [
     ... runArgs,
-    '-R', 'spec',
-    '-r', 'tests/setup',
-    '-r', '@babel/register',
+    '--reporter', 'spec',
+    '--require', 'tests/setup',
+    '--require', '@babel/register',
     ... mochaArgs,
   ];
 
@@ -55,6 +56,8 @@ function getMochaRunExecutor(bin: string, cmd_args: string[]): IPromiseExecutor<
         windowsVerbatimArguments: (platform?.os?.family?.toLowerCase() === 'win32')
       };
 
+      const command: string = `"${ bin } ${ (cmd_args ?? [ ]).join(' ') }" in ${ cmd_opts?.cwd }`;
+      console.info(`Executing: ${ command }.`);
       const proc: ChildProcess = spawn(bin, cmd_args, cmd_opts);
 
       proc.stdout.pipe(process.stdout);
@@ -68,7 +71,7 @@ function getMochaRunExecutor(bin: string, cmd_args: string[]): IPromiseExecutor<
         if (code === 0) {
           resolve();
         } else {
-          reject(new Error('test failed. nyc/mocha exit code: ' + code));
+          reject(new Error(`test failed executing ${ command }. nyc/mocha exit code: ${code}`));
         }
       });
     } catch (err) {
