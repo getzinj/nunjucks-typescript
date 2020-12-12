@@ -10,7 +10,7 @@ import { IMochaPhantomJsOptions } from './i-mocha-phantom-js-options';
 
 
 
-export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Promise<void> {
+export function mochaChromium(url, options: IMochaPhantomJsOptions = { }): Promise<void> {
   const coverageFile: string = path.join(__dirname, '../../.nyc_output', (url.indexOf('slim') > -1)
         ? 'browser-slim.json'
         : 'browser-std.json');

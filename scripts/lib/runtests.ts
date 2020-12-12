@@ -5,7 +5,7 @@ import * as platform from 'platform';
 import { SpawnOptions, ChildProcess, spawn } from 'child_process';
 
 import { getStaticServer } from './static-server';
-import { mochaPhantomJS } from './mocha-phantomjs';
+import { mochaChromium } from './mocha-chromium';
 import { IServer } from './IServer';
 import { Server } from 'http';
 import { IPromiseResolveFn } from './IPromiseResolveFn';
@@ -98,7 +98,7 @@ function getRunTestsPromiseExecutor(): IPromiseExecutor<void> {
             const port: number = args[1];
             const promises: IPromiseResolveFn<void>[] = ['index', 'slim'].map(
                 (f: string): IPromiseResolveFn<void> =>
-                    (): Promise<void> => mochaPhantomJS(`http://localhost:${ port }/tests/browser/${ f }.html`));
+                    (): Promise<void> => mochaChromium(`http://localhost:${ port }/tests/browser/${ f }.html`));
             return promiseSequence(promises).then((): void => {
               server.close();
               resolve();
