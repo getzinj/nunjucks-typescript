@@ -31,12 +31,12 @@ export function mochaPhantomJS(url, options: IMochaPhantomJsOptions = { }): Prom
 
 
       const args: string[] = [
-          '--file',
-        url,
-        `--reporter`,
-        `${ options.reporter || 'dot'}`,
-        // `--mocha`,
-        // `${ mochaArguments }`,
+          '--executablePath', chromiumPath,
+          '--file', url,
+          '--reporter', `${ options.reporter || 'dot'}`,
+          '--coverage', coverageFile,
+          // `--mocha`, `${ mochaArguments }`,
+          '--args', mochaArguments
       ];
 
       if (!chromiumPath) {
