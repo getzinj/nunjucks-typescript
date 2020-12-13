@@ -1,6 +1,6 @@
 import { ICallExtension } from './ICallExtension';
 import { INunjucksNodeList } from './INunjucksNodeList';
-import { NunjucksNode} from './nunjucksNode';
+import { NunjucksNode } from './nunjucksNode';
 import { NunjucksNodeList } from './nunjucksNodeList';
 
 

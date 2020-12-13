@@ -81,4 +81,4 @@ export function globals() {
 
 export const globalchokidar = {
   chokidar: undefined
-}
+};

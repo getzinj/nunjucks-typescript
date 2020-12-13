@@ -102,8 +102,11 @@ export function copySafeness(dest: string | SafeString, target): string | SafeSt
 
 
 export function markSafe(val: string | SafeString): SafeString;
+// eslint-disable-next-line no-redeclare
 export function markSafe(val: (... args) => (string | SafeString)): SafeString;
-export function markSafe(val: string | SafeString | ((... args) => (string | SafeString))): SafeString | (() => SafeString) {
+// eslint-disable-next-line no-redeclare
+export function markSafe(val: string | SafeString | ((... args) => (string | SafeString))):
+    SafeString | (() => SafeString) {
   if (typeof val === 'string') {
     return new SafeString(val);
   } else if (val instanceof SafeString) {
@@ -216,9 +219,21 @@ export function asyncEach<T>(arr: T[], dimen: number, iter: (...args) => void, c
 
 type errFn = (err?, info?: string) => void;
 
-export function asyncAll<T>(arr: ArrayLike<T>, dimen: 1, func: (item1, i: number, length: number, doneFn) => void, cb: errFn): void;
-export function asyncAll<T>(arr: ArrayLike<T>, dimen: 2, func: (item1, item2, i: number, length: number, doneFn) => void, cb: errFn): void;
-export function asyncAll<T>(arr: ArrayLike<T>, dimen: 3, func: (item1, item2, item3, i: number, length: number, doneFn) => void, cb: errFn): void;
+export function asyncAll<T>(arr: ArrayLike<T>,
+                            dimen: 1,
+                            func: (item1, i: number, length: number, doneFn) => void,
+                            cb: errFn): void;
+// eslint-disable-next-line no-redeclare
+export function asyncAll<T>(arr: ArrayLike<T>,
+                            dimen: 2,
+                            func: (item1, item2, i: number, length: number, doneFn) => void,
+                            cb: errFn): void;
+// eslint-disable-next-line no-redeclare
+export function asyncAll<T>(arr: ArrayLike<T>,
+                            dimen: 3,
+                            func: (item1, item2, item3, i: number, length: number, doneFn) => void,
+                            cb: errFn): void;
+// eslint-disable-next-line no-redeclare
 export function asyncAll<T>(arr: ArrayLike<T>, dimen: number, func: (...args) => void, cb: errFn): void {
   let finished: number = 0;
   let len: number;

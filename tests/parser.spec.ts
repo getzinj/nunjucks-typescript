@@ -4,7 +4,6 @@
   let expect;
   let lib;
   let nodes;
-  let parser;
 
   let Parser;
   let Root;
@@ -36,7 +35,6 @@
   let NunjucksSymbol;
   let ArrayNode;
   let Dict;
-  let NunjucksNode;
   let NunjucksNodeList;
 
 
@@ -73,7 +71,6 @@
     KeywordArgs = require('../nunjucks/src/nodes/keywordArgs').KeywordArgs;
     If = require('../nunjucks/src/nodes/if').If;
     NunjucksSymbol = require('../nunjucks/src/nodes/nunjucksSymbol').NunjucksSymbol;
-    NunjucksNode = require('../nunjucks/src/nodes/nunjucksNode').NunjucksNode;
     NunjucksNodeList = require('../nunjucks/src/nodes/nunjucksNodeList').NunjucksNodeList;
     ArrayNode = require('../nunjucks/src/nodes/arrayNode').ArrayNode;
     Dict = require('../nunjucks/src/nodes/dict').Dict;
@@ -110,7 +107,6 @@
     KeywordArgs = nodes.KeywordArgs;
     If = nodes.If;
     NunjucksSymbol = nodes.NunjucksSymbol;
-    NunjucksNode = nodes.NunjucksNode;
     NunjucksNodeList = nodes.NunjucksNodeList;
     ArrayNode = nodes.ArrayNode;
     Dict = nodes.Dict;
@@ -273,6 +269,7 @@
     if (Type instanceof Array) {
       return lib.map(ast, toNodes);
     }
+    // eslint-disable-next-line no-empty-function
     var F = function() { };
     F.prototype = Type.prototype;
 
@@ -784,7 +781,8 @@
 
 
     it('should parse multiline multiple verbatim blocks', function(): void {
-      isAST(Parser.parse('\n{% verbatim %}{{ var }}{% endverbatim %}\n{{ var }}\n{% verbatim %}{{ var }}{% endverbatim %}\n'),
+      isAST(Parser.parse(
+          '\n{% verbatim %}{{ var }}{% endverbatim %}\n{{ var }}\n{% verbatim %}{{ var }}{% endverbatim %}\n'),
         [ Root,
           [ Output, [ TemplateData, '\n' ] ],
           [ Output, [ TemplateData, '{{ var }}' ] ],
@@ -797,7 +795,8 @@
 
 
     it('should parse switch statements', function(): void {
-      const tpl: string = '{% switch foo %}{% case "bar" %}BAR{% case "baz" %}BAZ{% default %}NEITHER FOO NOR BAR{% endswitch %}';
+      const tpl: string =
+          '{% switch foo %}{% case "bar" %}BAR{% case "baz" %}BAZ{% default %}NEITHER FOO NOR BAR{% endswitch %}';
       isAST(Parser.parse(tpl),
         [ Root,
           [ Switch,

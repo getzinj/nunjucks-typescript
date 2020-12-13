@@ -1,4 +1,4 @@
-import { NunjucksNode} from './nunjucksNode';
+import { NunjucksNode } from './nunjucksNode';
 import { Root } from './root';
 import { Value } from './value';
 import { Literal } from './literal';

@@ -17,6 +17,7 @@ export class FileSystemLoader extends Loader implements ILoader {
   constructor(searchPaths: string | string[], opts?: ILoaderOptions) {
     super();
     if (typeof opts === 'boolean') {
+      // eslint-disable-next-line no-console
       console.log(
           '[nunjucks] Warning: you passed a boolean as the second ' +
           'argument to FileSystemLoader, but it now takes an options ' +
@@ -53,6 +54,7 @@ export class FileSystemLoader extends Loader implements ILoader {
         }
       });
       watcher.on('error', (error: string): void => {
+        // eslint-disable-next-line no-console
         console.log('Watcher error: ' + error);
       });
     }

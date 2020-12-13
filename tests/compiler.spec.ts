@@ -148,6 +148,7 @@
 
     it('should compile switch statements', (): void => {
       // standard switches
+      // eslint-disable-next-line max-len
       const tpl1: string = '{% switch foo %}{% case "bar" %}BAR{% case "baz" %}BAZ{% default %}NEITHER FOO NOR BAR{% endswitch %}';
       // test no-default switches
       const tpl2: string = '{% switch foo %}{% case "bar" %}BAR{% case "baz" %}BAZ{% endswitch %}';
@@ -1993,19 +1994,20 @@
     });
 
 
-    it('should throw an error when including a file that calls an undefined macro even inside {% if %} tag', (done): void => {
-      render(
-        '{% if true %}{% include "undefined-macro.njk" %}{% endif %}',
-        {},
-        { noThrow: true },
-          (err, res): void => {
-          expect(res).to.be(undefined);
-          expect(err).to.match(/Unable to call `\w+`, which is undefined or falsey/);
-        }
-      );
+    it('should throw an error when including a file that calls an undefined macro even inside {% if %} tag',
+        (done): void => {
+          render(
+              '{% if true %}{% include "undefined-macro.njk" %}{% endif %}',
+              { },
+              { noThrow: true },
+              (err, res): void => {
+                expect(res).to.be(undefined);
+                expect(err).to.match(/Unable to call `\w+`, which is undefined or falsey/);
+              }
+          );
 
-      finish(done);
-    });
+          finish(done);
+        });
 
 
     it('should throw an error when including a file that imports macro that calls an undefined macro', (done): void => {
@@ -2261,7 +2263,10 @@ class ShouldAllowCustomTagWithArgsCompilationExtension {
   }
 
 
-  public run(context: any, prefix: string | (() => string), kwargs: { cutoff?: any; } | (() => string), body: () => string): string {
+  public run(context: any,
+             prefix: string | (() => string),
+             kwargs: { cutoff?: any; } | (() => string),
+             body: () => string): string {
     if (typeof prefix === 'function') {
       body = prefix;
       kwargs = {};

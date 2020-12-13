@@ -23,7 +23,7 @@ export class Tokenizer implements ITokenizer {
   private readonly len: number;
   lineno: number;
   colno: number;
-  in_code: boolean;
+  inCode: boolean;
   public readonly tags: Record<string, string>;
   readonly trimBlocks: boolean;
   readonly lstripBlocks: boolean;
@@ -40,9 +40,9 @@ export class Tokenizer implements ITokenizer {
     this.lineno = 0;
     this.colno = 0;
 
-    this.in_code = false;
+    this.inCode = false;
 
-    const tags: ITags = opts.tags || {};
+    const tags: ITags = opts.tags || { };
     this.tags = {
       BLOCK_START: tags.blockStart || Tag.BLOCK_START,
       BLOCK_END: tags.blockEnd || Tag.BLOCK_END,
@@ -62,7 +62,7 @@ export class Tokenizer implements ITokenizer {
     const colno: number = this.colno;
     let tok: string;
 
-    if (this.in_code) {
+    if (this.inCode) {
       // Otherwise, if we are in a block parse it as code
       let cur: string = this.current();
 
@@ -83,7 +83,7 @@ export class Tokenizer implements ITokenizer {
         // delimiter characters (%{}[] etc), and our code always
         // breaks on delimiters so we can assume the token parsing
         // doesn't consume these elsewhere
-        this.in_code = false;
+        this.inCode = false;
         if (this.trimBlocks) {
           cur = this.current();
           if (cur === '\n') {
@@ -105,7 +105,7 @@ export class Tokenizer implements ITokenizer {
       } else if ((tok = this._extractString(this.tags.VARIABLE_END)) ||
           (tok = this._extractString('-' + this.tags.VARIABLE_END))) {
         // Special check for variable end tag (see above)
-        this.in_code = false;
+        this.inCode = false;
         return new Token(TokenType.TOKEN_VARIABLE_END, tok, lineno, colno);
       } else if (cur === 'r' && this.str.charAt(this.index + 1) === '/') {
         return this.getRegex(lineno, colno);
@@ -202,11 +202,11 @@ export class Tokenizer implements ITokenizer {
         return null;
       } else if ((tok = this._extractString(this.tags.BLOCK_START + '-')) ||
           (tok = this._extractString(this.tags.BLOCK_START))) {
-        this.in_code = true;
+        this.inCode = true;
         return new Token(TokenType.TOKEN_BLOCK_START, tok, lineno, colno);
       } else if ((tok = this._extractString(this.tags.VARIABLE_START + '-')) ||
           (tok = this._extractString(this.tags.VARIABLE_START))) {
-        this.in_code = true;
+        this.inCode = true;
         return new Token(TokenType.TOKEN_VARIABLE_START, tok, lineno, colno);
       } else {
         tok = '';
@@ -318,7 +318,7 @@ export class Tokenizer implements ITokenizer {
     }, lineno, colno);
   }
 
-  
+
   _parseString(delimiter: string): string {
     this.forward();
 

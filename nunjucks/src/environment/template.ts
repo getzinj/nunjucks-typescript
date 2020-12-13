@@ -181,13 +181,14 @@ export class Template implements ITemplateClass {
     if (this.tmplProps) {
       props = this.tmplProps;
     } else {
-      const source: string = new Compiler(this.path).compile(this.tmplStr, this.env.asyncFilters, this.env.extensionsList, this.path, this.env.opts);
+      const source: string =
+          new Compiler(this.path)
+              .compile(this.tmplStr, this.env.asyncFilters, this.env.extensionsList, this.path, this.env.opts);
 
       try {
         const func: Function = new Function(source); // eslint-disable-line no-new-func
         props = func();
       } catch (e) {
-        console.error(`Error compiling source: \n${source}\n`, e);
         throw e;
       }
     }

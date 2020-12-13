@@ -1,4 +1,4 @@
-import { NunjucksNode} from './nunjucksNode';
+import { NunjucksNode } from './nunjucksNode';
 import { NunjucksSymbol } from './nunjucksSymbol';
 import { NunjucksNodeList } from './nunjucksNodeList';
 

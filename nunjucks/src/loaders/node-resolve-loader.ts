@@ -33,6 +33,7 @@ export class NodeResolveLoader extends Loader implements ILoader {
       });
 
       this.watcher.on('error', (error): void => {
+        // eslint-disable-next-line no-console
         console.log('Watcher error: ' + error);
       });
 

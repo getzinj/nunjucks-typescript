@@ -19,6 +19,7 @@ import { IEnvironmentOptions } from './src/interfaces/IEnvironmentOptions';
 import { TokenType } from './src/compiler/lexer/tokenType';
 import { NunjucksNode, NunjucksNodeList, ArrayNode, Dict } from './src/nodes/nodes';
 import { NunjucksSymbol } from './src/runtime/runtime';
+import { IEnvironment } from './src/interfaces/IEnvironment';
 
 // A single instance of an environment, since this is so commonly used
 let e;
@@ -29,10 +30,13 @@ function isEnvironmentsOptions(v): v is IEnvironmentOptions {
 }
 
 
-function configure();
-function configure(templatesPath: IEnvironmentOptions, opts: undefined);
-function configure(templatesPath: string, opts: IEnvironmentOptions);
-function configure(templatesPath?: string | IEnvironmentOptions, opts?: IEnvironmentOptions) {
+function configure(): IEnvironment;
+// eslint-disable-next-line no-redeclare
+function configure(templatesPath: IEnvironmentOptions, opts: undefined): IEnvironment;
+// eslint-disable-next-line no-redeclare
+function configure(templatesPath: string, opts: IEnvironmentOptions): IEnvironment;
+// eslint-disable-next-line no-redeclare
+function configure(templatesPath?: string | IEnvironmentOptions, opts?: IEnvironmentOptions): IEnvironment {
   opts = opts ?? { };
   if (isEnvironmentsOptions(templatesPath)) {
     opts = templatesPath;

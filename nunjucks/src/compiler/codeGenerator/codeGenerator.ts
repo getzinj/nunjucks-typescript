@@ -1378,8 +1378,6 @@ export class CodeGenerator {
 
 
   private fail(msg, lineno?: number, colno?: number): void {
-    console.error(`msg = "${ msg }".`);
-    console.error(`Type of msg = ${ typeof msg }.`);
     if (lineno !== undefined) {
       lineno += 1;
     }

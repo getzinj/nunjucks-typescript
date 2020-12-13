@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 export enum TokenType {
   TOKEN_STRING = 'string',
   TOKEN_WHITESPACE = 'whitespace',

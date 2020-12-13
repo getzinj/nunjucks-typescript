@@ -2,7 +2,6 @@ import * as path from 'path';
 
 
 export function express(env, app) {
-
   function NunjucksView(name, opts): void {
     this.name = name;
     this.path = name;

@@ -26,10 +26,12 @@ function addCompileSliceToCodeGenerator(): void {
 }
 
 
-function addContextOrFrameLookupToRuntime(orig_contextOrFrameLookup: (context: Context, frame: Frame, name: string) => unknown, ...args): void {
+function addContextOrFrameLookupToRuntime(
+    origContextOrFrameLookup: (context: Context, frame: Frame, name: string) => unknown,
+    ...args): void {
   // @ts-ignore
   contextOrFrameLookup = function contextOrFrameLookup(context: Context, frame: Frame, key: string): boolean | null {
-    const val = orig_contextOrFrameLookup.apply(this, [ context, frame, key ]);
+    const val = origContextOrFrameLookup.apply(this, [ context, frame, key ]);
     if (val !== undefined) {
       return val;
     }
@@ -47,6 +49,8 @@ function addContextOrFrameLookupToRuntime(orig_contextOrFrameLookup: (context: C
 }
 
 
+type AssertType = { (node: any, ...types: any[]): void; (node: any, ...types: any[]): void; apply?: any; };
+
 export function installCompat() {
   'use strict';
 
@@ -58,7 +62,7 @@ export function installCompat() {
 
   const orig_contextOrFrameLookup = contextOrFrameLookup;
   const orig_memberLookup = memberLookup;
-  let orig_CodeGenerator_assertType: { (node: any, ...types: any[]): void; (node: any, ...types: any[]): void; apply?: any; };
+  let orig_CodeGenerator_assertType: AssertType;
   let orig_Parser_parseAggregate: { (): Group | ArrayNode | Dict; (): Group | ArrayNode | Dict; };
   if (CodeGenerator) {
     orig_CodeGenerator_assertType = CodeGenerator.prototype.assertType;
@@ -121,7 +125,7 @@ export function installCompat() {
       return orig_Parser_parseAggregate.apply(this);
     } catch (e) {
       const errState: ISavedTokensState = getTokensState(this.tokens);
-      const rethrow: <T>() => T = <T>(): any => {
+      const rethrow: <T>() => T = (): any => {
         restoreTokenizerState.call(this, errState);
         return e;
       };

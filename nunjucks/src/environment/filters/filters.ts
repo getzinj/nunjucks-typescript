@@ -1,8 +1,5 @@
 declare var exports;
 
-
-'use strict';
-
 import * as he from 'he';
 import * as lib from '../../lib';
 import { isArray, _entries } from '../../lib';
@@ -13,10 +10,7 @@ import { IKeyValuePair } from '../../interfaces/IKeyValuePair';
 
 
 export function normalize<T, V>(value: T | null | undefined | false, defaultValue: V): T | V {
-  if (value === null || value === undefined || value === false) {
-    return defaultValue;
-  }
-  return value;
+  return (value === null || value === undefined || value === false) ? defaultValue : value;
 }
 
 
@@ -237,8 +231,11 @@ export function length<T>(val: T): number {
 
 
 export function list(val: string): string[];
+// eslint-disable-next-line no-redeclare
 export function list<T>(val: T[]): T[];
+// eslint-disable-next-line no-redeclare
 export function list<T>(val: Record<string | number | symbol, T>): IKeyValuePair<T>[];
+// eslint-disable-next-line no-redeclare
 export function list<T>(val: T[] | Record<string | number | symbol, T> | string): T[] | IKeyValuePair<T>[] | string[] {
   if (lib.isString(val)) {
     return val.split('');
@@ -491,7 +488,10 @@ function sortFilter(arr, reversed: boolean, caseSens: boolean, attr: string) {
 }
 
 
-export const sort: (...macroArgs) => any = r.makeMacro([ 'value', 'reverse', 'case_sensitive', 'attribute' ], [], sortFilter);
+export const sort: (...macroArgs) => any = r.makeMacro(
+    [ 'value', 'reverse', 'case_sensitive', 'attribute' ],
+    [ ],
+    sortFilter);
 
 
 export function string(obj): string | SafeString {
@@ -529,7 +529,8 @@ export function trim(str: string | SafeString): string | SafeString {
 }
 
 
-export function truncate(input: string | SafeString, toLength: number = 255, killWords?: boolean, end?: number): string | SafeString {
+export function truncate(input: string | SafeString, toLength: number = 255, killWords?: boolean, end?: number):
+    string | SafeString {
   const orig: string | SafeString = input;
   input = normalize(input, '');
 
@@ -595,10 +596,15 @@ function isSimpleTuple(val): val is SimpleTuple {
 
 
 export function entities(obj: SafeString): SafeString;
+// eslint-disable-next-line no-redeclare
 export function entities(obj: Simple): SafeString;
+// eslint-disable-next-line no-redeclare
 export function entities(obj: SimpleObject): SafeString;
+// eslint-disable-next-line no-redeclare
 export function entities(obj: SimpleTuple): SafeString;
+// eslint-disable-next-line no-redeclare
 export function entities(obj: (SimpleTuple | SimpleObject)[]): SafeString;
+// eslint-disable-next-line no-redeclare,max-len
 export function entities(obj: Simple | SafeString | SimpleTuple | SimpleObject | (SimpleObject | SimpleTuple)[]): SafeString {
   const encoder: (str: string) => string = (str: string): string => he.encode(str, { useNamedReferences: true });
   const safer: (str: string) => SafeString = (str: string): SafeString => r.markSafe(str);

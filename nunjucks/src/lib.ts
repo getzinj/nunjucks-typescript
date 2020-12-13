@@ -170,14 +170,16 @@ export function repeat(char_: string, n: number): string {
 }
 
 
-export function each<T>(obj: T[], func: (this: Context, value: T, i: number, obj: T[]) => void, context: Context): void {
-  if (obj == null) {
-    return;
-  } else if (ArrayProto.forEach && obj.forEach === ArrayProto.forEach) {
-    obj.forEach(func, context);
-  } else if (obj.length === +obj.length) {
-    for (let i: number = 0, l: number = obj.length; i < l; i++) {
-      func.call(context, obj[i], i, obj);
+export function each<T>(obj: T[],
+                        func: (this: Context, value: T, i: number, obj: T[]) => void,
+                        context: Context): void {
+  if (obj != null) {
+    if (ArrayProto.forEach && obj.forEach === ArrayProto.forEach) {
+      obj.forEach(func, context);
+    } else if (obj.length === +obj.length) {
+      for (let i: number = 0, l: number = obj.length; i < l; i++) {
+        func.call(context, obj[i], i, obj);
+      }
     }
   }
 }

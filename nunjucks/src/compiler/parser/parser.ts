@@ -1141,7 +1141,8 @@ export class Parser implements IParser {
                 tok.lineno,
                 tok.colno,
                 new NunjucksSymbol(tok.lineno, tok.colno, tok.value),
-                new NunjucksNodeList(tok.lineno, tok.colno, [ new NunjucksSymbol(tok.lineno, tok.colno, nextToken.value) ]));
+                new NunjucksNodeList(tok.lineno, tok.colno,
+                                     [ new NunjucksSymbol(tok.lineno, tok.colno, nextToken.value) ]));
           } else {
             this.fail('parsePrimary: expected right paren after left paren', tok.lineno, tok.colno);
           }
@@ -1389,10 +1390,12 @@ export class Parser implements IParser {
         }
 
         // Same for the succeeding block start token
-        if (nextToken &&
-          ((nextToken.type === TokenType.TOKEN_BLOCK_START && nextVal.charAt(nextVal.length - 1) === '-') ||
-          (nextToken.type === TokenType.TOKEN_VARIABLE_START && nextVal.charAt(this.tokens.tags.VARIABLE_START.length) === '-') ||
-          (nextToken.type === TokenType.TOKEN_COMMENT && nextVal.charAt(this.tokens.tags.COMMENT_START.length) === '-'))) {
+        if (nextToken
+            && ((nextToken.type === TokenType.TOKEN_BLOCK_START && nextVal.charAt(nextVal.length - 1) === '-')
+                || (nextToken.type === TokenType.TOKEN_VARIABLE_START
+                    && nextVal.charAt(this.tokens.tags.VARIABLE_START.length) === '-')
+                || (nextToken.type === TokenType.TOKEN_COMMENT
+                    && nextVal.charAt(this.tokens.tags.COMMENT_START.length) === '-'))) {
           // TODO: this could be optimized (don't use regex)
           data = data.replace(/\s*$/, '');
         }
@@ -1413,7 +1416,8 @@ export class Parser implements IParser {
         this.advanceAfterVariableEnd();
         buf.push(new Output(tok.lineno, tok.colno, [ e ]));
       } else if (tok.type === TokenType.TOKEN_COMMENT) {
-        this.dropLeadingWhitespace = tok.value.charAt(tok.value.length - this.tokens.tags.COMMENT_END.length - 1) === '-';
+        this.dropLeadingWhitespace =
+            tok.value.charAt(tok.value.length - this.tokens.tags.COMMENT_END.length - 1) === '-';
       } else {
         const expected: string[] = [
             'TOKEN_DATA',

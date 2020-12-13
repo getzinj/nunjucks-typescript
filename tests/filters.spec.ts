@@ -681,7 +681,8 @@ declare var nunjucks;
       // Bad initial inputs
       equal('{{ undefined | replace("b", "y", 4) }}', '');
       equal('{{ null | replace("b", "y", 4) }}', '');
-      equal('{{ {} | replace("b", "y", 4) }}', '[object Object]'); // End up with the object passed out of replace, then toString called on it
+      // End up with the object passed out of replace, then toString called on it
+      equal('{{ {} | replace("b", "y", 4) }}', '[object Object]');
       equal('{{ [] | replace("b", "y", 4) }}', '');
       equal('{{ true | replace("rue", "afafasf", 4) }}', 'true');
       equal('{{ false | replace("rue", "afafasf", 4) }}', 'false');
@@ -792,7 +793,8 @@ declare var nunjucks;
       equal('{% for i in [ {n:3},{n:5},{n:2},{n:1},{n:4},{n:6}] | sort(attribute="n") %}{{ i.n }}{% endfor %}',
         '123456');
 
-      const nestedAttributeSortTemplate = '{% for item in items | sort(attribute="meta.age") %}{{ item.name }}{% endfor %}';
+      const nestedAttributeSortTemplate: string =
+          '{% for item in items | sort(attribute="meta.age") %}{{ item.name }}{% endfor %}';
       equal(
         nestedAttributeSortTemplate,
         {

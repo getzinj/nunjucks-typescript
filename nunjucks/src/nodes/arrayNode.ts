@@ -4,7 +4,6 @@ import { NunjucksNodeList } from './nunjucksNodeList';
 
 
 export class ArrayNode extends NunjucksNodeList {
-
   get typename(): string {
     return 'ArrayNode';
   }

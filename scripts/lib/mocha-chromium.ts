@@ -46,10 +46,6 @@ export function mochaChromium(url, options: IMochaPhantomJsOptions = { }): Promi
 
       const runDir: string = path.join(__dirname, '../..');
       const opts: SpawnOptionsWithoutStdio = { cwd: runDir };
-
-      const command: string = `"${ scriptPath } ${ (args ?? [ ]).join(' ') }" in ${ opts?.cwd }`;
-      console.info(`Executing: ${ command }.`);
-
       const proc: ChildProcess = spawn(scriptPath, args, opts);
 
       proc.stdout.pipe(process.stdout);
@@ -63,6 +59,7 @@ export function mochaChromium(url, options: IMochaPhantomJsOptions = { }): Promi
         if (code === 0) {
           resolve();
         } else {
+          const command: string = `"${ scriptPath } ${ (args ?? [ ]).join(' ') }" in ${ opts?.cwd }`;
           reject(new Error(`test failed executing ${ command }. chromium exit code: ${ code }`));
         }
       });

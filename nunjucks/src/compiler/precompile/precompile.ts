@@ -30,7 +30,7 @@ export function precompileString(str: string, opts: IPrecompileOptions): string 
   if (!opts.name) {
     throw new Error('the "name" option is required when compiling a string');
   }
-  return wrapper([_precompile(str, opts.name, env)], opts);
+  return wrapper([ _precompile(str, opts.name, env) ], opts);
 }
 
 

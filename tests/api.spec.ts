@@ -77,7 +77,9 @@ declare var nunjucks;
         return;
       }
       let env = new Environment(new Loader(templatesPath));
-      expect(env.renderString('{% extends "./relative/test1.njk" %}{% block block1 %}Test3{% endblock %}', {}, { path: path.resolve(templatesPath, 'string.njk') })).to.be('FooTest3BazFizzle');
+      expect(env.renderString('{% extends "./relative/test1.njk" %}{% block block1 %}Test3{% endblock %}',
+          { },
+          { path: path.resolve(templatesPath, 'string.njk') })).to.be('FooTest3BazFizzle');
     });
 
 

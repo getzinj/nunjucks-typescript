@@ -48,7 +48,9 @@
 
 
   function equal(str: string, ctx, opts, str2, env?): void;
+  // eslint-disable-next-line no-redeclare
   function equal(str: string, ctx: string, opts, str2, env?): void;
+  // eslint-disable-next-line no-redeclare
   function equal(str: string, ctx, opts, str2, env?): void {
     if (typeof ctx === 'string') {
       env = opts;
@@ -227,7 +229,8 @@
   }
 
 
-  function doRender(cb, t, ctx, opts): string | undefined {
+  // eslint-disable-next-line consistent-return
+  function doRender(cb, t, ctx, opts): string | undefined | void {
     if (cb) {
       numAsyncs++;
       t.render(ctx, function(err, res): void {
