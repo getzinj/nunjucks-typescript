@@ -14,6 +14,7 @@ module.exports = {
     es6: true,
   },
   rules: {
+    'arrow-parens': [ 'error', 'always' ],
     'array-bracket-spacing': [ 'error', 'always' ],
     'dot-notation': [ 'off' ],
     // The one assertion of personal preference: no spaces before parentheses

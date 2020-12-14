@@ -20,14 +20,19 @@ export class Context implements IContext {
     this.env = env ?? new Environment();
 
     // Make a duplicate of ctx
-    this.ctx = extend({}, ctx);
+    this.ctx = this.cloneObject(ctx);
 
-    this.blocks = {};
+    this.blocks = { };
     this.exported = [];
 
     keys(blocks).forEach((name: string): void => {
       this.addBlock(name, blocks[name]);
     });
+  }
+
+
+  private cloneObject(ctx: IContext): any {
+    return extend({}, ctx);
   }
 
 
@@ -104,8 +109,8 @@ export class Context implements IContext {
   }
 
 
-  getExported(): {} {
-    const exported: {} = {};
+  getExported(): { } {
+    const exported: { } = { };
     this.exported.forEach((name: string): void => {
       exported[name] = this.ctx[name];
     });

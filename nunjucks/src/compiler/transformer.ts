@@ -15,95 +15,29 @@ import { Output } from '../nodes/output';
 import { If } from '../nodes/if';
 import { AsyncEach } from '../nodes/asyncEach';
 import { CallExtensionAsync } from '../nodes/callExtensionAsync';
-import { NunjucksNode } from '../nodes/nunjucksNode';
 import { Root } from '../nodes/root';
 import { Self } from '../nodes/self';
-import { NodeFactory } from '../nodes/nodeFactory';
 import { CallExtension } from '../nodes/callExtension';
 import { NunjucksNodeList } from '../nodes/nunjucksNodeList';
 import { INunjucksNode } from '../nodes/INunjucksNode';
+import { ASTWalker } from './ASTWalker';
+import { ITransformer } from '../interfaces/ITransformer';
+import { IASTWalker } from '../interfaces/IASTWalker';
 
 
-export class Transformer {
+
+export class Transformer implements ITransformer {
   sym: number = 0;
+  private readonly astWalker: IASTWalker = new ASTWalker();
 
 
-  readonly nodeFactory: NodeFactory = new NodeFactory();
+  public transform(ast: Root, asyncFilters, name?: string): INunjucksNode {
+    return this.cps(ast, asyncFilters || []);
+  }
 
 
   private gensym(): string {
     return 'hole_' + this.sym++;
-  }
-
-
-// copy-on-write version of map
-  mapCOW<T, V>(arr: T[], func: (item: T) => T | V): (T | V)[] {
-    let res: (T | V)[] = null;
-    for (let i: number = 0; i < arr.length; i++) {
-      const item: T | V = func(arr[i]);
-
-      if (item !== arr[i]) {
-        if (!res) {
-          res = arr.slice();
-        }
-
-        res[i] = item;
-      }
-    }
-
-    return res ?? arr;
-  }
-
-
-
-  private walk(ast: INunjucksNode,
-               func: (ast: INunjucksNode) => INunjucksNode | undefined, depthFirst?: boolean): INunjucksNode {
-    if (ast instanceof NunjucksNode) {
-      if (!depthFirst) {
-        const astT: INunjucksNode | undefined = func(ast);
-
-        if (astT && astT !== ast) {
-          return astT;
-        }
-      }
-
-      if (ast instanceof NunjucksNodeList) {
-        const children: INunjucksNode[] = this.mapCOW(ast.children, (node: INunjucksNode): INunjucksNode =>
-            this.walk(node, func, depthFirst));
-
-        if (children !== ast.children) {
-          ast = this.nodeFactory.createDynamicNode(ast.typename, ast.lineno, ast.colno, children);
-        }
-      } else if (ast instanceof CallExtension) {
-        const args: NunjucksNodeList = this.walk(ast.args, func, depthFirst) as NunjucksNodeList;
-        const contentArgs: INunjucksNode[] = this.mapCOW(ast.contentArgs, (node: INunjucksNode): INunjucksNode =>
-            this.walk(node, func, depthFirst));
-
-        if (args !== ast.args || contentArgs !== ast.contentArgs) {
-          ast = this.nodeFactory.createDynamicNode(ast.typename, ast.extName, ast.prop, args, contentArgs);
-        }
-      } else {
-        const props: INunjucksNode[] = ast.fields.map(<T extends INunjucksNode>(field: string): T => ast[field]);
-        const propsT: INunjucksNode[] =
-            this.mapCOW(props, (prop: INunjucksNode): INunjucksNode => this.walk(prop, func, depthFirst));
-
-        if (propsT !== props) {
-          ast = this.nodeFactory.createDynamicNode(ast.typename, ast.lineno, ast.colno);
-          propsT.forEach((prop: INunjucksNode, i: number): void => {
-            ast[ast.fields[i]] = prop;
-          });
-        }
-      }
-
-      return depthFirst ? (func(ast) || ast) : ast;
-    } else {
-      return ast;
-    }
-  }
-
-
-  private depthWalk(ast: INunjucksNode, func: (node: INunjucksNode) => INunjucksNode): INunjucksNode {
-    return this.walk(ast, func, true);
   }
 
 
@@ -112,7 +46,7 @@ export class Transformer {
                        prop?: string): CallExtension | Output | Set | For | If | NunjucksNodeList {
     const children: INunjucksNode[] = [];
 
-    const walked: INunjucksNode = this.depthWalk(prop ? node[prop] : node,
+    const walked: INunjucksNode = this.astWalker.depthWalk(prop ? node[prop] : node,
         (descNode: Block | NunjucksSymbol | Filter): Block | NunjucksSymbol => {
           let symbol: NunjucksSymbol;
           if (descNode instanceof Block) {
@@ -155,7 +89,7 @@ export class Transformer {
 
 
   private liftFilters(ast: Root, asyncFilters: string[]): INunjucksNode | undefined {
-    return this.depthWalk(ast, (node: CallExtension | Output | Set | For | If):
+    return this.astWalker.depthWalk(ast, (node: CallExtension | Output | Set | For | If):
         NunjucksNodeList | CallExtension | Set | For | If | undefined => {
       if (node instanceof Output) {
         return this._liftFilters(node, asyncFilters);
@@ -175,7 +109,7 @@ export class Transformer {
 
 
   private liftSuper(ast: INunjucksNode): INunjucksNode | undefined {
-    return this.walk(ast, (blockNode: INunjucksNode): INunjucksNode => {
+    return this.astWalker.walk(ast, (blockNode: INunjucksNode): INunjucksNode => {
       if (!(blockNode instanceof Block)) {
         return;
       }
@@ -184,7 +118,7 @@ export class Transformer {
       const symbol: string = this.gensym();
 
       // eslint-disable-next-line consistent-return
-      blockNode.body = this.walk(blockNode.body, (node: INunjucksNode): NunjucksSymbol => {
+      blockNode.body = this.astWalker.walk(blockNode.body, (node: INunjucksNode): NunjucksSymbol => {
         if (node instanceof FunCall && node.name.value === 'super') {
           hasSuper = true;
           return new NunjucksSymbol(node.lineno, node.colno, symbol);
@@ -201,7 +135,7 @@ export class Transformer {
 
 
   private liftSelf(ast: INunjucksNode): INunjucksNode | undefined {
-    return this.walk(ast, (blockNode: INunjucksNode): NunjucksSymbol => { // eslint-disable-line consistent-return
+    return this.astWalker.walk(ast, (blockNode: INunjucksNode): NunjucksSymbol => { // eslint-disable-line consistent-return
       if (!(blockNode instanceof Block)) {
         return;
       }
@@ -210,7 +144,7 @@ export class Transformer {
       const symbol: string = this.gensym();
       let blockName: NunjucksSymbol;
 
-      blockNode.body = this.walk(blockNode.body,
+      blockNode.body = this.astWalker.walk(blockNode.body,
           // eslint-disable-next-line consistent-return
           (node: INunjucksNode): NunjucksSymbol => {
             if (node instanceof FunCall && node.name.value === 'self') {
@@ -228,13 +162,13 @@ export class Transformer {
 
 
   private convertStatements(ast): INunjucksNode | undefined {
-    return this.depthWalk(ast, (node: INunjucksNode): AsyncEach | undefined | IfAsync => {
+    return this.astWalker.depthWalk(ast, (node: INunjucksNode): AsyncEach | undefined | IfAsync => {
       if (!(node instanceof If) && !(node instanceof For)) {
         return undefined;
       }
 
       let async: boolean = false;
-      this.walk(node, (child: INunjucksNode):
+      this.astWalker.walk(node, (child: INunjucksNode):
           FilterAsync | IfAsync | AsyncEach | AsyncAll | CallExtensionAsync | undefined => {
         if (child instanceof FilterAsync ||
             child instanceof IfAsync ||
@@ -276,14 +210,4 @@ export class Transformer {
   private cps(ast: Root, asyncFilters: string[]): INunjucksNode {
     return this.convertStatements(this.liftSelf(this.liftSuper(this.liftFilters(ast, asyncFilters))));
   }
-
-
-  public transform(ast: Root, asyncFilters, name?: string): INunjucksNode {
-    return this.cps(ast, asyncFilters || []);
-  }
-
-// var parser = require('./parser');
-// var src = 'hello {% foo %}{% endfoo %} end';
-// var ast = transform(parser.parse(src, [new FooExtension()]), ['bar']);
-// printNodes(ast);
 }

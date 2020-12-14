@@ -9,6 +9,7 @@ import { Compiler } from '../compiler/compiler';
 import { IContext } from '../interfaces/IContext';
 import { Environment } from './environment';
 import { Context } from './context';
+import { IFrame } from '../interfaces/IFrame';
 
 
 
@@ -21,7 +22,7 @@ export class Template implements ITemplateClass {
   private blocks: Record<string, IBlockFunction[]>;
   private rootRenderFunc: (env: IEnvironment,
                            context: IContext,
-                           frame: Frame,
+                           frame: IFrame,
                            runtime: typeof globalRuntime,
                            callback:
                                (err: any, info?: any) => void
@@ -65,10 +66,10 @@ export class Template implements ITemplateClass {
 
   render(ctx?: IContext, cb?);
   render(ctx?: IContext, parentFrame?: undefined, cb?);
-  render(ctx?: IContext, parentFrame?: Frame, cb?) {
+  render(ctx?: IContext, parentFrame?: IFrame, cb?) {
     if (typeof ctx === 'function') {
       cb = ctx;
-      ctx = {} as IContext;
+      ctx = { } as IContext;
     } else if (typeof parentFrame === 'function') {
       cb = parentFrame;
       parentFrame = null;
@@ -92,8 +93,8 @@ export class Template implements ITemplateClass {
       }
     }
 
-    const context: IContext = new Context(ctx ?? {}, this.blocks, this.env);
-    const frame: Frame = parentFrame ? parentFrame.push(true) : new Frame();
+    const context: IContext = new Context(ctx ?? { }, this.blocks, this.env);
+    const frame: IFrame = parentFrame ? parentFrame.push(true) : new Frame();
     frame.topLevel = true;
     let syncResult = null;
     let didError: boolean = false;
@@ -131,10 +132,10 @@ export class Template implements ITemplateClass {
   }
 
 
-  getExported(ctx: IContext, parentFrame: Frame, cb) { // eslint-disable-line consistent-return
+  getExported(ctx: IContext, parentFrame: IFrame, cb) { // eslint-disable-line consistent-return
     if (typeof ctx === 'function') {
       cb = ctx;
-      ctx = {};
+      ctx = { };
     }
 
     if (typeof parentFrame === 'function') {
@@ -153,11 +154,11 @@ export class Template implements ITemplateClass {
       }
     }
 
-    const frame: Frame = parentFrame ? parentFrame.push() : new Frame();
+    const frame: IFrame = parentFrame ? parentFrame.push() : new Frame();
     frame.topLevel = true;
 
     // Run the rootRenderFunc to populate the context with exported vars
-    const context: Context = new Context(ctx || {}, this.blocks, this.env);
+    const context: IContext = new Context(ctx || { }, this.blocks, this.env);
     this.rootRenderFunc(this.env, context, frame, globalRuntime, (err): void => {
       if (err) {
         cb(err, null);
@@ -200,7 +201,7 @@ export class Template implements ITemplateClass {
 
 
   _getBlocks(props: { [x: string]: IBlockFunction[]; }): Record<string, IBlockFunction[]> {
-    const blocks: Record<string, IBlockFunction[]> = {};
+    const blocks: Record<string, IBlockFunction[]> = { };
 
     lib.keys(props).forEach((k: string): void => {
       if (k.slice(0, 2) === 'b_') {

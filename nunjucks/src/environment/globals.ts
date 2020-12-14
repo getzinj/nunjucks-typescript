@@ -1,6 +1,7 @@
 'use strict';
 
 import { ICyclerObj } from '../interfaces/ICyclerObj';
+import { IGlobals } from '../interfaces/IGlobals';
 
 
 export function cycler<T>(items: T[]): ICyclerObj<T> {
@@ -42,7 +43,7 @@ export function joiner(sep: string): () => string {
 // Making this a function instead so it returns a new object
 // each time it's called. That way, if something like an environment
 // uses it, they will each have their own copy.
-export function globals() {
+export function globals(): IGlobals {
   return {
     range(start: number, stop: number, step: number): number[] {
       if (typeof stop === 'undefined') {
@@ -72,7 +73,7 @@ export function globals() {
     },
 
 
-    joiner(sep): () => string {
+    joiner(sep: string): () => string {
       return joiner(sep);
     }
   };

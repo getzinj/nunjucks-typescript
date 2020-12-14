@@ -19,6 +19,7 @@ import { Template } from './template';
 import { EventEmitter } from 'events';
 import { ITemplateClass } from '../interfaces/ITemplateClass';
 import { ITest } from '../interfaces/ITest';
+import { IGlobals } from '../interfaces/IGlobals';
 
 const loadersModule = require('../loaders/loaders');
 
@@ -31,7 +32,7 @@ export class Environment extends EventEmitter implements IEnvironment {
   asyncFilters: string[];
   private readonly tests: Record<string, ITest>;
   private readonly filters: Record<string, IFilterFunction>;
-  globals;
+  globals: IGlobals;
 
 
   constructor(loaders?: ILoader | ILoader[], opts?: IEnvironmentOptions) {
@@ -95,7 +96,7 @@ export class Environment extends EventEmitter implements IEnvironment {
 
 
   _initLoaders(): void {
-    this.loaders.forEach((loader: Loader): void => {
+    this.loaders.forEach((loader: ILoader): void => {
       // Caching and cache busting
       loader.cache = { };
       if (typeof loader.on === 'function') {

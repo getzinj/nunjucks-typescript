@@ -8,16 +8,29 @@ import { Parser } from './parser/parser';
 import { CodeGenerator } from './codeGenerator/codeGenerator';
 import { Root } from '../nodes/root';
 import { INunjucksNode } from '../nodes/INunjucksNode';
+import { ICompiler } from '../interfaces/ICompiler';
 
 
 
-export class Compiler {
+export class Compiler implements ICompiler {
   constructor(private readonly templateName: string, private readonly throwOnUndefined: boolean = false) { }
+
+
+  public compile(src: string,
+                 asyncFilters,
+                 extensions: IExtension[],
+                 name: string,
+                 opts: ICompilerOptions = { throwOnUndefined: undefined }): string {
+    const processedSrc: string = this.getPreprocessedSource(extensions, src);
+    const parsedCode: Root = this.parseSource(processedSrc, extensions, opts);
+    const transformedCode: INunjucksNode = this.getTransformedSource(parsedCode, asyncFilters, name);
+    return this.generateCode(transformedCode);
+  }
 
 
   private getPreprocessedSource(extensions: IExtension[], src: string): string {
     // Run the extension preprocessors against the source.
-    const preprocessors: IPreprocessor[] = (extensions ?? [])
+    const preprocessors: IPreprocessor[] = (extensions ?? [ ])
         .map( (ext: IExtension): IPreprocessor => ext.preprocess )
         .filter( (f: IPreprocessor | null | undefined): boolean => !!f );
     return preprocessors.reduce((s: string, processor: IPreprocessor): string => processor(s), src);
@@ -42,17 +55,5 @@ export class Compiler {
     return new CodeGenerator(this.templateName, this.throwOnUndefined)
         .compile(transformedCode)
         .getCode();
-  }
-
-
-  public compile( src: string,
-                  asyncFilters,
-                  extensions: IExtension[],
-                  name: string,
-                  opts: ICompilerOptions = { throwOnUndefined: undefined }): string {
-    const processedSrc: string = this.getPreprocessedSource(extensions, src);
-    const parsedCode: Root = this.parseSource(processedSrc, extensions, opts);
-    const transformedCode: INunjucksNode = this.getTransformedSource(parsedCode, asyncFilters, name);
-    return this.generateCode(transformedCode);
   }
 }

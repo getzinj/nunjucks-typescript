@@ -52,10 +52,12 @@ import { CallExtension } from '../../nodes/callExtension';
 import { NunjucksNodeList } from '../../nodes/nunjucksNodeList';
 import { INunjucksNodeList } from '../../nodes/INunjucksNodeList';
 import { INunjucksNode } from '../../nodes/INunjucksNode';
+import { IFrame } from '../../interfaces/IFrame';
+import { ICodeGenerator } from '../../interfaces/ICodeGenerator';
 
 
 
-export class CodeGenerator {
+export class CodeGenerator implements ICodeGenerator {
   private inBlock: boolean = false;
   private _scopeClosers: string = '';
   private lastId: number = 0;
@@ -173,14 +175,14 @@ export class CodeGenerator {
   }
 
 
-  private _compileChildren(node: INunjucksNode, frame: Frame): void {
+  private _compileChildren(node: INunjucksNode, frame: IFrame): void {
     node?.children?.forEach?.((child: INunjucksNode): void => {
       this.compile(child, frame);
     });
   }
 
 
-  private _compileAggregate(node: INunjucksNode, frame: Frame, startChar?: string, endChar?: string): void {
+  private _compileAggregate(node: INunjucksNode, frame: IFrame, startChar?: string, endChar?: string): void {
     if (startChar) {
       this._emit(startChar);
     }
@@ -199,7 +201,7 @@ export class CodeGenerator {
   }
 
 
-  private _compileExpression(node: INunjucksNode, frame: Frame): void {
+  private _compileExpression(node: INunjucksNode, frame: IFrame): void {
     // TODO: I'm not really sure if this type check is worth it or  not.
     this.assertType(
         node,
@@ -243,7 +245,7 @@ export class CodeGenerator {
   }
 
 
-  private compileCallExtension(node: CallExtension, frame: Frame, async?: boolean): void {
+  private compileCallExtension(node: CallExtension, frame: IFrame, async?: boolean): void {
     const args: INunjucksNodeList = node.args;
     const contentArgs: INunjucksNode[] = node.contentArgs;
     const autoescape: boolean = typeof node.autoescape === 'boolean' ? node.autoescape : true;
@@ -317,20 +319,20 @@ export class CodeGenerator {
   }
 
 
-  private compileCallExtensionAsync(node: CallExtensionAsync, frame: Frame): void {
+  private compileCallExtensionAsync(node: CallExtensionAsync, frame: IFrame): void {
     this.compileCallExtension(node, frame, true);
   }
 
 
-  private compileNodeList(node: NunjucksNodeList, frame: Frame): void {
+  private compileNodeList(node: NunjucksNodeList, frame: IFrame): void {
     this._compileChildren(node, frame);
   }
 
 
-  public readonly compileNunjucksNodeList: (node: NunjucksNodeList, frame: Frame) => void = this.compileNodeList;
+  public readonly compileNunjucksNodeList: (node: NunjucksNodeList, frame: IFrame) => void = this.compileNodeList;
 
 
-  private compileLiteral(node: Literal, frame?: Frame): void {
+  private compileLiteral(node: Literal, frame?: IFrame): void {
     if (typeof node.value === 'string') {
       let val: string = node.value.replace(/\\/g, '\\\\');
       val = val.replace(/"/g, '\\"');
@@ -347,7 +349,7 @@ export class CodeGenerator {
   }
 
 
-  private compileSymbol(node: NunjucksSymbol, frame: Frame): void {
+  private compileSymbol(node: NunjucksSymbol, frame: IFrame): void {
     const name: string = node.value;
     const v: string = frame.lookup(name);
 
@@ -360,28 +362,28 @@ export class CodeGenerator {
 
 
   // Alias for TypeScript project renaming of Symbol -> NunjucksSymbol
-  public readonly compileNunjucksSymbol: (node: NunjucksSymbol, frame: Frame) => void = this.compileSymbol;
+  public readonly compileNunjucksSymbol: (node: NunjucksSymbol, frame: IFrame) => void = this.compileSymbol;
 
   // Alias for TypeScript project renaming of Array -> ArrayNode
-  public readonly compileArrayNode: (node: ArrayNode, frame: Frame) => void = this.compileArray;
+  public readonly compileArrayNode: (node: ArrayNode, frame: IFrame) => void = this.compileArray;
 
 
-  private compileGroup(node: Group, frame: Frame): void {
+  private compileGroup(node: Group, frame: IFrame): void {
     this._compileAggregate(node, frame, '(', ')');
   }
 
 
-  private compileArray(node: ArrayNode, frame: Frame): void {
+  private compileArray(node: ArrayNode, frame: IFrame): void {
     this._compileAggregate(node, frame, '[', ']');
   }
 
 
-  private compileDict(node: Dict, frame: Frame): void {
+  private compileDict(node: Dict, frame: IFrame): void {
     this._compileAggregate(node, frame, '{', '}');
   }
 
 
-  private compilePair(node: Pair, frame: Frame): void {
+  private compilePair(node: Pair, frame: IFrame): void {
     let key: INunjucksNode = node.key;
     const val: INunjucksNode = node.value;
 
@@ -397,7 +399,7 @@ export class CodeGenerator {
   }
 
 
-  private compileInlineIf(node: InlineIf, frame: Frame): void {
+  private compileInlineIf(node: InlineIf, frame: IFrame): void {
     this._emit('(');
     this.compile(node.cond, frame);
     this._emit('?');
@@ -412,7 +414,7 @@ export class CodeGenerator {
   }
 
 
-  private compileIn(node: In, frame: Frame): void {
+  private compileIn(node: In, frame: IFrame): void {
     this._emit('runtime.inOperator(');
     this.compile(node.left, frame);
     this._emit(',');
@@ -421,7 +423,7 @@ export class CodeGenerator {
   }
 
 
-  private compileIs(node: Is, frame: Frame): void {
+  private compileIs(node: Is, frame: IFrame): void {
     // first, we need to try to get the name of the test function, if it's a
     // callable (i.e., has args) and not a symbol.
     const right = node.right.name
@@ -439,7 +441,7 @@ export class CodeGenerator {
   }
 
 
-  private _binOpEmitter(node: BinOp, frame: Frame, str: string): void {
+  private _binOpEmitter(node: BinOp, frame: IFrame, str: string): void {
     this.compile(node.left, frame);
     this._emit(str);
     this.compile(node.right, frame);
@@ -448,53 +450,53 @@ export class CodeGenerator {
 
   // ensure concatenation instead of addition
   // by adding empty string in between
-  private compileOr(node: Or, frame: Frame): void {
+  private compileOr(node: Or, frame: IFrame): void {
     return this._binOpEmitter(node, frame, ' || ');
   }
 
 
-  private compileAnd(node: And, frame: Frame): void {
+  private compileAnd(node: And, frame: IFrame): void {
     return this._binOpEmitter(node, frame, ' && ');
   }
 
 
-  private compileAdd(node: Add, frame: Frame): void {
+  private compileAdd(node: Add, frame: IFrame): void {
     return this._binOpEmitter(node, frame, ' + ');
   }
 
 
-  private compileConcat(node: Concat, frame: Frame): void {
+  private compileConcat(node: Concat, frame: IFrame): void {
     return this._binOpEmitter(node, frame, ' + "" + ');
   }
 
 
-  private compileSub(node: Sub, frame: Frame): void {
+  private compileSub(node: Sub, frame: IFrame): void {
     return this._binOpEmitter(node, frame, ' - ');
   }
 
 
-  private compileMul(node: Mul, frame: Frame): void {
+  private compileMul(node: Mul, frame: IFrame): void {
     return this._binOpEmitter(node, frame, ' * ');
   }
 
 
-  private compileDiv(node: Div, frame: Frame): void {
+  private compileDiv(node: Div, frame: IFrame): void {
     return this._binOpEmitter(node, frame, ' / ');
   }
 
 
-  private compileMod(node: BinOp, frame: Frame): void {
+  private compileMod(node: BinOp, frame: IFrame): void {
     return this._binOpEmitter(node, frame, ' % ');
   }
 
 
-  private compileNot(node: Not, frame: Frame): void {
+  private compileNot(node: Not, frame: IFrame): void {
     this._emit('!');
     this.compile(node.target, frame);
   }
 
 
-  private compileFloorDiv(node: FloorDiv, frame: Frame): void {
+  private compileFloorDiv(node: FloorDiv, frame: IFrame): void {
     this._emit('Math.floor(');
     this.compile(node.left, frame);
     this._emit(' / ');
@@ -503,7 +505,7 @@ export class CodeGenerator {
   }
 
 
-  private compilePow(node: Pow, frame: Frame): void {
+  private compilePow(node: Pow, frame: IFrame): void {
     this._emit('Math.pow(');
     this.compile(node.left, frame);
     this._emit(', ');
@@ -512,19 +514,19 @@ export class CodeGenerator {
   }
 
 
-  private compileNeg(node: Neg, frame: Frame): void {
+  private compileNeg(node: Neg, frame: IFrame): void {
     this._emit('-');
     this.compile(node.target, frame);
   }
 
 
-  private compilePos(node: Pos, frame: Frame): void {
+  private compilePos(node: Pos, frame: IFrame): void {
     this._emit('+');
     this.compile(node.target, frame);
   }
 
 
-  private compileCompare(node, frame: Frame): void {
+  private compileCompare(node, frame: IFrame): void {
     this.compile(node.expr, frame);
 
     node.ops.forEach((op): void => {
@@ -534,7 +536,7 @@ export class CodeGenerator {
   }
 
 
-  private compileLookupVal(node: LookupVal, frame: Frame): void {
+  private compileLookupVal(node: LookupVal, frame: IFrame): void {
     this._emit('runtime.memberLookup((');
     this._compileExpression(node.target, frame);
     this._emit('),');
@@ -561,7 +563,7 @@ export class CodeGenerator {
   }
 
 
-  private compileFunCall(node: FunCall, frame: Frame): void {
+  private compileFunCall(node: FunCall, frame: IFrame): void {
     // Keep track of line/col info at runtime by settings
     // variables within an expression. An expression in javascript
     // like (x, y, z) returns the last value, and x and y can be
@@ -582,7 +584,7 @@ export class CodeGenerator {
   }
 
 
-  private compileFilter(node: Filter, frame: Frame): void {
+  private compileFilter(node: Filter, frame: IFrame): void {
     const name: NunjucksSymbol = node.name;
     this.assertType(name, NunjucksSymbol);
 
@@ -596,7 +598,7 @@ export class CodeGenerator {
   }
 
 
-  private compileFilterAsync(node: FilterAsync, frame: Frame): void {
+  private compileFilterAsync(node: FilterAsync, frame: IFrame): void {
     const name: NunjucksSymbol = node.name;
     const symbol: string = node.symbol.value;
 
@@ -613,7 +615,7 @@ export class CodeGenerator {
   }
 
 
-  private compileKeywordArgs(node: KeywordArgs, frame: Frame): void {
+  private compileKeywordArgs(node: KeywordArgs, frame: IFrame): void {
     this._emit('runtime.makeKeywordArgs(');
     {
       this.compileDict(node, frame);
@@ -622,7 +624,7 @@ export class CodeGenerator {
   }
 
 
-  private compileSet(node, frame: Frame): void {
+  private compileSet(node, frame: IFrame): void {
     const ids: string[] = [];
 
     // Lookup the variable names for each identifier and create
@@ -676,7 +678,7 @@ export class CodeGenerator {
   }
 
 
-  private compileSwitch(node: Switch, frame: Frame): void {
+  private compileSwitch(node: Switch, frame: IFrame): void {
     this._emit('switch (');
     this.compile(node.expr, frame);
     this._emit(') {');
@@ -736,7 +738,7 @@ export class CodeGenerator {
   }
 
 
-  private compileIfAsync(node: IfAsync, frame: Frame): void {
+  private compileIfAsync(node: IfAsync, frame: IFrame): void {
     this._emit('(function(cb) {');
     this.currentIndentLevel++;
     this.compileIf(node, frame, true);
@@ -762,7 +764,7 @@ export class CodeGenerator {
   }
 
 
-  private compileFor(node, frame: Frame): void {
+  private compileFor(node, frame: IFrame): void {
     // Some of this code is ugly, but it keeps the generated code
     // as fast as possible. ForAsync also shares some of this, but
     // not much.
@@ -946,17 +948,17 @@ export class CodeGenerator {
   }
 
 
-  private compileAsyncEach(node: AsyncEach, frame: Frame): void {
+  private compileAsyncEach(node: AsyncEach, frame: IFrame): void {
     this._compileAsyncLoop(node, frame);
   }
 
 
-  private compileAsyncAll(node: AsyncAll, frame: Frame): void {
+  private compileAsyncAll(node: AsyncAll, frame: IFrame): void {
     this._compileAsyncLoop(node, frame, true);
   }
 
 
-  private _compileMacro(node: Macro, frame?: Frame): string {
+  private _compileMacro(node: Macro, frame?: IFrame): string {
     const args = [];
     let kwargs = null;
     const funcId: string = 'macro_' + this._tmpid();
@@ -982,7 +984,7 @@ export class CodeGenerator {
     // arguments so support setting positional args with keywords
     // args and passing keyword args as positional args
     // (essentially default values). See runtime.js.
-    let currFrame: Frame = keepFrame ? frame.push(true) : new Frame();
+    let currFrame: IFrame = keepFrame ? frame.push(true) : new Frame();
     this._emitLines(
         `var ${funcId} = runtime.makeMacro(`,
         `[${argNames.join(', ')}], `,
@@ -1029,7 +1031,7 @@ export class CodeGenerator {
   }
 
 
-  private compileMacro(node: Macro, frame: Frame): void {
+  private compileMacro(node: Macro, frame: IFrame): void {
     const funcId: string = this._compileMacro(node);
 
     // Expose the macro to the templates
@@ -1047,7 +1049,7 @@ export class CodeGenerator {
   }
 
 
-  private compileCaller(node: Caller, frame: Frame): void {
+  private compileCaller(node: Caller, frame: IFrame): void {
     // basically an anonymous "macro expression"
     this._emit('(function (){');
     const funcId: string = this._compileMacro(node, frame);
@@ -1068,7 +1070,7 @@ export class CodeGenerator {
   }
 
 
-  private compileImport(node, frame: Frame): void {
+  private compileImport(node, frame: IFrame): void {
     const target = node.target.value;
     const id: string = this._compileGetTemplate(node, frame, false, false);
     this._addScopeLevel();
@@ -1088,7 +1090,7 @@ export class CodeGenerator {
   }
 
 
-  private compileFromImport(node, frame: Frame): void {
+  private compileFromImport(node, frame: IFrame): void {
     const importedId: string = this._compileGetTemplate(node, frame, false, false);
     this._addScopeLevel();
 
@@ -1163,7 +1165,7 @@ export class CodeGenerator {
   }
 
 
-  private compileSuper(node: Super, frame: Frame): void {
+  private compileSuper(node: Super, frame: IFrame): void {
     // @ts-ignore
     const name: string = node.blockName.value;
     const id: string = node.symbol.value;
@@ -1176,7 +1178,7 @@ export class CodeGenerator {
   }
 
 
-  private compileSelf(node: Self, frame: Frame): void {
+  private compileSelf(node: Self, frame: IFrame): void {
     const name: string = node.blockName.value;
     const id: string = node.symbol.value;
 
@@ -1187,7 +1189,7 @@ export class CodeGenerator {
   }
 
 
-  private compileExtends(node: Extends, frame: Frame): void {
+  private compileExtends(node: Extends, frame: IFrame): void {
     const k: string = this._tmpid();
 
     const parentTemplateId: string = this._compileGetTemplate(node, frame, true, false);
@@ -1209,7 +1211,7 @@ export class CodeGenerator {
   }
 
 
-  private compileInclude(node: Include, frame: Frame): void {
+  private compileInclude(node: Include, frame: IFrame): void {
     this._emitLine('var tasks = [];');
     this._emitLine('tasks.push(');
     this._emitLine('function(callback) {');
@@ -1246,12 +1248,12 @@ export class CodeGenerator {
   }
 
 
-  private compileTemplateData(node: TemplateData, frame: Frame): void {
+  private compileTemplateData(node: TemplateData, frame: IFrame): void {
     this.compileLiteral(node, frame);
   }
 
 
-  private compileCapture(node: Capture, frame: Frame): void {
+  private compileCapture(node: Capture, frame: IFrame): void {
     // we need to temporarily override the current buffer id as 'output'
     // so the set block writes to the capture output instead of the buffer
     const buffer: string = this.buffer;
@@ -1272,7 +1274,7 @@ export class CodeGenerator {
   }
 
 
-  private compileOutput(node: Output, frame: Frame): void {
+  private compileOutput(node: Output, frame: IFrame): void {
     const children: INunjucksNode[] = node.children;
     children.forEach((child: INunjucksNode): void => {
       // TemplateData is a special case because it is never
@@ -1298,7 +1300,7 @@ export class CodeGenerator {
   }
 
 
-  private compileRoot(node: INunjucksNode, frame: Frame | null | undefined): void {
+  private compileRoot(node: INunjucksNode, frame: IFrame | null | undefined): void {
     if (frame) {
       this.fail('compileRoot: root node can\'t have frame');
     }
@@ -1339,7 +1341,7 @@ export class CodeGenerator {
 
       this._emitFuncBegin(block, `b_${name}`);
 
-      const tmpFrame: Frame = new Frame();
+      const tmpFrame: IFrame = new Frame();
       this._emitLine('var frame = frame.push(true);');
       this.compile(block.body, tmpFrame);
       this._emitFuncEnd();
@@ -1361,8 +1363,8 @@ export class CodeGenerator {
   }
 
 
-  public compile(node: INunjucksNode, frame?: Frame): CodeGenerator {
-    const _compile: (node, frame: Frame) => void = this.lookupTable[node.typename];
+  public compile(node: INunjucksNode, frame?: IFrame): CodeGenerator {
+    const _compile: (node, frame: IFrame) => void = this.lookupTable[node.typename];
     if (_compile) {
       _compile.call(this, node, frame);
     } else {
@@ -1372,7 +1374,7 @@ export class CodeGenerator {
   }
 
 
-  public getCode(): string {
+  getCode(): string {
     return this.codebuf.join('');
   }
 
@@ -1389,13 +1391,13 @@ export class CodeGenerator {
   }
 
 
-  public generateCode(transformedCode: INunjucksNode): string {
+  generateCode(transformedCode: INunjucksNode): string {
     this.compile(transformedCode);
     return this.getCode();
   }
 
 
-  private readonly lookupTable: Readonly<Record< string, (node, frame: Frame, async?: boolean) => void>> = {
+  private readonly lookupTable: Readonly<Record< string, (node, frame: IFrame, async?: boolean) => void>> = {
     Add: this.compileAdd,
     And: this.compileAnd,
     ArrayNode: this.compileArrayNode,

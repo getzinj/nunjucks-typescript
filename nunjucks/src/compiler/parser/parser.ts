@@ -68,23 +68,26 @@ import { IExtension } from '../../interfaces/IExtension';
 import { IParserOptions } from '../../interfaces/IParserOptions';
 import { ITokenizer } from '../../interfaces/ITokenizer';
 import { INunjucksNode } from '../../nodes/INunjucksNode';
+import { IParserTokenStream } from '../../interfaces/IParserTokenStream';
 
 
 
 export class Parser implements IParser {
+  private static readonly COMPARE_OPS: Readonly<string[]> = [ '==', '===', '!=', '!==', '<', '>', '<=', '>=' ];
+
   extensions: IExtension[] | undefined = [ ];
   private dropLeadingWhitespace: boolean = false;
   private breakOnBlocks: string[] | undefined | null = null;
-  parserTokenStream: ParserTokenStream;
+  parserTokenStream: IParserTokenStream;
   public tokens: ITokenizer;
 
 
-  private parse(): NunjucksNodeList {
+  parse(): NunjucksNodeList {
     return new NunjucksNodeList(0, 0, this.parseNodes());
   }
 
 
-  private error(msg: string, lineno, colno): Error {
+  error(msg: string, lineno?: number, colno?: number): Error {
     if (lineno === undefined || colno === undefined) {
       const tok: Token<any> | { lineno: undefined; colno: undefined }
           = this.parserTokenStream.peekToken() || { lineno: undefined, colno: undefined };
@@ -101,12 +104,12 @@ export class Parser implements IParser {
   }
 
 
-  public fail(msg: string, lineno?: number, colno?: number): void {
+  fail(msg: string, lineno?: number, colno?: number): void {
     throw this.error(msg, lineno, colno);
   }
 
 
-  public skip(type): boolean {
+  skip(type): boolean {
     const tok: Token<any> = this.parserTokenStream.nextToken();
     if (!tok || tok.type !== type) {
       this.parserTokenStream.pushToken(tok);
@@ -116,16 +119,16 @@ export class Parser implements IParser {
   }
 
 
-  private expect(type: string): Token<any> {
+  expect(type: string): Token<any> {
     const tok: Token<any> = this.parserTokenStream.nextToken();
     if (tok.type !== type) {
-      this.fail(`expected ${ type }, got ${ tok.type }`, tok.lineno, tok.colno);
+      this.fail(`expected ${type}, got ${tok.type}`, tok.lineno, tok.colno);
     }
     return tok;
   }
 
 
-  private skipValue(type: TokenType, val: string): boolean {
+  skipValue(type: TokenType, val: string): boolean {
     const tok: Token<any> = this.parserTokenStream.nextToken();
     if (!tok || tok.type !== type || tok.value !== val) {
       this.parserTokenStream.pushToken(tok);
@@ -135,7 +138,7 @@ export class Parser implements IParser {
   }
 
 
-  private skipSymbol(val: string): boolean {
+  skipSymbol(val: string): boolean {
     return this.skipValue(TokenType.TOKEN_SYMBOL, val);
   }
 
@@ -914,8 +917,8 @@ export class Parser implements IParser {
   }
 
 
+
   private parseCompare(): INunjucksNode {
-    const compareOps: string[] = [ '==', '===', '!=', '!==', '<', '>', '<=', '>=' ];
     const expr: INunjucksNode = this.parseConcat();
     const ops: NunjucksNode[] = [];
 
@@ -924,7 +927,7 @@ export class Parser implements IParser {
 
       if (!tok) {
         break;
-      } else if (compareOps.indexOf(tok.value) !== -1) {
+      } else if (Parser.COMPARE_OPS.indexOf(tok.value) !== -1) {
         ops.push(new CompareOperand(tok.lineno,
           tok.colno,
           this.parseConcat(),
@@ -1279,16 +1282,12 @@ export class Parser implements IParser {
             tok.colno);
         }
 
-        // TODO: check for errors
-        const value: INunjucksNode = this.parseExpression();
         node.addChild(new Pair(key.lineno,
           key.colno,
           key,
-          value));
+          this.parseExpression()));
       } else {
-        // TODO: check for errors
-        const expr: INunjucksNode = this.parseExpression();
-        node.addChild(expr);
+        node.addChild(this.parseExpression());
       }
     }
 
@@ -1436,7 +1435,7 @@ export class Parser implements IParser {
   }
 
 
-  public parseAsRoot(): Root {
+  parseAsRoot(): Root {
     return new Root(0, 0, this.parseNodes());
   }
 

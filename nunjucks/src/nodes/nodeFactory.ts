@@ -54,11 +54,12 @@ import { CompareOperand } from './compareOperand';
 import { CallExtensionAsync } from './callExtensionAsync';
 import { CallExtension } from './callExtension';
 import { NunjucksNodeList } from './nunjucksNodeList';
+import { INodeFactory } from './INodeFactory';
 
 
 
-export class NodeFactory {
-  public createDynamicNode<T extends NunjucksNode>(typename: string, ...args: any[]): T {
+export class NodeFactory implements INodeFactory {
+  createDynamicNode<T extends NunjucksNode>(typename: string, ...args: any[]): T {
     switch (typename) {
       case 'Node':
       case 'NunjucksNode':

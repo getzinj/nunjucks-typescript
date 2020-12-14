@@ -1,10 +1,11 @@
 import { Token } from '../lexer/token';
 import { TokenType } from '../lexer/tokenType';
 import { ITokenizer } from '../../interfaces/ITokenizer';
+import { IParserTokenStream } from '../../interfaces/IParserTokenStream';
 
 
 
-export class ParserTokenStream {
+export class ParserTokenStream implements IParserTokenStream {
   peeked: Token<any> | null = null;
 
   get currentLine(): string { return this.tokens.currentLine; }
@@ -29,11 +30,17 @@ export class ParserTokenStream {
     tok = this.tokens.nextToken();
 
     if (!withWhitespace) {
-      while (tok && tok.type === TokenType.TOKEN_WHITESPACE) {
-        tok = this.tokens.nextToken();
-      }
+      tok = this.skipWhitespace(tok);
     }
 
+    return tok;
+  }
+
+
+  skipWhitespace(tok: Token<any>): Token<any> | null {
+    while (tok && tok.type === TokenType.TOKEN_WHITESPACE) {
+      tok = this.tokens.nextToken();
+    }
     return tok;
   }
 
